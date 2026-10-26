@@ -2,15 +2,15 @@
 
 Step-by-step guides for each kind of BIAN user. A slide overview of the platform is in [../presentation/BIAN-Platform-Overview.pptx](../presentation/BIAN-Platform-Overview.pptx). Find your role below and open your guide. The section [Things everyone can do](#things-everyone-can-do) applies to all signed-in users.
 
-| I am… | Category or role | Guide |
-|---|---|---|
-| A visitor who hasn't joined | — | [Visitors](01-visitors.md) |
-| Representing a startup, incubator, university, research institute or company | Startups & Innovation · Academia & Research · Industry | [Organisation members](02-organisation-members.md) |
-| Joining as an individual | Individual Expert (SME) · Alumni · Student · Professional | [Individual members](03-individual-members.md) |
-| Listed, or want to be listed, as an expert | Any member with an expert profile | [Experts](04-experts.md) |
-| Running the platform for Biozeen | Biozeen Administrator | [Administrators](05-administrators.md) |
-| Writing or publishing content | Content Editor · Content Publisher | [Content team](06-content-team.md) |
-| Approving members and keeping directories | Membership Manager | [Membership managers](07-membership-managers.md) |
+| I am… | Category or role | Guide | PDF |
+|---|---|---|---|
+| A visitor who hasn't joined | — | [Visitors](01-visitors.md) | [PDF](pdf/BIAN-User-Guide-01-Visitors.pdf) |
+| Representing a startup, incubator, university, research institute or company | Startups & Innovation · Academia & Research · Industry | [Organisation members](02-organisation-members.md) | [PDF](pdf/BIAN-User-Guide-02-Organisation-members.pdf) |
+| Joining as an individual | Individual Expert (SME) · Alumni · Student · Professional | [Individual members](03-individual-members.md) | [PDF](pdf/BIAN-User-Guide-03-Individual-members.pdf) |
+| Listed, or want to be listed, as an expert | Any member with an expert profile | [Experts](04-experts.md) | [PDF](pdf/BIAN-User-Guide-04-Experts.pdf) |
+| Running the platform for Biozeen | Biozeen Administrator | [Administrators](05-administrators.md) | [PDF](pdf/BIAN-User-Guide-05-Administrators.pdf) |
+| Writing or publishing content | Content Editor · Content Publisher | [Content team](06-content-team.md) | [PDF](pdf/BIAN-User-Guide-06-Content-team.pdf) |
+| Approving members and keeping directories | Membership Manager | [Membership managers](07-membership-managers.md) | [PDF](pdf/BIAN-User-Guide-07-Membership-managers.pdf) |
 
 > **Category or role?** Your *category* is what you chose when you registered (for example Student). Your *roles* decide what you can see and do. When you are approved you get the **Member** role plus the role for your category. An administrator can add or change roles later.
 
