@@ -32,7 +32,7 @@ function RolePicker({ value, onChange }: { value: string[]; onChange: (v: string
     <div className="flex flex-wrap gap-1.5">
       {roles.map((r) => {
         const on = value.includes(r._id)
-        return <button key={r._id} type="button" aria-pressed={on} onClick={() => onChange(on ? value.filter((x) => x !== r._id) : [...value, r._id])} className={`rounded-full border px-2.5 py-1 text-xs font-medium ${on ? 'border-brand-600 bg-brand-600 text-white' : 'border-ink-900/15 bg-white text-ink-700'}`}>{r.displayName}</button>
+        return <button key={r._id} type="button" aria-pressed={on} onClick={() => onChange(on ? value.filter((x) => x !== r._id) : [...value, r._id])} className={`rounded-full border px-2.5 py-1 text-xs font-medium ${on ? 'border-brand-600 bg-brand-600 text-white' : 'border-ink-900/15 bg-card text-ink-700'}`}>{r.displayName}</button>
       })}
     </div>
   )
@@ -43,7 +43,7 @@ function SearchBox({ value, onChange, placeholder }: { value: string; onChange: 
     <label className="relative">
       <span className="sr-only">{placeholder}</span>
       <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-300" />
-      <input value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className="h-10 w-64 rounded-lg border border-ink-300/70 bg-white pl-9 pr-3 text-sm" />
+      <input value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className="h-10 w-64 rounded-lg border border-ink-300/70 bg-card pl-9 pr-3 text-sm" />
     </label>
   )
 }
@@ -425,7 +425,7 @@ export function Directory({ initialTab = 'organizations' }: { initialTab?: 'orga
                   <tr key={r._id}>
                     <td className="px-4 py-3"><p className="font-medium text-ink-900">{r.user?.name}</p><p className="text-xs text-ink-500">{r.headline}</p></td>
                     <td className="px-4 py-3">{label(r.expertType)}</td>
-                    <td className="px-4 py-3 text-xs">{r.skills.join(', ')}</td>
+                    <td className="px-4 py-3 text-xs">{r.skills?.join(', ')}</td>
                     <td className="px-4 py-3">{label(r.visibility)}</td>
                     <td className="px-4 py-3"><StatusBadge status={r.status} /></td>
                     <td className="whitespace-nowrap px-4 py-3 text-right">

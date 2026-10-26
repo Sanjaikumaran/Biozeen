@@ -16,7 +16,11 @@ process.env.REQUIRE_APPROVAL = "true";
 process.env.REQUIRE_EMAIL_VERIFICATION = "true";
 process.env.UPLOAD_DIR = `${process.env.TMPDIR ?? "/tmp"}/bian-test-uploads`;
 
+const { createServer } = await import("node:http");
+const { io: connectSocket } = await import("socket.io-client");
 const { app } = await import("../src/app.js");
+const { config } = await import("../src/config.js");
+const { attachRealtime } = await import("../src/lib/realtime.js");
 const { seed } = await import("../src/seed.js");
 const { User, Role } = await import("../src/models/identity.js");
 const { Content } = await import("../src/models/content.js");
@@ -72,7 +76,9 @@ before(async () => {
   await mongoose.connect(process.env.MONGO_URI!);
   await mongoose.connection.dropDatabase();
   creds = await seed();
-  server = app.listen(0);
+  server = createServer(app);
+  attachRealtime(server);
+  await new Promise<void>((resolve) => server.listen(0, resolve));
   base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
   await admin.login("admin@bian.local", creds.adminPassword);
   await student.login(creds.studentEmail, creds.demoPassword);
@@ -305,5 +311,111 @@ describe("contact centre", () => {
     assert.equal(mine[0].response, "Thanks, we will connect you.");
     assert.equal(mine[0].notes, undefined);
     assert.equal(mine[0].status, "responded");
+  });
+});
+
+describe("account preferences", () => {
+  it("saves a member's theme and returns it with the session", async () => {
+    assert.equal((await anon.put("/api/auth/me/preferences", { themeMode: "dark", accent: "ocean" })).status, 401);
+    assert.equal((await student.put("/api/auth/me/preferences", { themeMode: "neon", accent: "ocean" })).status, 400);
+    assert.equal((await student.put("/api/auth/me/preferences", { themeMode: "dark", accent: "ocean" })).status, 200);
+    const me = await student.get("/api/auth/me");
+    assert.deepEqual(me.body.user.preferences, { themeMode: "dark", accent: "ocean" });
+  });
+});
+
+describe("sign-in codes", () => {
+  it("requires the emailed code after the password when enabled", async () => {
+    config.loginOtp = true;
+    try {
+      const c = new Client();
+      const step1 = await c.post("/api/auth/login", { email: creds.studentEmail, password: creds.demoPassword });
+      assert.equal(step1.status, 200);
+      assert.equal(step1.body.otpRequired, true);
+      assert.equal(c.cookie, "", "no session before the code");
+      assert.match(step1.body.devCode, /^\d{6}$/);
+      const wrong = step1.body.devCode === "000000" ? "111111" : "000000";
+      assert.equal((await c.post("/api/auth/login/otp", { challenge: step1.body.challenge, code: wrong })).status, 400);
+      assert.equal((await c.post("/api/auth/login/otp/resend", { challenge: step1.body.challenge })).status, 429);
+      const ok = await c.post("/api/auth/login/otp", { challenge: step1.body.challenge, code: step1.body.devCode });
+      assert.equal(ok.status, 200);
+      assert.equal((await c.get("/api/auth/me")).body.user.email, creds.studentEmail);
+      // A used challenge cannot be replayed.
+      assert.equal((await c.post("/api/auth/login/otp", { challenge: step1.body.challenge, code: step1.body.devCode })).status, 400);
+    } finally {
+      config.loginOtp = false;
+    }
+  });
+
+  it("locks the challenge after repeated wrong codes", async () => {
+    config.loginOtp = true;
+    try {
+      const c = new Client();
+      const { body } = await c.post("/api/auth/login", { email: creds.studentEmail, password: creds.demoPassword });
+      const wrong = body.devCode === "000000" ? "111111" : "000000";
+      for (let i = 0; i < 5; i++) await c.post("/api/auth/login/otp", { challenge: body.challenge, code: wrong });
+      assert.equal((await c.post("/api/auth/login/otp", { challenge: body.challenge, code: body.devCode })).status, 400);
+    } finally {
+      config.loginOtp = false;
+    }
+  });
+});
+
+describe("notifications", () => {
+  it("notifies staff of new requests and members of replies, live over the socket", async () => {
+    await student.post("/api/notifications/read-all");
+    const socket = connectSocket(base, { path: "/api/socket", extraHeaders: { cookie: student.cookie }, transports: ["websocket"] });
+    await new Promise<void>((resolve, reject) => {
+      socket.on("connect", () => resolve());
+      socket.on("connect_error", reject);
+    });
+    const live = new Promise<{ title: string }>((resolve) => socket.on("notification", resolve));
+
+    const sent = await student.post("/api/contact", { name: "Ananya", email: "s@example.com", category: "student", type: "training", subject: "GMP training", message: "Do you run GMP training for students?", startedAt: Date.now() - 10_000 });
+    assert.equal(sent.status, 201);
+    const staff = (await admin.get("/api/notifications")).body;
+    assert.ok(staff.unread >= 1);
+    assert.match(staff.items[0].title, /training request from Ananya/);
+    assert.equal(staff.items[0].link.startsWith("/admin/requests"), true);
+
+    const id = staff.items[0].link.split("open=")[1];
+    await admin.patch(`/api/admin/contacts/${id}`, { response: "Yes, the next batch starts in December." });
+    assert.match((await live).title, /secretariat replied/);
+    socket.close();
+
+    const mine = (await student.get("/api/notifications")).body;
+    assert.equal(mine.unread, 1);
+    assert.equal((await student.post(`/api/notifications/${mine.items[0]._id}/read`)).body.unread, 0);
+    // Members cannot read or mark someone else's notifications.
+    await industry.post(`/api/notifications/${staff.items[0]._id}/read`);
+    assert.equal((await admin.get("/api/notifications")).body.items[0].readAt, undefined);
+  });
+
+  it("rejects sockets without a valid session", async () => {
+    const socket = connectSocket(base, { path: "/api/socket", transports: ["websocket"], reconnection: false });
+    const err = await new Promise<Error>((resolve) => socket.on("connect_error", resolve));
+    assert.match(err.message, /Not signed in/);
+    socket.close();
+  });
+
+  it("alerts the audience when an announcement is published", async () => {
+    const created = await admin.post("/api/admin/contents", { type: "announcement", title: "Students only: lab visit", summary: "A lab visit for student members.", status: "published", access: { visibility: "roles", roles: [String((await Role.findOne({ name: "student" }))!._id)] } });
+    assert.equal(created.status, 201, JSON.stringify(created.body));
+    const s = (await student.get("/api/notifications")).body.items[0];
+    assert.match(s.title, /Announcement: Students only/);
+    assert.match(s.link, /^\/events\/announcements\//);
+    const i = (await industry.get("/api/notifications")).body.items;
+    assert.equal(i.some((n: { title: string }) => n.title.includes("Students only")), false);
+  });
+});
+
+describe("review notifications", () => {
+  it("asks publishers to review an editor's submission, but not other editors", async () => {
+    await admin.post("/api/notifications/read-all");
+    const r = await editor.post("/api/admin/contents", { type: "article", title: "Draft for review", summary: "An editor's draft awaiting a publisher.", status: "pending_review" });
+    assert.equal(r.status, 201, JSON.stringify(r.body));
+    const n = (await admin.get("/api/notifications?unread=true")).body.items;
+    assert.ok(n.some((x: { title: string }) => x.title === "Content to review: Draft for review"));
+    assert.equal((await editor.get("/api/notifications?unread=true")).body.items.length, 0);
   });
 });

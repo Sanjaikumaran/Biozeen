@@ -52,27 +52,18 @@ export function clearSession(res: Response) {
   res.clearCookie(config.cookieName, { path: "/" });
 }
 
-/**
- * Resolves the session cookie on every request. Account status and roles are read
- * fresh from the database so suspensions and role changes take effect immediately.
- */
-export async function loadUser(req: Request, res: Response, next: NextFunction) {
-  const token = req.cookies?.[config.cookieName] as string | undefined;
-  if (!token) return next();
+/** Resolve a session token to the current user, or null when it is invalid, revoked or the account is not active. */
+export async function sessionUser(token: string): Promise<AuthUser | null> {
   let payload: SessionPayload;
   try {
     payload = jwt.verify(token, config.jwtSecret) as SessionPayload;
   } catch {
-    clearSession(res);
-    return next();
+    return null;
   }
   const user = await User.findById(payload.sub).lean();
-  if (!user || user.tokenVersion !== payload.tv || user.status !== "active") {
-    clearSession(res);
-    return next();
-  }
+  if (!user || user.tokenVersion !== payload.tv || user.status !== "active") return null;
   const roles = await Role.find({ _id: { $in: user.roles } }).lean();
-  req.user = {
+  return {
     id: String(user._id),
     _id: user._id,
     email: user.email,
@@ -85,6 +76,18 @@ export async function loadUser(req: Request, res: Response, next: NextFunction) 
     roleNames: roles.map((r) => r.name),
     permissions: new Set(roles.flatMap((r) => r.permissions as Permission[])),
   };
+}
+
+/**
+ * Resolves the session cookie on every request. Account status and roles are read
+ * fresh from the database so suspensions and role changes take effect immediately.
+ */
+export async function loadUser(req: Request, res: Response, next: NextFunction) {
+  const token = req.cookies?.[config.cookieName] as string | undefined;
+  if (!token) return next();
+  const user = await sessionUser(token);
+  if (!user) clearSession(res);
+  else req.user = user;
   next();
 }
 

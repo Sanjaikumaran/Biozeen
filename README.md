@@ -1,6 +1,6 @@
 # BIAN — Biozeen Industry Academy Network
 
-Company portfolio website and role-based member platform for BIAN, built from the 12-screen website overview and the requirements in [client/Story.md](client/Story.md) and [db/schema.md](db/schema.md). For a screen-by-screen guide to using the platform, see [docs/BIAN-Platform-Guide.md](docs/BIAN-Platform-Guide.md).
+Company portfolio website and role-based member platform for BIAN, built from the 12-screen website overview and the requirements in [client/Story.md](client/Story.md) and [db/schema.md](db/schema.md). For a screen-by-screen guide to using the platform, see [docs/BIAN-Platform-Guide.md](docs/BIAN-Platform-Guide.md). Role-by-role user guides are in [docs/user-guides/](docs/user-guides/README.md), and a slide overview is in [docs/presentation/BIAN-Platform-Overview.pptx](docs/presentation/BIAN-Platform-Overview.pptx).
 
 | Layer | Stack |
 |---|---|
@@ -17,8 +17,7 @@ Requirements: Node.js 20+ and a MongoDB instance.
 cd server
 cp .env.example .env          # set MONGO_URI and a long random JWT_SECRET
 npm install
-npm run seed                  # roles, admin account and sample content
-npm run dev                   # http://localhost:5000
+npm run dev                   # http://localhost:5000 — an empty database is filled from db/data on first start
 
 # 2. Client (second terminal)
 cd client
@@ -26,7 +25,18 @@ npm install
 npm run dev                   # http://localhost:5173 (proxies /api to :5000)
 ```
 
-`npm run seed -- --reset` drops the database and reseeds.
+### Database on a new machine
+
+The database's contents are kept in the repository under [db/data/](db/data/) as MongoDB Extended JSON, so ObjectIds and dates keep their types. Uploaded files are included too.
+
+| Command (in `server/`) | What it does |
+|---|---|
+| `npm run dev` | On first start, an empty database is filled from `db/data`. If there is no export, it gets the sample seed instead. Turn this off with `AUTO_INIT_DB=false` |
+| `npm run db:export` | Saves the current database and uploads to `db/data`. Commit the result to share it |
+| `npm run db:import` | Loads `db/data` into an empty database. `-- --replace` drops the existing database first |
+| `npm run seed` · `npm run seed -- --reset` | Loads the built-in sample data instead (reset drops the database first) |
+
+`db/data` contains password hashes for the accounts in it. Use it for development and staging data only, never production data.
 
 ### Seeded accounts
 
@@ -47,17 +57,19 @@ Seeded organisations, people, opportunities, events and announcements come from 
 ## Checks
 
 ```bash
-cd server && npm run typecheck && npm test   # 19 API integration tests (needs MongoDB; uses the bian_test database)
+cd server && npm run typecheck && npm test   # 26 API integration tests (needs MongoDB; uses the bian_test database)
 cd client && npm run lint && npm run build
 ```
 
-The tests cover audience filtering on listings, direct URLs, search, courses and events; editor and publisher rights; HTML sanitising; session revocation on suspension; the registration → verification → approval flow; protected file downloads; upload type checks; anonymous feedback privacy; lesson-level analytics; and identity hiding in feedback reports.
+The tests cover audience filtering on listings, direct URLs, search, courses and events; editor and publisher rights; HTML sanitising; session revocation on suspension; the registration → verification → approval flow; protected file downloads; upload type checks; anonymous feedback privacy; lesson-level analytics; identity hiding in feedback reports; account theme preferences; sign-in codes (expiry, lockout, replay); and notifications (who is told, the live socket, rejection without a session).
 
 ## What's included
 
 **Public site:** homepage, About, Company Portfolio (services, projects, case studies), Partner Ecosystem with partner profiles, Opportunities Hub, Knowledge Hub with courses, Experts Network, Events & Announcements, Contact & Collaboration Center, and site-wide search.
 
-**Accounts:** 3-step registration by category (organisation or individual), email verification, admin approval, login with "remember me", forgot/reset password, change password, and sign out of all devices.
+**Accounts:** 3-step registration by category (organisation or individual), email verification, admin approval, login with "remember me", an optional emailed 6-digit sign-in code, forgot/reset password, change password, and sign out of all devices.
+
+**For every user:** live in-app notifications (bell, pop-up and notifications page) for approvals, replies, reviews, publications and new requests; per-user appearance settings with six theme colours, light/dark/system mode and a live preview, saved to the account.
 
 **Member dashboard:** relevant opportunities, learning progress, registered events, requests with secretariat replies, saved items, submitted feedback, profile, company profile for organisation accounts, a self-service expert profile, and "Post a Requirement" (goes to review before publishing).
 
@@ -74,10 +86,25 @@ The tests cover audience filtering on listings, direct URLs, search, courses and
 
 ## Known limitations
 
-- **Email delivery is not wired up.** Verification and password-reset links are written to the server log. In development they also appear on screen. Connect an email provider in `server/src/routes/auth.ts` before production.
+- **Email is off by default.** While `EMAIL_ENABLED=false`, verification links, reset links and sign-in codes are written to the server log, and in development they are also shown on screen. Set `EMAIL_ENABLED=true` and the `SMTP_*` values once a mailbox is available, then decide whether to turn on `LOGIN_OTP_ENABLED`.
+- **Scheduled publishing does not notify.** Items that go live at a future publish date don't send "new announcement/event" notifications; items published immediately do.
 - **"Continue with Google"** from the login mock-up is not implemented; it needs OAuth client credentials.
 - **Logos** are placeholders: the mock-ups show "LOGO". Partner logos can be set per organisation in the Master Database.
 - Quizzes and assessments, multi-factor authentication and real-time messaging are not implemented. Member messaging is handled through secretariat-mediated requests.
+
+## Configuration
+
+All settings are in `server/.env` (see [server/.env.example](server/.env.example)).
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `EMAIL_ENABLED` | `false` | Send real emails. When off, emails are written to the server log |
+| `SMTP_HOST` `SMTP_PORT` `SMTP_SECURE` `SMTP_USER` `SMTP_PASS` `MAIL_FROM` | — | Mail server settings (`SMTP_SECURE=true` for port 465) |
+| `LOGIN_OTP_ENABLED` · `LOGIN_OTP_MINUTES` | `false` · `10` | Require an emailed 6-digit code after the password. Codes lock after 5 wrong tries |
+| `REQUIRE_APPROVAL` · `REQUIRE_EMAIL_VERIFICATION` | `true` | Joining rules |
+| `AUTO_INIT_DB` · `DB_DATA_DIR` | `true` · `../db/data` | Fill an empty database on start, and where the export lives |
+
+Realtime notifications use Socket.IO on `/api/socket` and authenticate with the same session cookie as the API. Behind a reverse proxy, allow WebSocket upgrades on that path.
 
 ## Production notes
 

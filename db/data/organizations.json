@@ -1,0 +1,375 @@
+[
+  {
+    "_id": {
+      "$oid": "6adf0bc93bcd5c045c6e4ca1"
+    },
+    "name": "Biozeen",
+    "slug": "biozeen",
+    "orgType": "industry",
+    "partnerTier": "founding",
+    "description": "Platform owner and coordinator of the BIAN network.",
+    "location": "Hyderabad, India",
+    "contact": {
+      "name": "BIAN Secretariat",
+      "email": "bian@biozeen.com"
+    },
+    "collaborationAreas": [],
+    "visibility": "public",
+    "status": "approved",
+    "initiatives": [],
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002441516"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002441516"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bc93bcd5c045c6e4ca2"
+    },
+    "name": "Biocon",
+    "slug": "biocon",
+    "orgType": "industry",
+    "partnerTier": "industry",
+    "description": "Profile details to be provided by the partner organisation.",
+    "location": "Bangalore, India",
+    "contact": {
+      "name": "Ms. R. Iyer",
+      "email": "r.iyer@biocon.com"
+    },
+    "collaborationAreas": [],
+    "visibility": "public",
+    "status": "approved",
+    "initiatives": [],
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002441516"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002441516"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bc93bcd5c045c6e4ca3"
+    },
+    "name": "Dr. Reddy's",
+    "slug": "dr-reddy-s",
+    "orgType": "industry",
+    "partnerTier": "industry",
+    "description": "Profile details to be provided by the partner organisation.",
+    "location": "Hyderabad, India",
+    "collaborationAreas": [],
+    "visibility": "public",
+    "status": "approved",
+    "initiatives": [],
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002441516"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002441516"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bc93bcd5c045c6e4ca4"
+    },
+    "name": "Tata Biotech",
+    "slug": "tata-biotech",
+    "orgType": "industry",
+    "partnerTier": "industry",
+    "description": "Profile details to be provided by the partner organisation.",
+    "location": "Mumbai, India",
+    "contact": {
+      "name": "Mr. S. Menon",
+      "email": "smenon@tata.com"
+    },
+    "collaborationAreas": [],
+    "visibility": "public",
+    "status": "approved",
+    "initiatives": [],
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002441516"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002441516"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bc93bcd5c045c6e4ca5"
+    },
+    "name": "Thermo Fisher Scientific",
+    "slug": "thermo-fisher-scientific",
+    "orgType": "industry",
+    "partnerTier": "industry",
+    "description": "Profile details to be provided by the partner organisation.",
+    "location": "India",
+    "collaborationAreas": [],
+    "visibility": "public",
+    "status": "approved",
+    "initiatives": [],
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002441516"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002441516"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bc93bcd5c045c6e4ca6"
+    },
+    "name": "IIT Madras",
+    "slug": "iit-madras",
+    "orgType": "academia",
+    "partnerTier": "knowledge",
+    "description": "Profile details to be provided by the partner organisation.",
+    "location": "Chennai, India",
+    "contact": {
+      "name": "Dr. S. Kumar",
+      "email": "skumar@iitm.ac.in"
+    },
+    "collaborationAreas": [],
+    "visibility": "public",
+    "status": "approved",
+    "initiatives": [],
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002441516"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002441516"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bc93bcd5c045c6e4ca7"
+    },
+    "name": "CSIR",
+    "slug": "csir",
+    "orgType": "research",
+    "partnerTier": "knowledge",
+    "description": "Profile details to be provided by the partner organisation.",
+    "location": "New Delhi, India",
+    "contact": {
+      "name": "Dr. P. Singh",
+      "email": "psingh@csir.res.in"
+    },
+    "collaborationAreas": [],
+    "visibility": "public",
+    "status": "approved",
+    "initiatives": [],
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002441516"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002441516"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bc93bcd5c045c6e4ca8"
+    },
+    "name": "EduBiotech",
+    "slug": "edubiotech",
+    "orgType": "academia",
+    "partnerTier": "knowledge",
+    "description": "Profile details to be provided by the partner organisation.",
+    "location": "India",
+    "contact": {
+      "name": "Dr. L. Rao",
+      "email": "lrao@edubiotech.ac.in"
+    },
+    "collaborationAreas": [],
+    "visibility": "public",
+    "status": "approved",
+    "initiatives": [],
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002441516"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002441516"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bc93bcd5c045c6e4ca9"
+    },
+    "name": "SterileTech",
+    "slug": "steriletech",
+    "orgType": "innovation",
+    "partnerTier": "innovation",
+    "description": "Profile details to be provided by the partner organisation.",
+    "location": "India",
+    "contact": {
+      "name": "Ms. R. Nair",
+      "email": "rnair@steriletech.com"
+    },
+    "collaborationAreas": [],
+    "visibility": "public",
+    "status": "approved",
+    "initiatives": [],
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002441516"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002441516"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bc93bcd5c045c6e4caa"
+    },
+    "name": "NovaLife Sciences",
+    "slug": "novalife-sciences",
+    "orgType": "startup",
+    "partnerTier": "none",
+    "description": "Profile details to be provided by the partner organisation.",
+    "contact": {
+      "name": "Dr. A. Verma",
+      "email": "averma@novalife.in"
+    },
+    "collaborationAreas": [],
+    "visibility": "internal",
+    "status": "pending",
+    "initiatives": [],
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002441516"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002441516"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bc93bcd5c045c6e4cab"
+    },
+    "name": "NextBio",
+    "slug": "nextbio",
+    "orgType": "startup",
+    "partnerTier": "none",
+    "description": "Profile details to be provided by the partner organisation.",
+    "contact": {
+      "name": "Mr. K. Das",
+      "email": "kdas@nextbio.in"
+    },
+    "collaborationAreas": [],
+    "visibility": "internal",
+    "status": "pending",
+    "initiatives": [],
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002441516"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002441516"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bc93bcd5c045c6e4cac"
+    },
+    "name": "BioPharma Solutions",
+    "slug": "biopharma-solutions",
+    "orgType": "industry",
+    "partnerTier": "none",
+    "description": "Profile details to be provided by the partner organisation.",
+    "contact": {
+      "name": "Operations",
+      "email": "industry@demo.bian.local"
+    },
+    "collaborationAreas": [],
+    "visibility": "internal",
+    "status": "approved",
+    "initiatives": [],
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002441516"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002441516"
+      }
+    }
+  }
+]

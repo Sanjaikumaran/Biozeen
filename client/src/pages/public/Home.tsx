@@ -68,9 +68,9 @@ export default function Home() {
             const x2 = 100 - Math.sin(i / 2) * 60
             return (
               <g key={i}>
-                <line x1={x1} y1={y} x2={x2} y2={y} stroke="#a9d8b9" strokeWidth="1.2" />
+                <line x1={x1} y1={y} x2={x2} y2={y} className="stroke-[var(--brand-l-200)]" strokeWidth="1.2" />
                 <circle cx={x1} cy={y} r="4" fill="#8bd346" />
-                <circle cx={x2} cy={y} r="4" fill="#74bd8f" />
+                <circle cx={x2} cy={y} r="4" className="fill-[var(--brand-l-300)]" />
               </g>
             )
           })}
@@ -116,7 +116,7 @@ export default function Home() {
 
         <nav className="mt-6 grid grid-cols-3 gap-3 md:grid-cols-6" aria-label="Quick actions">
           {QUICK.map(({ to, label, icon: Icon }) => (
-            <Link key={label} to={to} className="flex flex-col items-center gap-2 rounded-xl border border-ink-900/8 bg-white px-2 py-5 text-center text-sm font-medium text-ink-900 transition hover:border-brand-200 hover:shadow-sm">
+            <Link key={label} to={to} className="flex flex-col items-center gap-2 rounded-xl border border-ink-900/8 bg-card px-2 py-5 text-center text-sm font-medium text-ink-900 transition hover:border-brand-200 hover:shadow-sm">
               <Icon className="size-7 text-brand-600" />
               {label}
             </Link>
@@ -136,7 +136,7 @@ export default function Home() {
           <div className="grid grid-cols-3 gap-3">
             {PILLARS.map(({ icon: Icon, label }) => (
               <div key={label} className="flex flex-col items-center gap-2 rounded-xl bg-brand-50 p-4 text-center">
-                <span className="grid size-12 place-items-center rounded-full bg-white text-brand-600 shadow-sm"><Icon className="size-6" /></span>
+                <span className="grid size-12 place-items-center rounded-full bg-card text-brand-600 shadow-sm"><Icon className="size-6" /></span>
                 <span className="text-sm font-medium text-ink-900">{label}</span>
               </div>
             ))}
@@ -148,7 +148,7 @@ export default function Home() {
             <SectionHead title="What we offer" to="/portfolio" cta="Explore portfolio" />
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {data.services.map((s) => (
-                <Link key={s._id} to={contentHref(s)} className="rounded-xl border border-ink-900/8 bg-white p-5 transition hover:border-brand-200 hover:shadow-sm">
+                <Link key={s._id} to={contentHref(s)} className="rounded-xl border border-ink-900/8 bg-card p-5 transition hover:border-brand-200 hover:shadow-sm">
                   <p className="font-semibold text-ink-900">{s.title}</p>
                   <p className="mt-1 text-sm text-ink-500">{s.summary}</p>
                 </Link>
@@ -171,7 +171,7 @@ export default function Home() {
           </div>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
             {data?.partners.map((p) => (
-              <Link key={p._id} to={`/partners/${p.slug}`} className="flex h-20 items-center justify-center rounded-xl border border-ink-900/8 bg-white px-3 text-center transition hover:border-brand-200">
+              <Link key={p._id} to={`/partners/${p.slug}`} className="flex h-20 items-center justify-center rounded-xl border border-ink-900/8 bg-card px-3 text-center transition hover:border-brand-200">
                 {p.logoUrl ? <img src={p.logoUrl} alt={p.name} className="max-h-10 max-w-full object-contain" /> : <span className="inline-flex items-center gap-2 font-semibold text-ink-900"><Building2 className="size-4 text-brand-600" />{p.name}</span>}
               </Link>
             ))}

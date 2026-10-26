@@ -46,7 +46,7 @@ export default function Opportunities() {
             </Button>
           </div>
           <form
-            className="mt-6 grid gap-2 rounded-xl bg-white p-2 sm:grid-cols-[1fr_200px_200px_auto]"
+            className="mt-6 grid gap-2 rounded-xl bg-card p-2 sm:grid-cols-[1fr_200px_200px_auto]"
             onSubmit={(e) => {
               e.preventDefault()
               setF({ q: draft.q, location: draft.location })
@@ -74,7 +74,7 @@ export default function Opportunities() {
               key={key}
               aria-pressed={f.type === key}
               onClick={() => setF({ type: f.type === key ? '' : key })}
-              className={cx('flex flex-col items-center gap-1.5 rounded-xl border px-2 py-3 text-xs font-medium transition', f.type === key ? 'border-brand-500 bg-brand-50 text-brand-700' : 'border-ink-900/8 bg-white text-ink-700 hover:border-brand-200')}
+              className={cx('flex flex-col items-center gap-1.5 rounded-xl border px-2 py-3 text-xs font-medium transition', f.type === key ? 'border-brand-500 bg-brand-50 text-brand-700' : 'border-ink-900/8 bg-card text-ink-700 hover:border-brand-200')}
             >
               <Icon className="size-5 text-brand-600" />
               {label(key)}

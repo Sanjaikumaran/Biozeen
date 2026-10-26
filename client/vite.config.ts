@@ -7,6 +7,6 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
     // Same-origin API calls keep the session cookie first-party.
-    proxy: { '/api': 'http://localhost:5000' },
+    proxy: { '/api': { target: 'http://localhost:5000', ws: true } },
   },
 })

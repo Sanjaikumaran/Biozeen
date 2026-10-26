@@ -1,0 +1,42 @@
+[
+  {
+    "_id": {
+      "$oid": "6adf0bca3bcd5c045c6e4cd5"
+    },
+    "key": "site",
+    "hero": {
+      "headline": [
+        "One Network.",
+        "Multiple Opportunities."
+      ],
+      "highlight": "A Stronger Biotech Future.",
+      "subheading": "Connecting Industry, Academia, Innovation and Expertise for a sustainable bioeconomy.",
+      "keywords": [
+        "Innovate",
+        "Collaborate",
+        "Develop",
+        "Transform"
+      ]
+    },
+    "contact": {
+      "email": "bian@biozeen.com",
+      "phone": "+91 40 2980 1234",
+      "address": "Biozeen, Hyderabad, India",
+      "ownerLine": "Powered by Biozeen · Platform Owner & Coordinator",
+      "quote": "Building a collaborative ecosystem for a healthier, more sustainable world."
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002442042"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002442042"
+      }
+    },
+    "__v": {
+      "$numberInt": "0"
+    }
+  }
+]

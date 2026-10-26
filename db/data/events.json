@@ -1,0 +1,279 @@
+[
+  {
+    "_id": {
+      "$oid": "6adf0bca3bcd5c045c6e4cf5"
+    },
+    "title": "Annual BIAN Summit",
+    "slug": "annual-bian-summit",
+    "summary": "Industry–Academia Collaboration for a Sustainable Future",
+    "eventType": "summit",
+    "startAt": {
+      "$date": {
+        "$numberLong": "1796441400000"
+      }
+    },
+    "endAt": {
+      "$date": {
+        "$numberLong": "1796473800000"
+      }
+    },
+    "location": {
+      "mode": "in_person",
+      "venue": "To be announced",
+      "city": "Bengaluru, India"
+    },
+    "registration": {
+      "enabled": true,
+      "capacity": {
+        "$numberInt": "300"
+      }
+    },
+    "blocks": [
+      {
+        "id": "201b0d59-262d-4f31-afa1-cb4d4370c697",
+        "type": "richText",
+        "data": {
+          "html": "<p>Sample event from the mock-ups. Agenda to be published.</p>"
+        }
+      }
+    ],
+    "categories": [],
+    "linkedContent": [],
+    "author": {
+      "$oid": "6adf0bca3bcd5c045c6e4cad"
+    },
+    "status": "published",
+    "publishedAt": {
+      "$date": {
+        "$numberLong": "1793002442042"
+      }
+    },
+    "feedbackForm": {
+      "$oid": "6adf0bca3bcd5c045c6e4cc7"
+    },
+    "access": {
+      "visibility": "public",
+      "roles": [],
+      "organizations": []
+    },
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002442056"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002442056"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bca3bcd5c045c6e4cf6"
+    },
+    "title": "Webinar: Advances in Bioprocessing",
+    "slug": "webinar-advances-in-bioprocessing",
+    "summary": "Expert talk on recent advances in continuous bioprocessing.",
+    "eventType": "webinar",
+    "startAt": {
+      "$date": {
+        "$numberLong": "1794220200000"
+      }
+    },
+    "endAt": {
+      "$date": {
+        "$numberLong": "1794223800000"
+      }
+    },
+    "location": {
+      "mode": "online",
+      "meetingUrl": "https://example.com/meeting"
+    },
+    "registration": {
+      "enabled": true
+    },
+    "blocks": [
+      {
+        "id": "849e2791-15bb-4e32-995f-6c688320bb80",
+        "type": "richText",
+        "data": {
+          "html": "<p>The meeting link is shared with registered members.</p>"
+        }
+      }
+    ],
+    "categories": [],
+    "linkedContent": [],
+    "author": {
+      "$oid": "6adf0bca3bcd5c045c6e4cad"
+    },
+    "status": "published",
+    "publishedAt": {
+      "$date": {
+        "$numberLong": "1793002442042"
+      }
+    },
+    "access": {
+      "visibility": "authenticated",
+      "roles": [],
+      "organizations": []
+    },
+    "feedbackForm": {
+      "$oid": "6adf0bca3bcd5c045c6e4cc7"
+    },
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002442056"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002442056"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bca3bcd5c045c6e4cf7"
+    },
+    "title": "Workshop: Regulatory Pathways for Biologics",
+    "slug": "workshop-regulatory-pathways-for-biologics",
+    "summary": "Hands-on workshop on regulatory strategy.",
+    "eventType": "workshop",
+    "startAt": {
+      "$date": {
+        "$numberLong": "1795408200000"
+      }
+    },
+    "endAt": {
+      "$date": {
+        "$numberLong": "1795429800000"
+      }
+    },
+    "location": {
+      "mode": "in_person",
+      "city": "Hyderabad, India"
+    },
+    "registration": {
+      "enabled": true,
+      "capacity": {
+        "$numberInt": "40"
+      }
+    },
+    "blocks": [
+      {
+        "id": "265e402f-a6ec-477e-855c-340338136752",
+        "type": "richText",
+        "data": {
+          "html": "<p>Sample workshop.</p>"
+        }
+      }
+    ],
+    "categories": [],
+    "linkedContent": [],
+    "author": {
+      "$oid": "6adf0bca3bcd5c045c6e4cad"
+    },
+    "status": "published",
+    "publishedAt": {
+      "$date": {
+        "$numberLong": "1793002442042"
+      }
+    },
+    "feedbackForm": {
+      "$oid": "6adf0bca3bcd5c045c6e4cc7"
+    },
+    "access": {
+      "visibility": "public",
+      "roles": [],
+      "organizations": []
+    },
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002442056"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002442056"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bca3bcd5c045c6e4cf8"
+    },
+    "title": "Industry Visit: Biologics Manufacturing Facility",
+    "slug": "industry-visit-biologics-facility",
+    "summary": "Guided visit for student members.",
+    "eventType": "industry_visit",
+    "startAt": {
+      "$date": {
+        "$numberLong": "1797741000000"
+      }
+    },
+    "location": {
+      "mode": "in_person",
+      "city": "Bangalore, India"
+    },
+    "registration": {
+      "enabled": true,
+      "capacity": {
+        "$numberInt": "25"
+      }
+    },
+    "blocks": [
+      {
+        "id": "fa7836d0-b90e-4338-8b2e-38f53bbd5f62",
+        "type": "richText",
+        "data": {
+          "html": "<p>Restricted to students and alumni.</p>"
+        }
+      }
+    ],
+    "categories": [],
+    "linkedContent": [],
+    "author": {
+      "$oid": "6adf0bca3bcd5c045c6e4cad"
+    },
+    "status": "published",
+    "publishedAt": {
+      "$date": {
+        "$numberLong": "1793002442042"
+      }
+    },
+    "access": {
+      "visibility": "roles",
+      "roles": [
+        {
+          "$oid": "6adf0bc93bcd5c045c6e4c91"
+        },
+        {
+          "$oid": "6adf0bc93bcd5c045c6e4c90"
+        }
+      ],
+      "organizations": []
+    },
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002442056"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002442056"
+      }
+    }
+  }
+]

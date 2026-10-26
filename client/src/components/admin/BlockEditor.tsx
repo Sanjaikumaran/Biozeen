@@ -79,7 +79,7 @@ function RichText({ value, onChange, placeholder }: { value: string; onChange: (
     onChange(ref.current?.innerHTML ?? '')
   }
   return (
-    <div className="rounded-lg border border-ink-300/70 bg-white focus-within:border-brand-500">
+    <div className="rounded-lg border border-ink-300/70 bg-card focus-within:border-brand-500">
       <div className="flex flex-wrap gap-0.5 border-b border-ink-900/8 p-1">
         {RICH_TOOLS.map(([Icon, title, cmd, arg]) => (
           <button key={title} type="button" title={title} aria-label={title} onMouseDown={(e) => e.preventDefault()} onClick={() => run(cmd, arg)} className="rounded p-1.5 text-ink-700 hover:bg-ink-900/5"><Icon className="size-4" /></button>

@@ -1,4 +1,4 @@
-import { createHash, randomBytes } from "node:crypto";
+import { createHash, randomBytes, randomInt, timingSafeEqual } from "node:crypto";
 import bcrypt from "bcryptjs";
 import { Router } from "express";
 import rateLimit from "express-rate-limit";
@@ -6,15 +6,27 @@ import { z } from "zod";
 import { config } from "../config.js";
 import { audit } from "../lib/audit.js";
 import { HttpError, parse, slugify } from "../lib/http.js";
-import { MEMBER_CATEGORIES, ORGANIZATION_CATEGORIES } from "../lib/permissions.js";
+import { sendMail } from "../lib/mailer.js";
+import { MEMBER_CATEGORIES, ORGANIZATION_CATEGORIES, PERMISSIONS } from "../lib/permissions.js";
 import { clearSession, issueSession, requireAuth } from "../middleware/auth.js";
-import { Organization, Role, User } from "../models/identity.js";
+import { Organization, Role, THEME_ACCENTS, THEME_MODES, User } from "../models/identity.js";
+import { notifyPermission } from "../lib/notify.js";
+import { disconnectUser } from "../lib/realtime.js";
 
 export const authRouter = Router();
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 20,
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+  message: { error: "Too many attempts. Please wait a few minutes and try again." },
+});
+
+// Codes are also capped per challenge (OTP_MAX_ATTEMPTS); this limits guessing across challenges.
+const otpLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 30,
   standardHeaders: "draft-7",
   legacyHeaders: false,
   message: { error: "Too many attempts. Please wait a few minutes and try again." },
@@ -64,9 +76,24 @@ const registerSchema = z
     path: ["organizationName"],
   });
 
-function devLink(path: string) {
-  return config.isProd ? undefined : `${config.appUrl}${path}`;
+/** Links and codes are shown on screen only in development, and only when no email went out. */
+function devLink(path: string, delivered: boolean) {
+  return config.isProd || delivered ? undefined : `${config.appUrl}${path}`;
 }
+
+/** Email failures are logged rather than failing the request (the member can ask for a resend). */
+const trySend = (mail: Parameters<typeof sendMail>[0]) =>
+  sendMail(mail).catch((err) => {
+    console.error(`[mail] Could not send "${mail.subject}" to ${mail.to}:`, err);
+    return false;
+  });
+
+const verificationMail = (to: string, name: string, path: string) =>
+  trySend({
+    to,
+    subject: "Verify your BIAN email address",
+    text: `Hello ${name},\n\nPlease confirm your email address for the Biozeen Industry Academy Network:\n${config.appUrl}${path}\n\nIf you didn't create an account, you can ignore this email.`,
+  });
 
 authRouter.post("/register", authLimiter, async (req, res) => {
   const data = parse(registerSchema, req.body);
@@ -122,9 +149,11 @@ authRouter.post("/register", authLimiter, async (req, res) => {
     verifyTokenHash: hashToken(verifyToken),
   });
 
+  if (!active) {
+    await notifyPermission(PERMISSIONS.membersManage, { kind: "approval_needed", title: `New registration: ${user.name}`, body: `${user.category} · ${user.email}`, link: "/admin/approvals" });
+  }
   const verifyPath = `/verify-email?token=${verifyToken}&email=${encodeURIComponent(user.email)}`;
-  // Email delivery is not configured; the link is logged for operators in development.
-  if (!config.isProd) console.log(`[auth] Verification link for ${user.email}: ${config.appUrl}${verifyPath}`);
+  const delivered = config.requireEmailVerification ? await verificationMail(user.email, user.name, verifyPath) : false;
 
   res.status(201).json({
     message: active
@@ -132,7 +161,7 @@ authRouter.post("/register", authLimiter, async (req, res) => {
       : "Registration received. Verify your email, and our team will review your application.",
     status: user.status,
     requiresVerification: config.requireEmailVerification,
-    devVerificationUrl: config.requireEmailVerification ? devLink(verifyPath) : undefined,
+    devVerificationUrl: config.requireEmailVerification ? devLink(verifyPath, delivered) : undefined,
   });
 });
 
@@ -172,10 +201,108 @@ authRouter.post("/login", authLimiter, async (req, res) => {
     throw new HttpError(403, "Please verify your email address before signing in", { code: "unverified" });
   }
   if (user.status !== "active") throw new HttpError(403, STATUS_MESSAGES[user.status] ?? "Account unavailable");
+
+  if (config.loginOtp) {
+    const challenge = newToken();
+    user.otpChallengeHash = hashToken(challenge);
+    user.otpRemember = !!remember;
+    const devCode = await sendLoginCode(user);
+    return res.json({ otpRequired: true, challenge, email: maskEmail(user.email), expiresInMinutes: config.otpMinutes, devCode });
+  }
+
   user.lastLoginAt = new Date();
   await user.save();
   issueSession(res, String(user._id), user.tokenVersion, !!remember);
   res.json({ ok: true });
+});
+
+const OTP_MAX_ATTEMPTS = 5;
+const OTP_RESEND_SECONDS = 30;
+
+function maskEmail(email: string) {
+  const [local = "", domain = ""] = email.split("@");
+  return `${local.slice(0, 2)}${"•".repeat(Math.max(1, local.length - 2))}@${domain}`;
+}
+
+const otpHash = (challenge: string, code: string) => createHash("sha256").update(`${config.jwtSecret}:${challenge}:${code}`).digest("hex");
+
+/** Issue a fresh 6-digit code for the user's pending challenge. Returns the code only in development without email. */
+async function sendLoginCode(user: InstanceType<typeof User>) {
+  const code = String(randomInt(0, 1_000_000)).padStart(6, "0");
+  // The challenge itself is only known to the browser; bind the code to its hash.
+  user.otpCodeHash = otpHash(user.otpChallengeHash!, code);
+  user.otpExpires = new Date(Date.now() + config.otpMinutes * 60 * 1000);
+  user.otpAttempts = 0;
+  user.otpSentAt = new Date();
+  await user.save();
+  let delivered: boolean;
+  try {
+    delivered = await sendMail({
+      to: user.email,
+      subject: `${code} is your BIAN sign-in code`,
+      text: `Hello ${user.name},\n\nYour BIAN sign-in code is ${code}. It expires in ${config.otpMinutes} minutes.\n\nIf you didn't try to sign in, change your password.`,
+    });
+  } catch (err) {
+    console.error(`[mail] Could not send sign-in code to ${user.email}:`, err);
+    throw new HttpError(502, "We couldn't send your sign-in code. Please try again shortly.");
+  }
+  return config.isProd || delivered ? undefined : code;
+}
+
+const OTP_FIELDS = "+otpChallengeHash +otpCodeHash +otpExpires +otpAttempts +otpSentAt +otpRemember";
+
+async function findChallenge(challenge: string) {
+  const user = await User.findOne({ otpChallengeHash: hashToken(challenge) }).select(OTP_FIELDS);
+  if (!user || !user.otpExpires || user.otpExpires < new Date()) {
+    throw new HttpError(400, "This sign-in code has expired. Please sign in again.", { code: "otp_expired" });
+  }
+  return user;
+}
+
+const clearOtp = (user: InstanceType<typeof User>) => {
+  user.otpChallengeHash = undefined;
+  user.otpCodeHash = undefined;
+  user.otpExpires = undefined;
+  user.otpAttempts = undefined;
+  user.otpSentAt = undefined;
+  user.otpRemember = undefined;
+};
+
+authRouter.post("/login/otp", otpLimiter, async (req, res) => {
+  const { challenge, code } = parse(
+    z.object({ challenge: z.string().min(10), code: z.string().trim().regex(/^\d{6}$/, "Enter the 6-digit code") }),
+    req.body,
+  );
+  const user = await findChallenge(challenge);
+  const expected = Buffer.from(user.otpCodeHash ?? "");
+  const given = Buffer.from(otpHash(user.otpChallengeHash!, code));
+  if (expected.length !== given.length || !timingSafeEqual(expected, given)) {
+    user.otpAttempts = (user.otpAttempts ?? 0) + 1;
+    if (user.otpAttempts >= OTP_MAX_ATTEMPTS) {
+      clearOtp(user);
+      await user.save();
+      throw new HttpError(400, "Too many incorrect codes. Please sign in again.", { code: "otp_expired" });
+    }
+    await user.save();
+    throw new HttpError(400, `Incorrect code. ${OTP_MAX_ATTEMPTS - user.otpAttempts} attempts left.`, { code: "Incorrect code" });
+  }
+  // Re-check the account: it may have been suspended since the password step.
+  if (user.status !== "active") throw new HttpError(403, STATUS_MESSAGES[user.status] ?? "Account unavailable");
+  const remember = !!user.otpRemember;
+  clearOtp(user);
+  user.lastLoginAt = new Date();
+  await user.save();
+  issueSession(res, String(user._id), user.tokenVersion, remember);
+  res.json({ ok: true });
+});
+
+authRouter.post("/login/otp/resend", otpLimiter, async (req, res) => {
+  const { challenge } = parse(z.object({ challenge: z.string().min(10) }), req.body);
+  const user = await findChallenge(challenge);
+  const wait = user.otpSentAt ? OTP_RESEND_SECONDS - Math.floor((Date.now() - user.otpSentAt.getTime()) / 1000) : 0;
+  if (wait > 0) throw new HttpError(429, `Please wait ${wait} seconds before requesting another code.`);
+  const devCode = await sendLoginCode(user);
+  res.json({ message: `A new code has been sent to ${maskEmail(user.email)}.`, devCode });
 });
 
 authRouter.post("/resend-verification", authLimiter, async (req, res) => {
@@ -187,8 +314,7 @@ authRouter.post("/resend-verification", authLimiter, async (req, res) => {
     user.verifyTokenHash = hashToken(token);
     await user.save();
     const path = `/verify-email?token=${token}&email=${encodeURIComponent(email)}`;
-    if (!config.isProd) console.log(`[auth] Verification link for ${email}: ${config.appUrl}${path}`);
-    url = devLink(path);
+    url = devLink(path, await verificationMail(email, user.name, path));
   }
   res.json({ message: "If that account needs verification, a new link has been sent.", devVerificationUrl: url });
 });
@@ -200,6 +326,7 @@ authRouter.post("/logout", (_req, res) => {
 
 authRouter.post("/logout-all", requireAuth, async (req, res) => {
   await User.updateOne({ _id: req.user!._id }, { $inc: { tokenVersion: 1 } });
+  disconnectUser(req.user!.id);
   clearSession(res);
   res.json({ ok: true });
 });
@@ -214,8 +341,12 @@ authRouter.post("/forgot-password", authLimiter, async (req, res) => {
     user.resetTokenExpires = new Date(Date.now() + 60 * 60 * 1000);
     await user.save();
     const path = `/reset-password?token=${token}&email=${encodeURIComponent(email)}`;
-    if (!config.isProd) console.log(`[auth] Password reset link for ${email}: ${config.appUrl}${path}`);
-    url = devLink(path);
+    const delivered = await trySend({
+      to: email,
+      subject: "Reset your BIAN password",
+      text: `Hello ${user.name},\n\nUse this link within one hour to choose a new password:\n${config.appUrl}${path}\n\nIf you didn't ask for this, you can ignore this email.`,
+    });
+    url = devLink(path, delivered);
   }
   res.json({ message: "If an account exists for that email, a reset link has been sent.", devResetUrl: url });
 });
@@ -269,6 +400,13 @@ authRouter.get("/me", async (req, res) => {
       permissions: [...req.user.permissions],
       profile: user?.profile ?? {},
       phone: user?.phone,
+      preferences: { themeMode: user?.preferences?.themeMode ?? null, accent: user?.preferences?.accent ?? null },
     },
   });
+});
+
+authRouter.put("/me/preferences", requireAuth, async (req, res) => {
+  const data = parse(z.object({ themeMode: z.enum(THEME_MODES), accent: z.enum(THEME_ACCENTS) }), req.body);
+  await User.updateOne({ _id: req.user!._id }, { $set: { preferences: data } });
+  res.json({ preferences: data });
 });

@@ -16,6 +16,9 @@ export type RoleDoc = HydratedDocument<InferSchemaType<typeof roleSchema>>;
 
 export const USER_STATUSES = ["pending", "active", "suspended", "inactive", "rejected"] as const;
 
+export const THEME_MODES = ["light", "dark", "system"] as const;
+export const THEME_ACCENTS = ["forest", "ocean", "teal", "indigo", "plum", "terracotta"] as const;
+
 const userSchema = new Schema(
   {
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
@@ -41,9 +44,21 @@ const userSchema = new Schema(
     verifyTokenHash: { type: String, select: false },
     resetTokenHash: { type: String, select: false },
     resetTokenExpires: { type: Date, select: false },
+    /** Pending sign-in code (LOGIN_OTP_ENABLED): the browser holds the challenge, the email holds the code. */
+    otpChallengeHash: { type: String, select: false, index: { sparse: true } },
+    otpCodeHash: { type: String, select: false },
+    otpExpires: { type: Date, select: false },
+    otpAttempts: { type: Number, select: false },
+    otpSentAt: { type: Date, select: false },
+    otpRemember: { type: Boolean, select: false },
     /** Incremented to revoke all existing sessions (logout everywhere, password change). */
     tokenVersion: { type: Number, default: 0 },
     savedContents: [{ type: Schema.Types.ObjectId, ref: "Content" }],
+    /** Per-user appearance; unset fields fall back to the device's saved choice. */
+    preferences: {
+      themeMode: { type: String, enum: THEME_MODES },
+      accent: { type: String, enum: THEME_ACCENTS },
+    },
     lastLoginAt: Date,
     approvedBy: { type: Schema.Types.ObjectId, ref: "User" },
     approvedAt: Date,

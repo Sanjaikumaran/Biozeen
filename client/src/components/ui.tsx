@@ -23,10 +23,10 @@ import { label } from '../lib/format'
 
 type Variant = 'primary' | 'accent' | 'dark' | 'outline' | 'outlineLight' | 'ghost' | 'danger' | 'soft'
 const VARIANTS: Record<Variant, string> = {
-  primary: 'bg-brand-600 text-white hover:bg-brand-700 shadow-sm',
+  primary: 'bg-brand-600 text-white hover:bg-brand-strong shadow-sm',
   accent: 'bg-lime-500 text-brand-900 hover:bg-lime-400 shadow-sm',
-  dark: 'bg-ink-900 text-white hover:bg-ink-700 shadow-sm',
-  outline: 'border border-brand-200 bg-white text-brand-700 hover:bg-brand-50',
+  dark: 'bg-navy text-white hover:bg-navy/90 shadow-sm',
+  outline: 'border border-brand-200 bg-card text-brand-700 hover:bg-brand-50',
   outlineLight: 'border border-white/40 bg-transparent text-white hover:bg-white/10',
   ghost: 'text-ink-700 hover:bg-ink-900/5',
   danger: 'bg-red-600 text-white hover:bg-red-700',
@@ -69,7 +69,7 @@ export function LinkButton({ to, variant = 'primary', size = 'md', className, ch
 // ---------------------------------------------------------------- form fields
 
 const inputBase =
-  'w-full rounded-lg border border-ink-300/70 bg-white px-3 py-2 text-sm text-ink-900 placeholder:text-ink-300 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 disabled:bg-ink-900/5'
+  'w-full rounded-lg border border-ink-300/70 bg-card px-3 py-2 text-sm text-ink-900 placeholder:text-ink-300 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 disabled:bg-ink-900/5'
 
 interface FieldProps {
   label?: ReactNode
@@ -185,7 +185,7 @@ export function TagInput({ label: l, value, onChange, placeholder, hint }: { lab
 
 export function Card({ className, children, ...rest }: { className?: string; children: ReactNode } & React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cx('rounded-xl border border-ink-900/8 bg-white shadow-[0_1px_2px_rgb(15_42_74/0.04)]', className)} {...rest}>
+    <div className={cx('rounded-xl border border-ink-900/8 bg-card shadow-[0_1px_2px_rgb(15_42_74/0.04)]', className)} {...rest}>
       {children}
     </div>
   )
@@ -253,7 +253,7 @@ export function SkeletonGrid({ count = 6, className = 'h-40' }: { count?: number
 
 export function Empty({ icon, title, children, action }: { icon?: ReactNode; title: string; children?: ReactNode; action?: ReactNode }) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-ink-300/60 bg-white/60 px-6 py-14 text-center">
+    <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-ink-300/60 bg-card/60 px-6 py-14 text-center">
       {icon && <div className="mb-3 text-ink-300">{icon}</div>}
       <p className="font-semibold text-ink-900">{title}</p>
       {children && <div className="mt-1 max-w-md text-sm text-ink-500">{children}</div>}
@@ -382,8 +382,8 @@ export function Modal({ open, onClose, title, children, footer, size = 'md' }: {
   if (!open) return null
   const widths = { md: 'max-w-lg', lg: 'max-w-2xl', xl: 'max-w-4xl' }
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-ink-900/40 p-0 sm:items-center sm:p-4" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
-      <div ref={ref} tabIndex={-1} role="dialog" aria-modal="true" className={cx('flex max-h-[92vh] w-full flex-col rounded-t-2xl bg-white shadow-xl outline-none sm:rounded-2xl', widths[size])}>
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-0 sm:items-center sm:p-4" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
+      <div ref={ref} tabIndex={-1} role="dialog" aria-modal="true" className={cx('flex max-h-[92vh] w-full flex-col rounded-t-2xl bg-card shadow-xl outline-none sm:rounded-2xl', widths[size])}>
         <div className="flex items-center justify-between border-b border-ink-900/8 px-5 py-4">
           <h2 className="text-lg font-semibold">{title}</h2>
           <button onClick={onClose} className="rounded-md p-1 text-ink-500 hover:bg-ink-900/5" aria-label="Close">
@@ -451,7 +451,7 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
             key={t.id}
             className={cx(
               'pointer-events-auto flex max-w-md items-center gap-2 rounded-lg px-4 py-3 text-sm font-medium text-white shadow-lg',
-              t.tone === 'error' ? 'bg-red-600' : t.tone === 'info' ? 'bg-ink-900' : 'bg-brand-700',
+              t.tone === 'error' ? 'bg-red-600' : t.tone === 'info' ? 'bg-navy' : 'bg-brand-strong',
             )}
           >
             {t.tone === 'error' ? <AlertTriangle className="size-4" /> : <CheckCircle2 className="size-4" />}

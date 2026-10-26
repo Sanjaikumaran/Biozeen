@@ -11,7 +11,7 @@ function Video({ url, caption }: { url: string; caption?: string }) {
   const embed = embedUrl(url)
   return (
     <figure className="my-6">
-      <div className="aspect-video max-w-full overflow-hidden rounded-xl bg-ink-900">
+      <div className="aspect-video max-w-full overflow-hidden rounded-xl bg-black">
         {embed ? (
           <iframe src={embed} title={caption || 'Embedded video'} className="size-full" allow="encrypted-media; picture-in-picture; fullscreen" sandbox="allow-scripts allow-same-origin allow-presentation" loading="lazy" referrerPolicy="strict-origin-when-cross-origin" />
         ) : /\.(mp4|webm)$|\/api\/media\//.test(url) ? (
@@ -27,7 +27,7 @@ function Video({ url, caption }: { url: string; caption?: string }) {
 
 function RelatedCard({ item }: { item: ContentCard }) {
   return (
-    <Link to={contentHref(item)} className="block rounded-xl border border-ink-900/8 bg-white p-4 transition hover:border-brand-200 hover:shadow-sm">
+    <Link to={contentHref(item)} className="block rounded-xl border border-ink-900/8 bg-card p-4 transition hover:border-brand-200 hover:shadow-sm">
       <p className="font-semibold text-ink-900">{item.title}</p>
       <p className="mt-1 line-clamp-2 text-sm text-ink-500">{item.summary}</p>
     </Link>
@@ -68,7 +68,7 @@ export function BlockRenderer({ blocks, target }: { blocks: Block[]; target?: Fe
             const href = d.file?.url ?? d.url
             if (!href) return null
             return (
-              <a key={b.id} href={href} target="_blank" rel="noopener noreferrer" className="not-prose my-4 flex items-center gap-4 rounded-xl border border-ink-900/10 bg-white p-4 no-underline hover:border-brand-200">
+              <a key={b.id} href={href} target="_blank" rel="noopener noreferrer" className="not-prose my-4 flex items-center gap-4 rounded-xl border border-ink-900/10 bg-card p-4 no-underline hover:border-brand-200">
                 <div className="grid size-11 place-items-center rounded-lg bg-brand-50 text-brand-600"><FileText className="size-5" /></div>
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-semibold text-ink-900">{d.label || d.file?.name || 'Download'}</p>
@@ -95,7 +95,7 @@ export function BlockRenderer({ blocks, target }: { blocks: Block[]; target?: Fe
                       <p className="mt-1 text-sm text-ink-500">{c.text}</p>
                     </>
                   )
-                  const cls = 'block rounded-xl border border-ink-900/8 bg-white p-5 no-underline'
+                  const cls = 'block rounded-xl border border-ink-900/8 bg-card p-5 no-underline'
                   return c.link ? <a key={i} href={c.link} className={cx(cls, 'hover:border-brand-200')}>{inner}</a> : <div key={i} className={cls}>{inner}</div>
                 })}
               </div>
@@ -123,7 +123,7 @@ export function BlockRenderer({ blocks, target }: { blocks: Block[]; target?: Fe
             )
           case 'faq':
             return (
-              <div key={b.id} className="my-6 divide-y divide-ink-900/8 rounded-xl border border-ink-900/10 bg-white">
+              <div key={b.id} className="my-6 divide-y divide-ink-900/8 rounded-xl border border-ink-900/10 bg-card">
                 {(d.items ?? []).map((f: { q: string; a: string }, i: number) => (
                   <details key={i} className="group px-5 py-4">
                     <summary className="flex cursor-pointer list-none items-center justify-between font-semibold text-ink-900">

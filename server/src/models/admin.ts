@@ -81,3 +81,33 @@ const siteSettingsSchema = new Schema(
   { timestamps: true },
 );
 export const SiteSettings = model("SiteSettings", siteSettingsSchema, "siteSettings");
+
+export const NOTIFICATION_KINDS = [
+  "membership",
+  "approval_needed",
+  "request",
+  "request_update",
+  "content_review",
+  "content_published",
+  "expert_profile",
+  "announcement",
+  "event",
+] as const;
+
+/** In-app notifications; pushed live over the socket and kept for 90 days. */
+const notificationSchema = new Schema(
+  {
+    user: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    kind: { type: String, enum: NOTIFICATION_KINDS, required: true },
+    title: { type: String, required: true, maxlength: 200 },
+    body: { type: String, maxlength: 500 },
+    /** App-relative link to the related page. */
+    link: { type: String, maxlength: 300 },
+    readAt: Date,
+  },
+  { timestamps: { createdAt: true, updatedAt: false } },
+);
+notificationSchema.index({ user: 1, createdAt: -1 });
+notificationSchema.index({ user: 1, readAt: 1 });
+notificationSchema.index({ createdAt: 1 }, { expireAfterSeconds: 90 * 24 * 60 * 60 });
+export const Notification = model("Notification", notificationSchema, "notifications");

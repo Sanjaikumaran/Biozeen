@@ -109,7 +109,7 @@ export default function ContentPage({ type, back }: Props) {
               {o.employmentType && <p>{o.employmentType}</p>}
               {o.deadline && <p className="flex items-center gap-2"><CalendarClock className="size-4 text-ink-500" />Apply by {formatDate(o.deadline)}</p>}
               {o.applyUrl && (
-                <a href={o.applyUrl} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 rounded-lg bg-brand-600 py-2.5 font-semibold text-white hover:bg-brand-700">
+                <a href={o.applyUrl} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 rounded-lg bg-brand-600 py-2.5 font-semibold text-white hover:bg-brand-strong">
                   Apply now <ExternalLink className="size-4" />
                 </a>
               )}

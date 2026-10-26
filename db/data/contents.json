@@ -1,0 +1,2054 @@
+[
+  {
+    "_id": {
+      "$oid": "6adf0bca3bcd5c045c6e4cd6"
+    },
+    "type": "page",
+    "title": "About BIAN",
+    "slug": "about",
+    "summary": "The Biozeen Industry Academy Network (BIAN) bridges industry, academia and innovation for a healthier, more sustainable tomorrow.",
+    "blocks": [
+      {
+        "id": "0a5ea636-42eb-42ad-a8ad-fa6b4ebe2970",
+        "type": "heading",
+        "data": {
+          "text": "Connect · Collaborate · Innovate · Grow",
+          "level": {
+            "$numberInt": "2"
+          }
+        }
+      },
+      {
+        "id": "8eac5de8-386c-4265-8a5f-bb5b61d98328",
+        "type": "richText",
+        "data": {
+          "html": "<p>BIAN brings together industry partners, academic and research institutions, startups, subject-matter experts and alumni in one network so that people, partnerships, ideas and knowledge translate into opportunities and impact.</p>"
+        }
+      },
+      {
+        "id": "d4ccb080-ba79-4ff6-81f2-a92342fdc151",
+        "type": "cards",
+        "data": {
+          "cards": [
+            {
+              "title": "Vision",
+              "text": "To be provided by BIAN administrators."
+            },
+            {
+              "title": "Mission",
+              "text": "To be provided by BIAN administrators."
+            },
+            {
+              "title": "Values",
+              "text": "To be provided by BIAN administrators."
+            }
+          ]
+        }
+      },
+      {
+        "id": "23c4f7da-2d1a-4877-8a9d-83520f18b4cb",
+        "type": "callout",
+        "data": {
+          "tone": "warning",
+          "title": "Placeholder content",
+          "text": "This section is ready for approved BIAN company content. Edit it in Admin → Content."
+        }
+      }
+    ],
+    "categories": [],
+    "tags": [],
+    "author": {
+      "$oid": "6adf0bca3bcd5c045c6e4cad"
+    },
+    "status": "published",
+    "publishedAt": {
+      "$date": {
+        "$numberLong": "1793002442042"
+      }
+    },
+    "featured": false,
+    "order": {
+      "$numberInt": "0"
+    },
+    "seo": {
+      "noIndex": false
+    },
+    "opportunity": {},
+    "knowledge": {},
+    "portfolio": {
+      "section": "overview"
+    },
+    "access": {
+      "visibility": "public",
+      "roles": [],
+      "organizations": []
+    },
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002442045"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002442045"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bca3bcd5c045c6e4cd7"
+    },
+    "type": "service",
+    "title": "Hire Talent",
+    "slug": "hire-talent",
+    "summary": "Find trained candidates and interns from partner institutions.",
+    "blocks": [
+      {
+        "id": "faeeb29c-7962-474e-a804-02e69b8a98e3",
+        "type": "richText",
+        "data": {
+          "html": "<p>Find trained candidates and interns from partner institutions.</p>"
+        }
+      },
+      {
+        "id": "23c4f7da-2d1a-4877-8a9d-83520f18b4cb",
+        "type": "callout",
+        "data": {
+          "tone": "warning",
+          "title": "Placeholder content",
+          "text": "This section is ready for approved BIAN company content. Edit it in Admin → Content."
+        }
+      }
+    ],
+    "categories": [
+      {
+        "$oid": "6adf0bc93bcd5c045c6e4c97"
+      }
+    ],
+    "tags": [],
+    "author": {
+      "$oid": "6adf0bca3bcd5c045c6e4cad"
+    },
+    "status": "published",
+    "publishedAt": {
+      "$date": {
+        "$numberLong": "1793002442042"
+      }
+    },
+    "featured": false,
+    "order": {
+      "$numberInt": "0"
+    },
+    "seo": {
+      "noIndex": false
+    },
+    "opportunity": {},
+    "knowledge": {},
+    "portfolio": {},
+    "access": {
+      "visibility": "public",
+      "roles": [],
+      "organizations": []
+    },
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002442045"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002442045"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bca3bcd5c045c6e4cd8"
+    },
+    "type": "service",
+    "title": "Find Experts",
+    "slug": "find-experts",
+    "summary": "Reach subject-matter experts, consultants, trainers and mentors.",
+    "blocks": [
+      {
+        "id": "73ebfc72-588c-4d5c-a244-2d69c7dcc3b3",
+        "type": "richText",
+        "data": {
+          "html": "<p>Reach subject-matter experts, consultants, trainers and mentors.</p>"
+        }
+      },
+      {
+        "id": "23c4f7da-2d1a-4877-8a9d-83520f18b4cb",
+        "type": "callout",
+        "data": {
+          "tone": "warning",
+          "title": "Placeholder content",
+          "text": "This section is ready for approved BIAN company content. Edit it in Admin → Content."
+        }
+      }
+    ],
+    "categories": [
+      {
+        "$oid": "6adf0bc93bcd5c045c6e4c95"
+      }
+    ],
+    "tags": [],
+    "author": {
+      "$oid": "6adf0bca3bcd5c045c6e4cad"
+    },
+    "status": "published",
+    "publishedAt": {
+      "$date": {
+        "$numberLong": "1793002442042"
+      }
+    },
+    "featured": false,
+    "order": {
+      "$numberInt": "1"
+    },
+    "seo": {
+      "noIndex": false
+    },
+    "opportunity": {},
+    "knowledge": {},
+    "portfolio": {},
+    "access": {
+      "visibility": "public",
+      "roles": [],
+      "organizations": []
+    },
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002442045"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002442045"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bca3bcd5c045c6e4cd9"
+    },
+    "type": "service",
+    "title": "Collaborate",
+    "slug": "collaborate",
+    "summary": "Start research collaborations and technology-transfer projects.",
+    "blocks": [
+      {
+        "id": "139a2f95-064b-476d-a98f-fcd8fe229409",
+        "type": "richText",
+        "data": {
+          "html": "<p>Start research collaborations and technology-transfer projects.</p>"
+        }
+      },
+      {
+        "id": "23c4f7da-2d1a-4877-8a9d-83520f18b4cb",
+        "type": "callout",
+        "data": {
+          "tone": "warning",
+          "title": "Placeholder content",
+          "text": "This section is ready for approved BIAN company content. Edit it in Admin → Content."
+        }
+      }
+    ],
+    "categories": [
+      {
+        "$oid": "6adf0bc93bcd5c045c6e4c95"
+      }
+    ],
+    "tags": [],
+    "author": {
+      "$oid": "6adf0bca3bcd5c045c6e4cad"
+    },
+    "status": "published",
+    "publishedAt": {
+      "$date": {
+        "$numberLong": "1793002442042"
+      }
+    },
+    "featured": false,
+    "order": {
+      "$numberInt": "2"
+    },
+    "seo": {
+      "noIndex": false
+    },
+    "opportunity": {},
+    "knowledge": {},
+    "portfolio": {},
+    "access": {
+      "visibility": "public",
+      "roles": [],
+      "organizations": []
+    },
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002442045"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002442045"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bca3bcd5c045c6e4cda"
+    },
+    "type": "service",
+    "title": "Access Funding",
+    "slug": "access-funding",
+    "summary": "Discover grants, fellowships and government schemes.",
+    "blocks": [
+      {
+        "id": "7b9060d2-ac60-4b17-8d3b-d4a031f8b4cc",
+        "type": "richText",
+        "data": {
+          "html": "<p>Discover grants, fellowships and government schemes.</p>"
+        }
+      },
+      {
+        "id": "23c4f7da-2d1a-4877-8a9d-83520f18b4cb",
+        "type": "callout",
+        "data": {
+          "tone": "warning",
+          "title": "Placeholder content",
+          "text": "This section is ready for approved BIAN company content. Edit it in Admin → Content."
+        }
+      }
+    ],
+    "categories": [
+      {
+        "$oid": "6adf0bc93bcd5c045c6e4c96"
+      }
+    ],
+    "tags": [],
+    "author": {
+      "$oid": "6adf0bca3bcd5c045c6e4cad"
+    },
+    "status": "published",
+    "publishedAt": {
+      "$date": {
+        "$numberLong": "1793002442042"
+      }
+    },
+    "featured": false,
+    "order": {
+      "$numberInt": "3"
+    },
+    "seo": {
+      "noIndex": false
+    },
+    "opportunity": {},
+    "knowledge": {},
+    "portfolio": {},
+    "access": {
+      "visibility": "public",
+      "roles": [],
+      "organizations": []
+    },
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002442045"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002442045"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bca3bcd5c045c6e4cdb"
+    },
+    "type": "service",
+    "title": "Learn & Grow",
+    "slug": "learn-grow",
+    "summary": "Webinars, workshops, courses and training materials.",
+    "blocks": [
+      {
+        "id": "02545fab-b467-4d55-a343-6af30925d371",
+        "type": "richText",
+        "data": {
+          "html": "<p>Webinars, workshops, courses and training materials.</p>"
+        }
+      },
+      {
+        "id": "23c4f7da-2d1a-4877-8a9d-83520f18b4cb",
+        "type": "callout",
+        "data": {
+          "tone": "warning",
+          "title": "Placeholder content",
+          "text": "This section is ready for approved BIAN company content. Edit it in Admin → Content."
+        }
+      }
+    ],
+    "categories": [
+      {
+        "$oid": "6adf0bc93bcd5c045c6e4c93"
+      }
+    ],
+    "tags": [],
+    "author": {
+      "$oid": "6adf0bca3bcd5c045c6e4cad"
+    },
+    "status": "published",
+    "publishedAt": {
+      "$date": {
+        "$numberLong": "1793002442042"
+      }
+    },
+    "featured": false,
+    "order": {
+      "$numberInt": "4"
+    },
+    "seo": {
+      "noIndex": false
+    },
+    "opportunity": {},
+    "knowledge": {},
+    "portfolio": {},
+    "access": {
+      "visibility": "public",
+      "roles": [],
+      "organizations": []
+    },
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002442045"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002442045"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bca3bcd5c045c6e4cdc"
+    },
+    "type": "service",
+    "title": "Share Resources",
+    "slug": "share-resources",
+    "summary": "Templates, SOPs, reports and case studies from the network.",
+    "blocks": [
+      {
+        "id": "d42e8618-65f5-44f3-add9-ab649af152a0",
+        "type": "richText",
+        "data": {
+          "html": "<p>Templates, SOPs, reports and case studies from the network.</p>"
+        }
+      },
+      {
+        "id": "23c4f7da-2d1a-4877-8a9d-83520f18b4cb",
+        "type": "callout",
+        "data": {
+          "tone": "warning",
+          "title": "Placeholder content",
+          "text": "This section is ready for approved BIAN company content. Edit it in Admin → Content."
+        }
+      }
+    ],
+    "categories": [
+      {
+        "$oid": "6adf0bc93bcd5c045c6e4c94"
+      }
+    ],
+    "tags": [],
+    "author": {
+      "$oid": "6adf0bca3bcd5c045c6e4cad"
+    },
+    "status": "published",
+    "publishedAt": {
+      "$date": {
+        "$numberLong": "1793002442042"
+      }
+    },
+    "featured": false,
+    "order": {
+      "$numberInt": "5"
+    },
+    "seo": {
+      "noIndex": false
+    },
+    "opportunity": {},
+    "knowledge": {},
+    "portfolio": {},
+    "access": {
+      "visibility": "public",
+      "roles": [],
+      "organizations": []
+    },
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002442045"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002442045"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bca3bcd5c045c6e4cdd"
+    },
+    "type": "project",
+    "title": "Sample project (draft)",
+    "slug": "sample-project",
+    "summary": "Use this draft as a template for projects and case studies.",
+    "blocks": [
+      {
+        "id": "23c4f7da-2d1a-4877-8a9d-83520f18b4cb",
+        "type": "callout",
+        "data": {
+          "tone": "warning",
+          "title": "Placeholder content",
+          "text": "This section is ready for approved BIAN company content. Edit it in Admin → Content."
+        }
+      }
+    ],
+    "categories": [],
+    "tags": [],
+    "author": {
+      "$oid": "6adf0bca3bcd5c045c6e4cad"
+    },
+    "status": "draft",
+    "featured": false,
+    "order": {
+      "$numberInt": "0"
+    },
+    "seo": {
+      "noIndex": false
+    },
+    "opportunity": {},
+    "knowledge": {},
+    "portfolio": {
+      "section": "projects"
+    },
+    "access": {
+      "visibility": "public",
+      "roles": [],
+      "organizations": []
+    },
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002442045"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002442045"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bca3bcd5c045c6e4cde"
+    },
+    "type": "opportunity",
+    "title": "Bioprocess Development Scientist",
+    "slug": "bioprocess-development-scientist",
+    "summary": "Lead upstream and downstream process development for biologics programmes.",
+    "blocks": [
+      {
+        "id": "df2e24de-f248-4dc2-adff-0f910258bf46",
+        "type": "heading",
+        "data": {
+          "text": "Role overview",
+          "level": {
+            "$numberInt": "2"
+          }
+        }
+      },
+      {
+        "id": "2c5712a2-65e3-41f3-a297-b5c8e7d5f93d",
+        "type": "richText",
+        "data": {
+          "html": "<p>Sample listing from the BIAN mock-ups. Replace with the partner's approved job description.</p>"
+        }
+      },
+      {
+        "id": "003f0144-cd07-4bde-9fed-c3985c70d332",
+        "type": "heading",
+        "data": {
+          "text": "Eligibility",
+          "level": {
+            "$numberInt": "3"
+          }
+        }
+      },
+      {
+        "id": "e8f7e475-e6e2-4f72-a905-908331876669",
+        "type": "list",
+        "data": {
+          "ordered": false,
+          "items": [
+            "M.Tech / PhD in Biotechnology or Chemical Engineering",
+            "3+ years in process development",
+            "Hands-on chromatography experience"
+          ]
+        }
+      },
+      {
+        "id": "7f479498-48f6-472e-914c-a8fe8f455cf4",
+        "type": "cta",
+        "data": {
+          "title": "Ready to apply?",
+          "text": "Applications are handled by the hiring organisation.",
+          "buttonLabel": "Apply now",
+          "buttonUrl": "https://example.com/apply"
+        }
+      }
+    ],
+    "categories": [
+      {
+        "$oid": "6adf0bc93bcd5c045c6e4c93"
+      },
+      {
+        "$oid": "6adf0bc93bcd5c045c6e4c97"
+      }
+    ],
+    "tags": [
+      {
+        "$oid": "6adf0bc93bcd5c045c6e4ca0"
+      },
+      {
+        "$oid": "6adf0bc93bcd5c045c6e4c9b"
+      }
+    ],
+    "author": {
+      "$oid": "6adf0bca3bcd5c045c6e4cad"
+    },
+    "status": "published",
+    "publishedAt": {
+      "$date": {
+        "$numberLong": "1792829642046"
+      }
+    },
+    "featured": false,
+    "order": {
+      "$numberInt": "0"
+    },
+    "seo": {
+      "noIndex": false
+    },
+    "access": {
+      "visibility": "public",
+      "roles": [],
+      "organizations": []
+    },
+    "feedbackForm": {
+      "$oid": "6adf0bca3bcd5c045c6e4cbc"
+    },
+    "opportunity": {
+      "opportunityType": "hiring",
+      "organization": {
+        "$oid": "6adf0bc93bcd5c045c6e4ca2"
+      },
+      "organizationName": "Biocon",
+      "location": "Bangalore, India",
+      "workMode": "onsite",
+      "employmentType": "Full-time",
+      "deadline": {
+        "$date": {
+          "$numberLong": "1795594442046"
+        }
+      },
+      "applyUrl": "https://example.com/apply"
+    },
+    "knowledge": {},
+    "portfolio": {},
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002442048"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002442048"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bca3bcd5c045c6e4cdf"
+    },
+    "type": "opportunity",
+    "title": "Internship – Fermentation",
+    "slug": "internship-fermentation",
+    "summary": "Six-month research internship in microbial fermentation and scale-up.",
+    "blocks": [
+      {
+        "id": "b92b8ad3-dfae-46e9-9f67-3e1032b71abf",
+        "type": "richText",
+        "data": {
+          "html": "<p>Available to signed-in BIAN members. Sample listing — replace with approved details.</p>"
+        }
+      }
+    ],
+    "categories": [
+      {
+        "$oid": "6adf0bc93bcd5c045c6e4c95"
+      }
+    ],
+    "tags": [
+      {
+        "$oid": "6adf0bc93bcd5c045c6e4c9a"
+      }
+    ],
+    "author": {
+      "$oid": "6adf0bca3bcd5c045c6e4cad"
+    },
+    "status": "published",
+    "publishedAt": {
+      "$date": {
+        "$numberLong": "1792743242046"
+      }
+    },
+    "featured": false,
+    "order": {
+      "$numberInt": "0"
+    },
+    "seo": {
+      "noIndex": false
+    },
+    "access": {
+      "visibility": "authenticated",
+      "roles": [],
+      "organizations": []
+    },
+    "feedbackForm": {
+      "$oid": "6adf0bca3bcd5c045c6e4cbc"
+    },
+    "opportunity": {
+      "opportunityType": "internship",
+      "organization": {
+        "$oid": "6adf0bc93bcd5c045c6e4ca6"
+      },
+      "organizationName": "IIT Madras",
+      "location": "Chennai, India",
+      "workMode": "onsite",
+      "employmentType": "Internship",
+      "deadline": {
+        "$date": {
+          "$numberLong": "1794816842046"
+        }
+      }
+    },
+    "knowledge": {},
+    "portfolio": {},
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002442048"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002442048"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bca3bcd5c045c6e4ce0"
+    },
+    "type": "opportunity",
+    "title": "Regulatory Consultant (SME)",
+    "slug": "regulatory-consultant-sme",
+    "summary": "Consulting engagement supporting global regulatory submissions for biosimilars.",
+    "blocks": [
+      {
+        "id": "93cb5bc5-2f04-4482-b780-dad4bfb6c95e",
+        "type": "callout",
+        "data": {
+          "tone": "info",
+          "title": "Restricted listing",
+          "text": "Visible only to experts, professionals and industry members."
+        }
+      }
+    ],
+    "categories": [
+      {
+        "$oid": "6adf0bc93bcd5c045c6e4c94"
+      }
+    ],
+    "tags": [
+      {
+        "$oid": "6adf0bc93bcd5c045c6e4c9f"
+      },
+      {
+        "$oid": "6adf0bc93bcd5c045c6e4c99"
+      }
+    ],
+    "author": {
+      "$oid": "6adf0bca3bcd5c045c6e4cad"
+    },
+    "status": "published",
+    "publishedAt": {
+      "$date": {
+        "$numberLong": "1792570442046"
+      }
+    },
+    "featured": false,
+    "order": {
+      "$numberInt": "0"
+    },
+    "seo": {
+      "noIndex": false
+    },
+    "access": {
+      "visibility": "roles",
+      "roles": [
+        {
+          "$oid": "6adf0bc93bcd5c045c6e4c8f"
+        },
+        {
+          "$oid": "6adf0bc93bcd5c045c6e4c92"
+        },
+        {
+          "$oid": "6adf0bc93bcd5c045c6e4c8c"
+        }
+      ],
+      "organizations": []
+    },
+    "feedbackForm": {
+      "$oid": "6adf0bca3bcd5c045c6e4cbc"
+    },
+    "opportunity": {
+      "opportunityType": "consultancy",
+      "organization": {
+        "$oid": "6adf0bc93bcd5c045c6e4ca3"
+      },
+      "organizationName": "Dr. Reddy's",
+      "location": "Hyderabad, India",
+      "workMode": "hybrid",
+      "employmentType": "Consulting"
+    },
+    "knowledge": {},
+    "portfolio": {},
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002442048"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002442048"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bca3bcd5c045c6e4ce1"
+    },
+    "type": "opportunity",
+    "title": "Summer Research Fellowship for Students",
+    "slug": "summer-research-fellowship",
+    "summary": "Eight-week mentored research placements at partner laboratories.",
+    "blocks": [
+      {
+        "id": "6248456b-bbd8-4e4c-8f6a-7c9fb20e344f",
+        "type": "richText",
+        "data": {
+          "html": "<p>Student-only sample listing demonstrating role-restricted publishing.</p>"
+        }
+      }
+    ],
+    "categories": [
+      {
+        "$oid": "6adf0bc93bcd5c045c6e4c96"
+      }
+    ],
+    "tags": [],
+    "author": {
+      "$oid": "6adf0bca3bcd5c045c6e4cad"
+    },
+    "status": "published",
+    "publishedAt": {
+      "$date": {
+        "$numberLong": "1792916042046"
+      }
+    },
+    "featured": false,
+    "order": {
+      "$numberInt": "0"
+    },
+    "seo": {
+      "noIndex": false
+    },
+    "access": {
+      "visibility": "roles",
+      "roles": [
+        {
+          "$oid": "6adf0bc93bcd5c045c6e4c91"
+        }
+      ],
+      "organizations": []
+    },
+    "feedbackForm": {
+      "$oid": "6adf0bca3bcd5c045c6e4cbc"
+    },
+    "opportunity": {
+      "opportunityType": "training",
+      "organizationName": "BIAN",
+      "location": "Multiple locations",
+      "workMode": "onsite",
+      "deadline": {
+        "$date": {
+          "$numberLong": "1796890442046"
+        }
+      }
+    },
+    "knowledge": {},
+    "portfolio": {},
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002442048"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002442048"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bca3bcd5c045c6e4ce2"
+    },
+    "type": "opportunity",
+    "title": "Technology Transfer: Novel Expression Platform",
+    "slug": "technology-transfer-expression-platform",
+    "summary": "Licensing opportunity for a high-yield microbial expression platform.",
+    "blocks": [
+      {
+        "id": "05ec6b6b-06b1-423a-8b60-cf29eee17106",
+        "type": "richText",
+        "data": {
+          "html": "<p>Sample listing — replace with approved details.</p>"
+        }
+      }
+    ],
+    "categories": [
+      {
+        "$oid": "6adf0bc93bcd5c045c6e4c98"
+      }
+    ],
+    "tags": [],
+    "author": {
+      "$oid": "6adf0bca3bcd5c045c6e4cad"
+    },
+    "status": "published",
+    "publishedAt": {
+      "$date": {
+        "$numberLong": "1792311242046"
+      }
+    },
+    "featured": false,
+    "order": {
+      "$numberInt": "0"
+    },
+    "seo": {
+      "noIndex": false
+    },
+    "access": {
+      "visibility": "public",
+      "roles": [],
+      "organizations": []
+    },
+    "feedbackForm": {
+      "$oid": "6adf0bca3bcd5c045c6e4cbc"
+    },
+    "opportunity": {
+      "opportunityType": "technology_transfer",
+      "organization": {
+        "$oid": "6adf0bc93bcd5c045c6e4ca7"
+      },
+      "organizationName": "CSIR",
+      "location": "New Delhi, India",
+      "workMode": "remote"
+    },
+    "knowledge": {},
+    "portfolio": {},
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002442048"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002442048"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bca3bcd5c045c6e4ce3"
+    },
+    "type": "article",
+    "title": "Biomanufacturing Outlook",
+    "slug": "biomanufacturing-outlook",
+    "summary": "Reports, trends and market updates from across the network.",
+    "blocks": [
+      {
+        "id": "605ce11a-d354-4fd6-aeda-76ab6a3caf8f",
+        "type": "heading",
+        "data": {
+          "text": "Overview",
+          "level": {
+            "$numberInt": "2"
+          }
+        }
+      },
+      {
+        "id": "2ffc95b1-7e0b-4976-b5a3-c77f96205b65",
+        "type": "richText",
+        "data": {
+          "html": "<p>Reports, trends and market updates from across the network. This is sample knowledge content; replace it with approved material in the CMS.</p>"
+        }
+      },
+      {
+        "id": "51a70adf-61c8-4c2e-aced-26a6f7be6908",
+        "type": "faq",
+        "data": {
+          "items": [
+            {
+              "q": "Who can access this resource?",
+              "a": "Everyone."
+            }
+          ]
+        }
+      }
+    ],
+    "categories": [
+      {
+        "$oid": "6adf0bc93bcd5c045c6e4c93"
+      }
+    ],
+    "tags": [
+      {
+        "$oid": "6adf0bc93bcd5c045c6e4ca0"
+      }
+    ],
+    "author": {
+      "$oid": "6adf0bca3bcd5c045c6e4cad"
+    },
+    "status": "published",
+    "publishedAt": {
+      "$date": {
+        "$numberLong": "1792916042049"
+      }
+    },
+    "featured": false,
+    "order": {
+      "$numberInt": "0"
+    },
+    "seo": {
+      "noIndex": false
+    },
+    "access": {
+      "visibility": "public",
+      "roles": [],
+      "organizations": []
+    },
+    "feedbackForm": {
+      "$oid": "6adf0bca3bcd5c045c6e4cbc"
+    },
+    "opportunity": {},
+    "knowledge": {
+      "section": "industry_insights",
+      "readingMinutes": {
+        "$numberInt": "4"
+      }
+    },
+    "portfolio": {},
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002442051"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002442051"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bca3bcd5c045c6e4ce4"
+    },
+    "type": "article",
+    "title": "Publications and Case Studies",
+    "slug": "publications-and-case-studies",
+    "summary": "Publications, case studies and whitepapers.",
+    "blocks": [
+      {
+        "id": "22693fa2-da64-461a-994f-3b9019758f73",
+        "type": "heading",
+        "data": {
+          "text": "Overview",
+          "level": {
+            "$numberInt": "2"
+          }
+        }
+      },
+      {
+        "id": "42443bc0-40d0-40f8-9cc8-8e1c80d0e37c",
+        "type": "richText",
+        "data": {
+          "html": "<p>Publications, case studies and whitepapers. This is sample knowledge content; replace it with approved material in the CMS.</p>"
+        }
+      },
+      {
+        "id": "7f95422c-85a1-41e3-bf76-c7e9dd2967c4",
+        "type": "faq",
+        "data": {
+          "items": [
+            {
+              "q": "Who can access this resource?",
+              "a": "All signed-in BIAN members."
+            }
+          ]
+        }
+      }
+    ],
+    "categories": [
+      {
+        "$oid": "6adf0bc93bcd5c045c6e4c95"
+      }
+    ],
+    "tags": [
+      {
+        "$oid": "6adf0bc93bcd5c045c6e4c99"
+      }
+    ],
+    "author": {
+      "$oid": "6adf0bca3bcd5c045c6e4cad"
+    },
+    "status": "published",
+    "publishedAt": {
+      "$date": {
+        "$numberLong": "1792829642049"
+      }
+    },
+    "featured": false,
+    "order": {
+      "$numberInt": "0"
+    },
+    "seo": {
+      "noIndex": false
+    },
+    "access": {
+      "visibility": "authenticated",
+      "roles": [],
+      "organizations": []
+    },
+    "feedbackForm": {
+      "$oid": "6adf0bca3bcd5c045c6e4cbc"
+    },
+    "opportunity": {},
+    "knowledge": {
+      "section": "research_repository",
+      "readingMinutes": {
+        "$numberInt": "5"
+      }
+    },
+    "portfolio": {},
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002442051"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002442051"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bca3bcd5c045c6e4ce5"
+    },
+    "type": "tutorial",
+    "title": "GMP Essentials for Biologics",
+    "slug": "gmp-essentials-for-biologics",
+    "summary": "GMP, compliance and global regulatory updates.",
+    "blocks": [
+      {
+        "id": "13710920-ab54-46aa-ae76-d4d326120740",
+        "type": "heading",
+        "data": {
+          "text": "Overview",
+          "level": {
+            "$numberInt": "2"
+          }
+        }
+      },
+      {
+        "id": "8ec8f68a-e101-4639-a2c3-370a96f85447",
+        "type": "richText",
+        "data": {
+          "html": "<p>GMP, compliance and global regulatory updates. This is sample knowledge content; replace it with approved material in the CMS.</p>"
+        }
+      },
+      {
+        "id": "b15588b0-0b27-404a-879d-8f403f104554",
+        "type": "faq",
+        "data": {
+          "items": [
+            {
+              "q": "Who can access this resource?",
+              "a": "Everyone."
+            }
+          ]
+        }
+      }
+    ],
+    "categories": [
+      {
+        "$oid": "6adf0bc93bcd5c045c6e4c94"
+      }
+    ],
+    "tags": [
+      {
+        "$oid": "6adf0bc93bcd5c045c6e4ca0"
+      }
+    ],
+    "author": {
+      "$oid": "6adf0bca3bcd5c045c6e4cad"
+    },
+    "status": "published",
+    "publishedAt": {
+      "$date": {
+        "$numberLong": "1792743242049"
+      }
+    },
+    "featured": false,
+    "order": {
+      "$numberInt": "0"
+    },
+    "seo": {
+      "noIndex": false
+    },
+    "access": {
+      "visibility": "public",
+      "roles": [],
+      "organizations": []
+    },
+    "feedbackForm": {
+      "$oid": "6adf0bca3bcd5c045c6e4cbc"
+    },
+    "opportunity": {},
+    "knowledge": {
+      "section": "regulatory_corner",
+      "readingMinutes": {
+        "$numberInt": "6"
+      }
+    },
+    "portfolio": {},
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002442051"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002442051"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bca3bcd5c045c6e4ce6"
+    },
+    "type": "article",
+    "title": "Webinar Library",
+    "slug": "webinar-library",
+    "summary": "Webinars, workshops and training materials.",
+    "blocks": [
+      {
+        "id": "d858c6c5-93af-4780-bba7-11ba468931d1",
+        "type": "heading",
+        "data": {
+          "text": "Overview",
+          "level": {
+            "$numberInt": "2"
+          }
+        }
+      },
+      {
+        "id": "065f535b-79df-4b05-9325-b8808cdde7a7",
+        "type": "richText",
+        "data": {
+          "html": "<p>Webinars, workshops and training materials. This is sample knowledge content; replace it with approved material in the CMS.</p>"
+        }
+      },
+      {
+        "id": "5474119c-301b-4dcd-ae4d-e86a51fc6b3f",
+        "type": "faq",
+        "data": {
+          "items": [
+            {
+              "q": "Who can access this resource?",
+              "a": "All signed-in BIAN members."
+            }
+          ]
+        }
+      }
+    ],
+    "categories": [
+      {
+        "$oid": "6adf0bc93bcd5c045c6e4c93"
+      }
+    ],
+    "tags": [
+      {
+        "$oid": "6adf0bc93bcd5c045c6e4c99"
+      }
+    ],
+    "author": {
+      "$oid": "6adf0bca3bcd5c045c6e4cad"
+    },
+    "status": "published",
+    "publishedAt": {
+      "$date": {
+        "$numberLong": "1792656842049"
+      }
+    },
+    "featured": false,
+    "order": {
+      "$numberInt": "0"
+    },
+    "seo": {
+      "noIndex": false
+    },
+    "access": {
+      "visibility": "authenticated",
+      "roles": [],
+      "organizations": []
+    },
+    "feedbackForm": {
+      "$oid": "6adf0bca3bcd5c045c6e4cbc"
+    },
+    "opportunity": {},
+    "knowledge": {
+      "section": "learning_center",
+      "readingMinutes": {
+        "$numberInt": "7"
+      }
+    },
+    "portfolio": {},
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002442051"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002442051"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bca3bcd5c045c6e4ce7"
+    },
+    "type": "article",
+    "title": "Grants and Fellowships Guide",
+    "slug": "grants-and-fellowships-guide",
+    "summary": "Grants, fellowships and government schemes.",
+    "blocks": [
+      {
+        "id": "0dbb0ce6-7ea0-465e-a38b-6f3fe76361ed",
+        "type": "heading",
+        "data": {
+          "text": "Overview",
+          "level": {
+            "$numberInt": "2"
+          }
+        }
+      },
+      {
+        "id": "898fb6f4-566a-4b4e-abaf-d85a16caffea",
+        "type": "richText",
+        "data": {
+          "html": "<p>Grants, fellowships and government schemes. This is sample knowledge content; replace it with approved material in the CMS.</p>"
+        }
+      },
+      {
+        "id": "1d4a2d6e-ed92-47dd-a18a-664003693bed",
+        "type": "faq",
+        "data": {
+          "items": [
+            {
+              "q": "Who can access this resource?",
+              "a": "Everyone."
+            }
+          ]
+        }
+      }
+    ],
+    "categories": [
+      {
+        "$oid": "6adf0bc93bcd5c045c6e4c96"
+      }
+    ],
+    "tags": [
+      {
+        "$oid": "6adf0bc93bcd5c045c6e4ca0"
+      }
+    ],
+    "author": {
+      "$oid": "6adf0bca3bcd5c045c6e4cad"
+    },
+    "status": "published",
+    "publishedAt": {
+      "$date": {
+        "$numberLong": "1792570442049"
+      }
+    },
+    "featured": false,
+    "order": {
+      "$numberInt": "0"
+    },
+    "seo": {
+      "noIndex": false
+    },
+    "access": {
+      "visibility": "public",
+      "roles": [],
+      "organizations": []
+    },
+    "feedbackForm": {
+      "$oid": "6adf0bca3bcd5c045c6e4cbc"
+    },
+    "opportunity": {},
+    "knowledge": {
+      "section": "funding_opportunities",
+      "readingMinutes": {
+        "$numberInt": "8"
+      }
+    },
+    "portfolio": {},
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002442051"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002442051"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bca3bcd5c045c6e4ce8"
+    },
+    "type": "tutorial",
+    "title": "Startup Resource Kit",
+    "slug": "startup-resource-kit",
+    "summary": "Startup resources and incubation support.",
+    "blocks": [
+      {
+        "id": "ee4ba944-f03d-4398-a127-02266374a1f0",
+        "type": "heading",
+        "data": {
+          "text": "Overview",
+          "level": {
+            "$numberInt": "2"
+          }
+        }
+      },
+      {
+        "id": "bfc35d66-9800-49db-8c15-5d88d514f3b7",
+        "type": "richText",
+        "data": {
+          "html": "<p>Startup resources and incubation support. This is sample knowledge content; replace it with approved material in the CMS.</p>"
+        }
+      },
+      {
+        "id": "de1bbddb-2e0b-486b-b75b-1187301d3b7a",
+        "type": "faq",
+        "data": {
+          "items": [
+            {
+              "q": "Who can access this resource?",
+              "a": "All signed-in BIAN members."
+            }
+          ]
+        }
+      }
+    ],
+    "categories": [
+      {
+        "$oid": "6adf0bc93bcd5c045c6e4c98"
+      }
+    ],
+    "tags": [
+      {
+        "$oid": "6adf0bc93bcd5c045c6e4c99"
+      }
+    ],
+    "author": {
+      "$oid": "6adf0bca3bcd5c045c6e4cad"
+    },
+    "status": "published",
+    "publishedAt": {
+      "$date": {
+        "$numberLong": "1792484042049"
+      }
+    },
+    "featured": false,
+    "order": {
+      "$numberInt": "0"
+    },
+    "seo": {
+      "noIndex": false
+    },
+    "access": {
+      "visibility": "authenticated",
+      "roles": [],
+      "organizations": []
+    },
+    "feedbackForm": {
+      "$oid": "6adf0bca3bcd5c045c6e4cbc"
+    },
+    "opportunity": {},
+    "knowledge": {
+      "section": "innovation_center",
+      "readingMinutes": {
+        "$numberInt": "9"
+      }
+    },
+    "portfolio": {},
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002442051"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002442051"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bca3bcd5c045c6e4ce9"
+    },
+    "type": "article",
+    "title": "SOP Templates",
+    "slug": "sop-templates",
+    "summary": "SOPs, formats and templates.",
+    "blocks": [
+      {
+        "id": "d6760709-3890-491d-a80e-515cc5f75eb1",
+        "type": "heading",
+        "data": {
+          "text": "Overview",
+          "level": {
+            "$numberInt": "2"
+          }
+        }
+      },
+      {
+        "id": "d242c2a2-be80-4730-8ad5-941eb007e70b",
+        "type": "richText",
+        "data": {
+          "html": "<p>SOPs, formats and templates. This is sample knowledge content; replace it with approved material in the CMS.</p>"
+        }
+      },
+      {
+        "id": "cb5b2de5-b4aa-4d09-887c-7b74882b6a9a",
+        "type": "faq",
+        "data": {
+          "items": [
+            {
+              "q": "Who can access this resource?",
+              "a": "Selected member roles."
+            }
+          ]
+        }
+      }
+    ],
+    "categories": [
+      {
+        "$oid": "6adf0bc93bcd5c045c6e4c94"
+      }
+    ],
+    "tags": [
+      {
+        "$oid": "6adf0bc93bcd5c045c6e4ca0"
+      }
+    ],
+    "author": {
+      "$oid": "6adf0bca3bcd5c045c6e4cad"
+    },
+    "status": "published",
+    "publishedAt": {
+      "$date": {
+        "$numberLong": "1792397642049"
+      }
+    },
+    "featured": false,
+    "order": {
+      "$numberInt": "0"
+    },
+    "seo": {
+      "noIndex": false
+    },
+    "access": {
+      "visibility": "roles",
+      "roles": [
+        {
+          "$oid": "6adf0bc93bcd5c045c6e4c8c"
+        },
+        {
+          "$oid": "6adf0bc93bcd5c045c6e4c92"
+        },
+        {
+          "$oid": "6adf0bc93bcd5c045c6e4c8f"
+        }
+      ],
+      "organizations": []
+    },
+    "feedbackForm": {
+      "$oid": "6adf0bca3bcd5c045c6e4cbc"
+    },
+    "opportunity": {},
+    "knowledge": {
+      "section": "templates_downloads",
+      "readingMinutes": {
+        "$numberInt": "10"
+      }
+    },
+    "portfolio": {},
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002442051"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002442051"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bca3bcd5c045c6e4cea"
+    },
+    "type": "article",
+    "title": "Collaboration Stories",
+    "slug": "collaboration-stories",
+    "summary": "Real collaborations. Real impact.",
+    "blocks": [
+      {
+        "id": "eddbbbfa-c356-4423-8f08-af943f26131e",
+        "type": "heading",
+        "data": {
+          "text": "Overview",
+          "level": {
+            "$numberInt": "2"
+          }
+        }
+      },
+      {
+        "id": "e7b71764-14ae-48a3-901f-74db30d291e2",
+        "type": "richText",
+        "data": {
+          "html": "<p>Real collaborations. Real impact. This is sample knowledge content; replace it with approved material in the CMS.</p>"
+        }
+      },
+      {
+        "id": "b0868604-f883-47fb-9cb5-8c4c1455f73c",
+        "type": "faq",
+        "data": {
+          "items": [
+            {
+              "q": "Who can access this resource?",
+              "a": "Everyone."
+            }
+          ]
+        }
+      }
+    ],
+    "categories": [
+      {
+        "$oid": "6adf0bc93bcd5c045c6e4c95"
+      }
+    ],
+    "tags": [
+      {
+        "$oid": "6adf0bc93bcd5c045c6e4c99"
+      }
+    ],
+    "author": {
+      "$oid": "6adf0bca3bcd5c045c6e4cad"
+    },
+    "status": "published",
+    "publishedAt": {
+      "$date": {
+        "$numberLong": "1792311242049"
+      }
+    },
+    "featured": false,
+    "order": {
+      "$numberInt": "0"
+    },
+    "seo": {
+      "noIndex": false
+    },
+    "access": {
+      "visibility": "public",
+      "roles": [],
+      "organizations": []
+    },
+    "feedbackForm": {
+      "$oid": "6adf0bca3bcd5c045c6e4cbc"
+    },
+    "opportunity": {},
+    "knowledge": {
+      "section": "success_stories",
+      "readingMinutes": {
+        "$numberInt": "11"
+      }
+    },
+    "portfolio": {},
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002442051"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002442051"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bca3bcd5c045c6e4ceb"
+    },
+    "type": "announcement",
+    "title": "New Industry Partner Onboarded – Thermo Fisher Scientific",
+    "slug": "new-industry-partner-thermo-fisher",
+    "summary": "Welcoming a new industry partner to the BIAN network.",
+    "blocks": [
+      {
+        "id": "19e4701a-9ca4-4a8c-bbdf-e92eb5ffb115",
+        "type": "richText",
+        "data": {
+          "html": "<p>Sample announcement from the mock-ups.</p>"
+        }
+      }
+    ],
+    "categories": [],
+    "tags": [],
+    "author": {
+      "$oid": "6adf0bca3bcd5c045c6e4cad"
+    },
+    "status": "published",
+    "publishedAt": {
+      "$date": {
+        "$numberLong": "1792829642052"
+      }
+    },
+    "featured": false,
+    "order": {
+      "$numberInt": "0"
+    },
+    "seo": {
+      "noIndex": false
+    },
+    "opportunity": {},
+    "knowledge": {},
+    "portfolio": {},
+    "access": {
+      "visibility": "public",
+      "roles": [],
+      "organizations": []
+    },
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002442052"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002442052"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bca3bcd5c045c6e4cec"
+    },
+    "type": "announcement",
+    "title": "BIRAC Funding Call for Startups – Apply Now",
+    "slug": "birac-funding-call-startups",
+    "summary": "A funding call relevant to startup members.",
+    "blocks": [
+      {
+        "id": "cf21b9f3-b39a-4ec9-b697-92280262e93b",
+        "type": "richText",
+        "data": {
+          "html": "<p>Sample announcement for signed-in members.</p>"
+        }
+      }
+    ],
+    "categories": [],
+    "tags": [],
+    "author": {
+      "$oid": "6adf0bca3bcd5c045c6e4cad"
+    },
+    "status": "published",
+    "publishedAt": {
+      "$date": {
+        "$numberLong": "1792656842052"
+      }
+    },
+    "featured": false,
+    "order": {
+      "$numberInt": "0"
+    },
+    "seo": {
+      "noIndex": false
+    },
+    "access": {
+      "visibility": "authenticated",
+      "roles": [],
+      "organizations": []
+    },
+    "opportunity": {},
+    "knowledge": {},
+    "portfolio": {},
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002442052"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002442052"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bca3bcd5c045c6e4ced"
+    },
+    "type": "announcement",
+    "title": "BIAN Launches Expert Mentorship Program",
+    "slug": "expert-mentorship-program",
+    "summary": "Members can now request mentoring from experts in the network.",
+    "blocks": [
+      {
+        "id": "8db3e23f-82ed-4fd0-902f-e82d4afd7148",
+        "type": "richText",
+        "data": {
+          "html": "<p>Browse the Experts Network to send a mentoring request.</p>"
+        }
+      }
+    ],
+    "categories": [],
+    "tags": [],
+    "author": {
+      "$oid": "6adf0bca3bcd5c045c6e4cad"
+    },
+    "status": "published",
+    "publishedAt": {
+      "$date": {
+        "$numberLong": "1792397642052"
+      }
+    },
+    "featured": false,
+    "order": {
+      "$numberInt": "0"
+    },
+    "seo": {
+      "noIndex": false
+    },
+    "opportunity": {},
+    "knowledge": {},
+    "portfolio": {},
+    "access": {
+      "visibility": "public",
+      "roles": [],
+      "organizations": []
+    },
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002442052"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002442052"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0c3e1d541bc7ea5d710d"
+    },
+    "type": "article",
+    "summary": "Essential lab safety practices for student members.",
+    "categories": [],
+    "tags": [],
+    "author": {
+      "$oid": "6adf0bca3bcd5c045c6e4cad"
+    },
+    "status": "published",
+    "featured": false,
+    "order": {
+      "$numberInt": "0"
+    },
+    "seo": {
+      "noIndex": false
+    },
+    "opportunity": {},
+    "knowledge": {},
+    "portfolio": {},
+    "blocks": [
+      {
+        "id": "1dd300a0-5950-4691-ab67-c6891bb5e4e6",
+        "type": "heading",
+        "data": {
+          "text": "Before you start",
+          "level": {
+            "$numberInt": "2"
+          }
+        }
+      },
+      {
+        "id": "5b25a919-46f1-4f5d-a254-0148442d3a50",
+        "type": "faq",
+        "data": {
+          "items": [
+            {
+              "q": "Do I need PPE?",
+              "a": "Yes — always wear a lab coat and goggles."
+            }
+          ]
+        }
+      }
+    ],
+    "access": {
+      "visibility": "roles",
+      "roles": [
+        {
+          "$oid": "6adf0bc93bcd5c045c6e4c91"
+        }
+      ],
+      "organizations": []
+    },
+    "slug": "student-lab-safety-guide",
+    "title": "Student Lab Safety Guide",
+    "featuredImage": "",
+    "publishAt": null,
+    "expireAt": null,
+    "feedbackForm": {
+      "$oid": "6adf0bca3bcd5c045c6e4cbc"
+    },
+    "publishedAt": {
+      "$date": {
+        "$numberLong": "1793002558901"
+      }
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002558902"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002558902"
+      }
+    },
+    "__v": {
+      "$numberInt": "0"
+    }
+  }
+]

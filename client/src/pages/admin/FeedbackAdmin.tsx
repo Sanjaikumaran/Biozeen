@@ -7,6 +7,7 @@ import { useAuth } from '../../lib/auth'
 import { formatDate, formatDateTime, label } from '../../lib/format'
 import { useAsync, useDocumentTitle, useQueryState } from '../../lib/hooks'
 import type { Question } from '../../lib/types'
+import { useChartColors } from '../../lib/theme'
 
 const QTYPES: { value: Question['type']; label: string }[] = [
   { value: 'rating', label: 'Star rating' },
@@ -167,8 +168,6 @@ interface Response {
   answers: { questionId: string; label: string; type: string; display: string }[]
 }
 
-const BRAND = '#136445'
-const tooltipStyle = { borderRadius: 8, border: '1px solid rgb(15 42 74 / 0.1)', fontSize: 12 }
 
 function targetKey(t: { kind: string; content?: string; course?: string; lessonId?: string; event?: string }) {
   return [t.kind, t.content ?? t.event ?? t.course ?? '', t.lessonId ?? ''].join(':')
@@ -188,6 +187,7 @@ function Stars({ value }: { value: number | null | undefined }) {
 }
 
 export function FeedbackAnalytics() {
+  const chart = useChartColors()
   useDocumentTitle('Feedback analytics')
   const { can } = useAuth()
   const identified = can('feedback.viewIdentified')
@@ -239,11 +239,11 @@ export function FeedbackAnalytics() {
                 <div className="h-56">
                   <ResponsiveContainer>
                     <LineChart data={summary.data.trend} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
-                      <CartesianGrid stroke="#e7ebef" vertical={false} />
-                      <XAxis dataKey="date" tickFormatter={(d) => formatDate(d, { day: 'numeric', month: 'short' })} tick={{ fontSize: 11, fill: '#5d6b7c' }} axisLine={false} tickLine={false} minTickGap={24} />
-                      <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: '#5d6b7c' }} axisLine={false} tickLine={false} />
-                      <Tooltip contentStyle={tooltipStyle} labelFormatter={(d) => formatDate(d as string)} formatter={(v, n) => [v, n === 'count' ? 'Responses' : 'Avg rating']} />
-                      <Line type="monotone" dataKey="count" stroke={BRAND} strokeWidth={2} dot={summary.data.trend.length < 20 ? { r: 4, fill: BRAND, stroke: '#fff', strokeWidth: 2 } : false} activeDot={{ r: 5 }} />
+                      <CartesianGrid stroke={chart.grid} vertical={false} />
+                      <XAxis dataKey="date" tickFormatter={(d) => formatDate(d, { day: 'numeric', month: 'short' })} tick={{ fontSize: 11, fill: chart.tick }} axisLine={false} tickLine={false} minTickGap={24} />
+                      <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: chart.tick }} axisLine={false} tickLine={false} />
+                      <Tooltip contentStyle={chart.tooltip} labelFormatter={(d) => formatDate(d as string)} formatter={(v, n) => [v, n === 'count' ? 'Responses' : 'Avg rating']} />
+                      <Line type="monotone" dataKey="count" stroke={chart.series} strokeWidth={2} dot={summary.data.trend.length < 20 ? { r: 4, fill: chart.series, stroke: chart.surface, strokeWidth: 2 } : false} activeDot={{ r: 5 }} />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
@@ -253,11 +253,11 @@ export function FeedbackAnalytics() {
                 <div className="h-56">
                   <ResponsiveContainer>
                     <BarChart data={[1, 2, 3, 4, 5].map((r) => ({ rating: `${r}★`, count: summary.data!.ratingDistribution.find((d) => d.rating === r)?.count ?? 0 }))} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
-                      <CartesianGrid stroke="#e7ebef" vertical={false} />
-                      <XAxis dataKey="rating" tick={{ fontSize: 11, fill: '#5d6b7c' }} axisLine={false} tickLine={false} />
-                      <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: '#5d6b7c' }} axisLine={false} tickLine={false} />
-                      <Tooltip contentStyle={tooltipStyle} cursor={{ fill: 'rgb(19 100 69 / 0.06)' }} formatter={(v) => [v, 'Responses']} />
-                      <Bar dataKey="count" fill={BRAND} radius={[4, 4, 0, 0]} barSize={28} />
+                      <CartesianGrid stroke={chart.grid} vertical={false} />
+                      <XAxis dataKey="rating" tick={{ fontSize: 11, fill: chart.tick }} axisLine={false} tickLine={false} />
+                      <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: chart.tick }} axisLine={false} tickLine={false} />
+                      <Tooltip contentStyle={chart.tooltip} cursor={{ fill: chart.cursor }} formatter={(v) => [v, 'Responses']} />
+                      <Bar dataKey="count" fill={chart.series} radius={[4, 4, 0, 0]} barSize={28} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -341,7 +341,7 @@ export function FeedbackAnalytics() {
 
       {f.view === 'responses' && (
         <div className="space-y-3">
-          <input aria-label="Search answers" value={f.q} onChange={(e) => setF({ q: e.target.value })} placeholder="Search text answers…" className="h-10 w-72 rounded-lg border border-ink-300/70 bg-white px-3 text-sm" />
+          <input aria-label="Search answers" value={f.q} onChange={(e) => setF({ q: e.target.value })} placeholder="Search text answers…" className="h-10 w-72 rounded-lg border border-ink-300/70 bg-card px-3 text-sm" />
           {responses.loading ? <Loading /> : responses.error ? <ErrorState error={responses.error} onRetry={responses.reload} /> : !responses.data?.items.length ? <Empty title="No responses" /> : (
             <>
               <Card className="divide-y divide-ink-900/8">

@@ -126,7 +126,7 @@ export function ExpertCard({ expert }: { expert: Expert }) {
         {expert.skills.slice(0, 4).map((s) => <Badge key={s} tone="green">{s}</Badge>)}
         {expert.mentoringAvailable && <Badge tone="lime"><Briefcase className="size-3" />Mentoring</Badge>}
       </div>
-      <Link to={`/experts/${expert._id}`} className="mt-4 block rounded-lg bg-brand-600 py-2 text-center text-sm font-semibold text-white hover:bg-brand-700">
+      <Link to={`/experts/${expert._id}`} className="mt-4 block rounded-lg bg-brand-600 py-2 text-center text-sm font-semibold text-white hover:bg-brand-strong">
         View Profile
       </Link>
     </Card>

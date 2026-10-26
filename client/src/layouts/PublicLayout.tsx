@@ -1,13 +1,16 @@
-import { ChevronDown, LayoutDashboard, LogOut, Mail, MapPin, Menu, Phone, Search, Shield, X } from 'lucide-react'
+import { ChevronDown, LayoutDashboard, LogOut, Mail, MapPin, Menu, Moon, Palette, Phone, Search, Shield, Sun, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { Logo } from '../components/Logo'
-import { LinkButton } from '../components/ui'
+import { NotificationBell } from '../components/NotificationBell'
+import { LinkButton, useFeedback } from '../components/ui'
 import { cx } from '../lib/cx'
 import { api } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { useAsync } from '../lib/hooks'
+import { useTheme } from '../lib/theme'
 import type { SiteSettings } from '../lib/types'
+import { PageErrorBoundary } from '../components/ErrorBoundary'
 
 const NAV = [
   { to: '/', label: 'Home', end: true },
@@ -20,6 +23,22 @@ const NAV = [
   { to: '/events', label: 'Events' },
   { to: '/contact', label: 'Contact' },
 ]
+
+function ThemeToggle() {
+  const { theme, resolvedMode, setTheme } = useTheme()
+  const { toast } = useFeedback()
+  const next = resolvedMode === 'dark' ? 'light' : 'dark'
+  return (
+    <button
+      onClick={() => setTheme({ ...theme, mode: next }).catch((e: Error) => toast(e.message, 'error'))}
+      className="rounded-md p-2 text-ink-500 hover:bg-ink-900/5 hover:text-ink-900"
+      aria-label={`Switch to ${next} mode`}
+      title={`Switch to ${next} mode`}
+    >
+      {resolvedMode === 'dark' ? <Sun className="size-4" /> : <Moon className="size-4" />}
+    </button>
+  )
+}
 
 function UserMenu() {
   const { user, logout, can } = useAuth()
@@ -40,7 +59,7 @@ function UserMenu() {
         <ChevronDown className="size-4" />
       </button>
       {open && (
-        <div className="absolute right-0 z-40 mt-2 w-56 rounded-xl border border-ink-900/10 bg-white p-1.5 shadow-lg">
+        <div className="absolute right-0 z-40 mt-2 w-56 rounded-xl border border-ink-900/10 bg-card p-1.5 shadow-lg">
           <p className="truncate px-3 py-2 text-xs text-ink-500">{user.email}</p>
           <Link to="/dashboard" onClick={() => setOpen(false)} className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-ink-900/5">
             <LayoutDashboard className="size-4" /> My dashboard
@@ -50,6 +69,9 @@ function UserMenu() {
               <Shield className="size-4" /> Admin workspace
             </Link>
           )}
+          <Link to="/dashboard/appearance" onClick={() => setOpen(false)} className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-ink-900/5">
+            <Palette className="size-4" /> Appearance
+          </Link>
           <button
             onClick={async () => {
               await logout()
@@ -79,12 +101,12 @@ export function SiteHeader() {
   }
 
   return (
-    <header className="sticky top-0 z-30 border-b border-ink-900/8 bg-white/95 backdrop-blur">
+    <header className="sticky top-0 z-30 border-b border-ink-900/8 bg-card/95 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6">
         <Logo />
         <nav className="ml-auto hidden items-center gap-0.5 lg:flex" aria-label="Main">
           {NAV.map((n) => (
-            <NavLink key={n.to} to={n.to} end={n.end} className={({ isActive }) => cx('rounded-md px-2.5 py-2 text-[13px] font-medium transition-colors', isActive ? 'text-brand-700' : 'text-ink-700 hover:text-brand-700')}>
+            <NavLink key={n.to} to={n.to} end={n.end} className={({ isActive }) => cx('whitespace-nowrap rounded-md px-2 py-2 text-[13px] font-medium transition-colors', isActive ? 'text-brand-700' : 'text-ink-700 hover:text-brand-700')}>
               {n.label}
             </NavLink>
           ))}
@@ -93,6 +115,8 @@ export function SiteHeader() {
           <Link to="/search" className="rounded-md p-2 text-ink-500 hover:bg-ink-900/5 hover:text-ink-900" aria-label="Search">
             <Search className="size-4" />
           </Link>
+          <ThemeToggle />
+          {user && <NotificationBell />}
           {user ? (
             <UserMenu />
           ) : (
@@ -107,7 +131,7 @@ export function SiteHeader() {
         </div>
       </div>
       {open && (
-        <div className="border-t border-ink-900/8 bg-white px-4 pb-4 lg:hidden">
+        <div className="border-t border-ink-900/8 bg-card px-4 pb-4 lg:hidden">
           <form
             className="my-3"
             onSubmit={(e) => {
@@ -178,10 +202,10 @@ export default function PublicLayout() {
   }, [pathname])
   return (
     <div className="flex min-h-screen flex-col">
-      <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-white focus:px-3 focus:py-2">Skip to content</a>
+      <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-card focus:px-3 focus:py-2">Skip to content</a>
       <SiteHeader />
       <main id="main" className="flex-1">
-        <Outlet />
+        <PageErrorBoundary><Outlet /></PageErrorBoundary>
       </main>
       <SiteFooter />
     </div>

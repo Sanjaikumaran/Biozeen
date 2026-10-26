@@ -49,7 +49,7 @@ function QuestionInput({ q, value, onChange }: { q: Question; value: unknown; on
       return (
         <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label={q.label}>
           {Array.from({ length: 11 }, (_, n) => (
-            <button key={n} type="button" role="radio" aria-checked={value === n} onClick={() => onChange(n)} className={cx('size-9 rounded-lg border text-sm font-semibold', value === n ? 'border-brand-600 bg-brand-600 text-white' : 'border-ink-300/70 bg-white hover:border-brand-300')}>
+            <button key={n} type="button" role="radio" aria-checked={value === n} onClick={() => onChange(n)} className={cx('size-9 rounded-lg border text-sm font-semibold', value === n ? 'border-brand-600 bg-brand-600 text-white' : 'border-ink-300/70 bg-card hover:border-brand-300')}>
               {n}
             </button>
           ))}
@@ -59,7 +59,7 @@ function QuestionInput({ q, value, onChange }: { q: Question; value: unknown; on
       return (
         <div className="flex gap-2" role="radiogroup" aria-label={q.label}>
           {[true, false].map((v) => (
-            <button key={String(v)} type="button" role="radio" aria-checked={value === v} onClick={() => onChange(v)} className={cx('rounded-lg border px-5 py-2 text-sm font-semibold', value === v ? 'border-brand-600 bg-brand-600 text-white' : 'border-ink-300/70 bg-white hover:border-brand-300')}>
+            <button key={String(v)} type="button" role="radio" aria-checked={value === v} onClick={() => onChange(v)} className={cx('rounded-lg border px-5 py-2 text-sm font-semibold', value === v ? 'border-brand-600 bg-brand-600 text-white' : 'border-ink-300/70 bg-card hover:border-brand-300')}>
               {v ? 'Yes' : 'No'}
             </button>
           ))}

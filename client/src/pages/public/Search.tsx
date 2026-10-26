@@ -31,7 +31,7 @@ export default function Search() {
         <label className="relative flex-1">
           <span className="sr-only">Search</span>
           <SearchIcon className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-300" />
-          <input autoFocus value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="Opportunities, resources, events, experts…" className="h-11 w-full rounded-lg border border-ink-300/70 bg-white pl-9 pr-3 text-sm" />
+          <input autoFocus value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="Opportunities, resources, events, experts…" className="h-11 w-full rounded-lg border border-ink-300/70 bg-card pl-9 pr-3 text-sm" />
         </label>
         <Button type="submit" size="lg">Search</Button>
       </form>

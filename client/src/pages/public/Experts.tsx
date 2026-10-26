@@ -33,7 +33,7 @@ export default function Experts() {
               <p className="text-brand-100">Access a diverse network of industry and academic experts.</p>
             </div>
           </div>
-          <form className="mt-6 flex gap-2 rounded-xl bg-white p-2" onSubmit={(e) => { e.preventDefault(); apply() }}>
+          <form className="mt-6 flex gap-2 rounded-xl bg-card p-2" onSubmit={(e) => { e.preventDefault(); apply() }}>
             <label className="relative flex-1">
               <span className="sr-only">Search experts</span>
               <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-300" />
@@ -45,12 +45,12 @@ export default function Experts() {
       </section>
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
         <form className="grid gap-2 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_1fr_auto]" onSubmit={(e) => { e.preventDefault(); apply() }}>
-          <input aria-label="Expertise" value={draft.expertise} onChange={(e) => setDraft({ ...draft, expertise: e.target.value })} placeholder="Expertise (e.g. GMP)" className="h-10 rounded-lg border border-ink-300/70 bg-white px-3 text-sm" />
+          <input aria-label="Expertise" value={draft.expertise} onChange={(e) => setDraft({ ...draft, expertise: e.target.value })} placeholder="Expertise (e.g. GMP)" className="h-10 rounded-lg border border-ink-300/70 bg-card px-3 text-sm" />
           <Select aria-label="Domain" value={f.domain} onChange={(e) => setF({ domain: e.target.value })} className="h-10">
             <option value="">All domains</option>
             {data?.domains.map((d) => <option key={d}>{d}</option>)}
           </Select>
-          <input aria-label="Location" value={draft.location} onChange={(e) => setDraft({ ...draft, location: e.target.value })} placeholder="Location" className="h-10 rounded-lg border border-ink-300/70 bg-white px-3 text-sm" />
+          <input aria-label="Location" value={draft.location} onChange={(e) => setDraft({ ...draft, location: e.target.value })} placeholder="Location" className="h-10 rounded-lg border border-ink-300/70 bg-card px-3 text-sm" />
           <Select aria-label="Experience" value={f.minYears} onChange={(e) => setF({ minYears: e.target.value })} className="h-10">
             <option value="">Any experience</option>
             {[5, 10, 15, 20].map((y) => <option key={y} value={y}>{y}+ years</option>)}

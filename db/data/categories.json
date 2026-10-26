@@ -1,0 +1,134 @@
+[
+  {
+    "_id": {
+      "$oid": "6adf0bc93bcd5c045c6e4c93"
+    },
+    "name": "Biomanufacturing",
+    "slug": "biomanufacturing",
+    "contentTypes": [],
+    "status": "active",
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002441511"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002441511"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bc93bcd5c045c6e4c94"
+    },
+    "name": "Regulatory & Quality",
+    "slug": "regulatory-quality",
+    "contentTypes": [],
+    "status": "active",
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002441511"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002441511"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bc93bcd5c045c6e4c95"
+    },
+    "name": "Research & Discovery",
+    "slug": "research-discovery",
+    "contentTypes": [],
+    "status": "active",
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002441511"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002441511"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bc93bcd5c045c6e4c96"
+    },
+    "name": "Funding & Grants",
+    "slug": "funding-grants",
+    "contentTypes": [],
+    "status": "active",
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002441511"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002441511"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bc93bcd5c045c6e4c97"
+    },
+    "name": "Careers & Talent",
+    "slug": "careers-talent",
+    "contentTypes": [],
+    "status": "active",
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002441511"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002441511"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bc93bcd5c045c6e4c98"
+    },
+    "name": "Innovation & Startups",
+    "slug": "innovation-startups",
+    "contentTypes": [],
+    "status": "active",
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002441511"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002441511"
+      }
+    }
+  }
+]

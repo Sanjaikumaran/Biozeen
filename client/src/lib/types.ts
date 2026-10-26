@@ -175,6 +175,7 @@ export interface SessionUser {
   permissions: string[]
   profile: Record<string, any> // eslint-disable-line @typescript-eslint/no-explicit-any
   phone?: string
+  preferences?: { themeMode: 'light' | 'dark' | 'system' | null; accent: string | null }
 }
 
 export interface SiteSettings {

@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
-/* BIAN design tokens — deep forest green, lime accent and navy ink from the mock-ups. */
+/* BIAN design tokens — deep forest green, lime accent and navy ink from the mock-ups.
+   These are the defaults; the theme layer below remaps them per accent and light/dark mode. */
 @theme {
   --color-brand-50: #eef7f1;
   --color-brand-100: #d5ecdc;
@@ -19,6 +20,10 @@
   --color-ink-500: #5d6b7c;
   --color-ink-300: #a9b3bf;
   --color-surface: #f6f8f7;
+  --color-card: #ffffff;
+  /* Fixed dark fills that carry white text (dark buttons, toasts, overlays) in either mode. */
+  --color-navy: #0f2a4a;
+  --color-brand-strong: #0b4d3b;
   --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 
@@ -56,6 +61,74 @@
 .hero-bg {
   background:
     radial-gradient(ellipse at 80% 20%, rgb(139 211 70 / 0.18), transparent 55%),
-    radial-gradient(ellipse at 10% 90%, rgb(31 122 85 / 0.5), transparent 60%),
-    linear-gradient(135deg, #052a21 0%, #0b4d3b 55%, #136445 100%);
+    radial-gradient(ellipse at 10% 90%, color-mix(in srgb, var(--brand-l-500) 50%, transparent), transparent 60%),
+    linear-gradient(135deg, var(--brand-l-900) 0%, var(--brand-l-700) 55%, var(--brand-l-600) 100%);
+}
+
+/* ------------------------------------------------------------------ theme layer
+   Each user picks an accent and a light/dark mode (see src/lib/theme.tsx). The attributes
+   live on <html>, and on preview swatches, so a preview can show a theme without applying it.
+   --brand-l-* is the accent's light-mode scale; --color-brand-* is what utilities read. */
+
+[data-accent="forest"] {
+  --brand-l-50: #eef7f1; --brand-l-100: #d5ecdc; --brand-l-200: #a9d8b9; --brand-l-300: #74bd8f; --brand-l-500: #1f7a55;
+  --brand-l-600: #136445; --brand-l-700: #0b4d3b; --brand-l-800: #083b2e; --brand-l-900: #052a21;
+}
+[data-accent="ocean"] {
+  --brand-l-50: #eef5fc; --brand-l-100: #d6e6f7; --brand-l-200: #a9c9ee; --brand-l-300: #74a6e0; --brand-l-500: #2563b8;
+  --brand-l-600: #1d4f96; --brand-l-700: #173e76; --brand-l-800: #12305b; --brand-l-900: #0b1f3d;
+}
+[data-accent="teal"] {
+  --brand-l-50: #ecf8f7; --brand-l-100: #d0eeeb; --brand-l-200: #a0dbd5; --brand-l-300: #67c1b8; --brand-l-500: #138a80;
+  --brand-l-600: #0e6f67; --brand-l-700: #0b5751; --brand-l-800: #08433e; --brand-l-900: #052d2a;
+}
+[data-accent="indigo"] {
+  --brand-l-50: #f0f0fc; --brand-l-100: #dcdcf7; --brand-l-200: #b8b8ef; --brand-l-300: #8e8ee2; --brand-l-500: #4f4fc4;
+  --brand-l-600: #3e3ea3; --brand-l-700: #313183; --brand-l-800: #262665; --brand-l-900: #191944;
+}
+[data-accent="plum"] {
+  --brand-l-50: #f8eff7; --brand-l-100: #eedaec; --brand-l-200: #ddb3d9; --brand-l-300: #c784c0; --brand-l-500: #94408c;
+  --brand-l-600: #7a3273; --brand-l-700: #61285c; --brand-l-800: #4b1f47; --brand-l-900: #33152f;
+}
+[data-accent="terracotta"] {
+  --brand-l-50: #fcf1ec; --brand-l-100: #f7ddd1; --brand-l-200: #eebba3; --brand-l-300: #e2916d; --brand-l-500: #b9532b;
+  --brand-l-600: #994322; --brand-l-700: #7a361c; --brand-l-800: #5e2a16; --brand-l-900: #401c0e;
+}
+
+/* Light mode. Also re-applied on dark-green surfaces (hero, sidebars), which look the same in both modes. */
+[data-accent], .hero-bg, .on-brand {
+  --color-brand-50: var(--brand-l-50); --color-brand-100: var(--brand-l-100); --color-brand-200: var(--brand-l-200);
+  --color-brand-300: var(--brand-l-300); --color-brand-500: var(--brand-l-500); --color-brand-600: var(--brand-l-600);
+  --color-brand-700: var(--brand-l-700); --color-brand-800: var(--brand-l-800); --color-brand-900: var(--brand-l-900);
+  --color-brand-strong: var(--brand-l-700);
+}
+[data-accent] {
+  color-scheme: light;
+  --color-ink-900: #0f2a4a; --color-ink-700: #33475e; --color-ink-500: #5d6b7c; --color-ink-300: #a9b3bf;
+  --color-surface: #f6f8f7; --color-card: #ffffff; --color-navy: #0f2a4a;
+  --color-sky-50: #f0f9ff; --color-sky-200: #b8e6fe; --color-sky-700: #0069a8; --color-sky-900: #024a70;
+  --color-violet-50: #f5f3ff; --color-violet-200: #ddd6ff; --color-violet-700: #7008e7;
+  --color-amber-50: #fffbeb; --color-amber-200: #fee685; --color-amber-800: #973c00; --color-amber-900: #7b3306;
+  --color-red-50: #fef2f2; --color-red-200: #ffc9c9; --color-red-700: #c10007; --color-red-800: #9f0712;
+}
+
+/* Dark mode: same hues, re-stepped for a dark surface. Tints mix the accent into the card colour,
+   and text-weight steps move to the light end of the scale so they stay readable. */
+[data-accent][data-mode="dark"] {
+  color-scheme: dark;
+  --color-ink-900: #e6ecf2; --color-ink-700: #c0cad6; --color-ink-500: #8d9aab; --color-ink-300: #566476;
+  --color-surface: #0b1219; --color-card: #131c26; --color-navy: #263a52;
+  --color-brand-50: color-mix(in oklab, var(--brand-l-500) 16%, var(--color-card));
+  --color-brand-100: color-mix(in oklab, var(--brand-l-500) 26%, var(--color-card));
+  --color-brand-200: color-mix(in oklab, var(--brand-l-500) 45%, var(--color-card));
+  --color-brand-300: var(--brand-l-300);
+  --color-brand-500: color-mix(in oklab, var(--brand-l-500) 50%, var(--brand-l-300));
+  --color-brand-600: color-mix(in oklab, var(--brand-l-500) 55%, var(--brand-l-300));
+  --color-brand-700: var(--brand-l-300);
+  --color-brand-800: var(--brand-l-200);
+  --color-brand-strong: var(--brand-l-500);
+  --color-sky-50: #0c2233; --color-sky-200: #1b4560; --color-sky-700: #7cc8f5; --color-sky-900: #b8e2fb;
+  --color-violet-50: #1f1a36; --color-violet-200: #3d3466; --color-violet-700: #c4b5fd;
+  --color-amber-50: #2a2111; --color-amber-200: #5a4416; --color-amber-800: #fcd34d; --color-amber-900: #fde68a;
+  --color-red-50: #2d1517; --color-red-200: #5c2328; --color-red-700: #fca5a5; --color-red-800: #fecaca;
 }

@@ -63,7 +63,7 @@ export default function Partners() {
           <label className="relative">
             <span className="sr-only">Search partners</span>
             <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-300" />
-            <input value={f.q} onChange={(e) => setF({ q: e.target.value })} placeholder="Search partners…" className="h-10 w-56 rounded-lg border border-ink-300/70 bg-white pl-9 pr-3 text-sm" />
+            <input value={f.q} onChange={(e) => setF({ q: e.target.value })} placeholder="Search partners…" className="h-10 w-56 rounded-lg border border-ink-300/70 bg-card pl-9 pr-3 text-sm" />
           </label>
           <Select aria-label="Organization type" value={f.type} onChange={(e) => setF({ type: e.target.value })} className="h-10 w-44">
             <option value="">All types</option>
@@ -141,7 +141,7 @@ export function PartnerDetail() {
           {data.logoUrl && <img src={data.logoUrl} alt={data.name} className="max-h-16" />}
           {data.location && <p className="flex items-center gap-2"><MapPin className="size-4 text-ink-500" />{data.location}</p>}
           {data.website && <a href={data.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-brand-600 hover:underline"><ExternalLink className="size-4" />Website</a>}
-          <Link to={`/contact?type=partnership&org=${encodeURIComponent(data.name)}`} className="block rounded-lg bg-brand-600 py-2 text-center font-semibold text-white hover:bg-brand-700">Enquire about collaboration</Link>
+          <Link to={`/contact?type=partnership&org=${encodeURIComponent(data.name)}`} className="block rounded-lg bg-brand-600 py-2 text-center font-semibold text-white hover:bg-brand-strong">Enquire about collaboration</Link>
         </Card>
       </div>
     </>

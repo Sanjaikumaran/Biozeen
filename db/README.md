@@ -6,7 +6,7 @@ This is the MongoDB schema that implements [schema.md](schema.md). The Mongoose 
 
 | Collection | Model file | Purpose |
 |---|---|---|
-| `users` | `identity.ts` | Identity, profile, category, roles, status, verification, sessions, saved content |
+| `users` | `identity.ts` | Identity, profile, category, roles, status, verification, sessions, saved content, appearance preferences, pending sign-in code (hashed) |
 | `roles` | `identity.ts` | Name, display name, permissions, system flag |
 | `organizations` | `identity.ts` | Partners and member organisations; public profile and internal contact |
 | `contents` | `content.ts` | Central CMS: portfolio pages, services, projects, case studies, opportunities, articles, blogs, tutorials, announcements |
@@ -22,6 +22,7 @@ This is the MongoDB schema that implements [schema.md](schema.md). The Mongoose 
 | `contactRequests` | `admin.ts` | Contact, partnership, collaboration and expert-connect requests; status, assignee, notes, reply |
 | `auditLogs` | `admin.ts` | Actor, action, entity, summary, scrubbed metadata |
 | `siteSettings` | `admin.ts` | Homepage hero and secretariat contact (single document) |
+| `notifications` | `admin.ts` | Per-user in-app notifications (kind, title, body, link, read time); expire after 90 days |
 
 ## Shared embedded shapes
 
@@ -71,6 +72,7 @@ An item is **live** when its status is `published` and `publishAt` is unset or p
 | feedbackSubmissions | `{form, submittedAt}` · `{content, submittedAt}` · `{course, lessonId}` · `event` · `{user, submittedAt}` · `dedupeKey` (sparse) |
 | contactRequests | `{status, type, createdAt}` · `user` |
 | auditLogs | `at` · `{entityType, entityId}` · `{actor, at}` |
+| notifications | `{user, createdAt}` · `{user, readAt}` · TTL on `createdAt` (90 days) |
 
 ## Privacy and retention
 
@@ -79,3 +81,16 @@ An item is **live** when its status is `published` and `publishAt` is unset or p
 - Anonymous feedback stores no `user`, roles or category. `dedupeKey` is an HMAC used only to enforce one response per person.
 - Audit metadata is scrubbed of any key matching password/token/secret/hash.
 - Forms with responses cannot be deleted; close them instead. Organisations with linked members cannot be deleted; mark them inactive. Media used by content cannot be deleted.
+
+## Moving data between machines
+
+[`data/`](data/) holds an export of the database: one Extended JSON file per collection, a `manifest.json` with document counts, and `uploads/` for stored files. Notifications are not exported.
+
+```bash
+cd server
+npm run db:export               # write the current database to db/data
+npm run db:import               # load db/data into an empty database
+npm run db:import -- --replace  # drop the database first, then load
+```
+
+The server also loads `db/data` automatically when it starts against an empty database (`AUTO_INIT_DB=true`). The export includes password hashes, so keep production data out of it.

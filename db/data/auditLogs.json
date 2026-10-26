@@ -1,0 +1,74 @@
+[
+  {
+    "_id": {
+      "$oid": "6adf0c3e1d541bc7ea5d710c"
+    },
+    "actor": {
+      "$oid": "6adf0bca3bcd5c045c6e4cad"
+    },
+    "actorEmail": "admin@bian.local",
+    "action": "member.approve",
+    "entityType": "User",
+    "entityId": {
+      "$oid": "6adf0c3c1d541bc7ea5d710b"
+    },
+    "summary": "Approved riya@example.com",
+    "ip": "::1",
+    "at": {
+      "$date": {
+        "$numberLong": "1793002558020"
+      }
+    },
+    "__v": {
+      "$numberInt": "0"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0c3e1d541bc7ea5d710e"
+    },
+    "actor": {
+      "$oid": "6adf0bca3bcd5c045c6e4cad"
+    },
+    "actorEmail": "admin@bian.local",
+    "action": "content.create",
+    "entityType": "Content",
+    "entityId": {
+      "$oid": "6adf0c3e1d541bc7ea5d710d"
+    },
+    "summary": "Created article \"Student Lab Safety Guide\" (published)",
+    "ip": "::1",
+    "at": {
+      "$date": {
+        "$numberLong": "1793002558903"
+      }
+    },
+    "__v": {
+      "$numberInt": "0"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf179ff22532be6db636ce"
+    },
+    "actor": {
+      "$oid": "6adf0bca3bcd5c045c6e4cad"
+    },
+    "actorEmail": "admin@bian.local",
+    "action": "contact.update",
+    "entityType": "ContactRequest",
+    "entityId": {
+      "$oid": "6adf179cf22532be6db636cc"
+    },
+    "summary": "Request from student@demo.bian.local: new → responded",
+    "ip": "::1",
+    "at": {
+      "$date": {
+        "$numberLong": "1793005471187"
+      }
+    },
+    "__v": {
+      "$numberInt": "0"
+    }
+  }
+]

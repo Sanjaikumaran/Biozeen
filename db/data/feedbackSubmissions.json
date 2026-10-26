@@ -1,0 +1,63 @@
+[
+  {
+    "_id": {
+      "$oid": "6adf0c3f1d541bc7ea5d710f"
+    },
+    "form": {
+      "$oid": "6adf0bca3bcd5c045c6e4cbc"
+    },
+    "formVersion": {
+      "$numberInt": "1"
+    },
+    "targetKind": "content",
+    "targetType": "article",
+    "targetTitle": "Student Lab Safety Guide",
+    "content": {
+      "$oid": "6adf0c3e1d541bc7ea5d710d"
+    },
+    "user": {
+      "$oid": "6adf0c3c1d541bc7ea5d710b"
+    },
+    "respondentCategory": "student",
+    "respondentRoles": [
+      {
+        "$oid": "6adf0bc93bcd5c045c6e4c8b"
+      },
+      {
+        "$oid": "6adf0bc93bcd5c045c6e4c91"
+      }
+    ],
+    "anonymous": false,
+    "answers": [
+      {
+        "questionId": {
+          "$oid": "6adf0bca3bcd5c045c6e4cbd"
+        },
+        "label": "How useful was this content?",
+        "type": "rating",
+        "value": {
+          "$numberInt": "4"
+        }
+      },
+      {
+        "questionId": {
+          "$oid": "6adf0bca3bcd5c045c6e4cbe"
+        },
+        "label": "Would you recommend it to a colleague?",
+        "type": "yes_no",
+        "value": true
+      }
+    ],
+    "ratingAvg": {
+      "$numberInt": "4"
+    },
+    "submittedAt": {
+      "$date": {
+        "$numberLong": "1793002559482"
+      }
+    },
+    "__v": {
+      "$numberInt": "0"
+    }
+  }
+]

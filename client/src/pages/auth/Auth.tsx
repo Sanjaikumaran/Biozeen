@@ -4,9 +4,10 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { Alert, Button, Card, Checkbox, Input, Loading, TagInput, Textarea } from '../../components/ui'
 import { cx } from '../../lib/cx'
 import { ApiError, api } from '../../lib/api'
-import { useAuth } from '../../lib/auth'
+import { useAuth, type OtpChallenge } from '../../lib/auth'
 import { label } from '../../lib/format'
 import { useDocumentTitle } from '../../lib/hooks'
+import type { SessionUser } from '../../lib/types'
 
 const ORG_CATEGORIES = [
   { key: 'startup', title: 'Startups & Innovation Ecosystems', icon: Rocket },
@@ -40,7 +41,7 @@ function AuthShell({ children, aside }: { children: React.ReactNode; aside?: Rea
 
 export function Login() {
   useDocumentTitle('Login')
-  const { login } = useAuth()
+  const { login, verifyOtp } = useAuth()
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const [form, setForm] = useState({ email: '', password: '', remember: false })
@@ -48,19 +49,59 @@ export function Login() {
   const [busy, setBusy] = useState(false)
   const [portal, setPortal] = useState('')
   const [resent, setResent] = useState('')
+  const [otp, setOtp] = useState<OtpChallenge | null>(null)
+  const [code, setCode] = useState('')
+  const [otpNotice, setOtpNotice] = useState('')
+
+  const enter = (user: SessionUser | null) => {
+    const next = safeNext(params.get('next'))
+    navigate(next ?? (user?.permissions.includes('admin.access') ? '/admin' : '/dashboard'), { replace: true })
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
     setBusy(true)
     setError(null)
     try {
-      const user = await login(form.email, form.password, form.remember)
-      const next = safeNext(params.get('next'))
-      navigate(next ?? (user?.permissions.includes('admin.access') ? '/admin' : '/dashboard'), { replace: true })
+      const r = await login(form.email, form.password, form.remember)
+      if (r.otp) {
+        setOtp(r.otp)
+        setCode('')
+        setOtpNotice('')
+      } else enter(r.user)
     } catch (err) {
       setError(err as ApiError)
     } finally {
       setBusy(false)
+    }
+  }
+
+  async function submitCode(e: React.FormEvent) {
+    e.preventDefault()
+    if (!otp) return
+    setBusy(true)
+    setError(null)
+    try {
+      enter(await verifyOtp(otp.challenge, code))
+    } catch (err) {
+      const apiErr = err as ApiError
+      // An expired or locked challenge needs a fresh password step.
+      if (apiErr.details?.code === 'otp_expired') setOtp(null)
+      setError(apiErr)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function resendCode() {
+    if (!otp) return
+    setError(null)
+    try {
+      const r = await api.post<{ message: string; devCode?: string }>('/auth/login/otp/resend', { challenge: otp.challenge })
+      setOtp({ ...otp, devCode: r.devCode })
+      setOtpNotice(r.message)
+    } catch (err) {
+      setError(err as ApiError)
     }
   }
 
@@ -97,24 +138,53 @@ export function Login() {
       <Card className="mx-auto max-w-md p-6 sm:p-8">
         <h1 className="text-2xl font-bold">Welcome to BIAN</h1>
         <p className="mt-1 text-sm text-ink-500">{portal ? `Signing in to: ${portal}` : 'Sign in to access your dashboard.'}</p>
-        <form onSubmit={submit} className="mt-6 space-y-4">
-          {error && (
-            <Alert tone="error">
-              {error.message}
-              {error.details?.code === 'unverified' && (
-                <button type="button" onClick={resend} className="mt-1 block font-semibold underline">Resend verification email</button>
-              )}
+        {otp ? (
+          <form onSubmit={submitCode} className="mt-6 space-y-4">
+            {error && <Alert tone="error">{error.message}</Alert>}
+            <Alert tone="info" title="Check your email">
+              We sent a 6-digit sign-in code to <strong>{otp.email}</strong>. It expires in {otp.expiresInMinutes} minutes.
             </Alert>
-          )}
-          {resent && <Alert tone="info">{resent.startsWith('http') ? <>Development mode — <a className="font-semibold underline" href={resent}>open verification link</a></> : resent}</Alert>}
-          <Input label="Email" type="email" required autoComplete="email" placeholder="Enter your email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
-          <Input label="Password" type="password" required autoComplete="current-password" placeholder="Enter your password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
-          <div className="flex items-center justify-between">
-            <Checkbox label="Remember me" checked={form.remember} onChange={(e) => setForm({ ...form, remember: e.target.checked })} />
-            <Link to="/forgot-password" className="text-sm font-medium text-brand-600 hover:underline">Forgot Password?</Link>
-          </div>
-          <Button type="submit" size="lg" className="w-full" loading={busy}>Login</Button>
-        </form>
+            {otp.devCode && <Alert tone="warning" title="Development mode">Email is turned off, so here is the code: <strong className="font-mono tracking-widest">{otp.devCode}</strong></Alert>}
+            {otpNotice && <p className="text-sm text-ink-500" role="status">{otpNotice}</p>}
+            <Input
+              label="Sign-in code"
+              required
+              autoFocus
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              pattern="[0-9]{6}"
+              maxLength={6}
+              placeholder="000000"
+              className="text-center font-mono text-lg tracking-[0.4em]"
+              value={code}
+              onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+            />
+            <Button type="submit" size="lg" className="w-full" loading={busy} disabled={code.length !== 6}>Verify and sign in</Button>
+            <div className="flex justify-between text-sm">
+              <button type="button" onClick={() => { setOtp(null); setError(null) }} className="font-medium text-ink-500 hover:text-ink-900">← Use a different account</button>
+              <button type="button" onClick={resendCode} className="font-medium text-brand-600 hover:underline">Resend code</button>
+            </div>
+          </form>
+        ) : (
+          <form onSubmit={submit} className="mt-6 space-y-4">
+            {error && (
+              <Alert tone="error">
+                {error.message}
+                {error.details?.code === 'unverified' && (
+                  <button type="button" onClick={resend} className="mt-1 block font-semibold underline">Resend verification email</button>
+                )}
+              </Alert>
+            )}
+            {resent && <Alert tone="info">{resent.startsWith('http') ? <>Development mode — <a className="font-semibold underline" href={resent}>open verification link</a></> : resent}</Alert>}
+            <Input label="Email" type="email" required autoComplete="email" placeholder="Enter your email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+            <Input label="Password" type="password" required autoComplete="current-password" placeholder="Enter your password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
+            <div className="flex items-center justify-between">
+              <Checkbox label="Remember me" checked={form.remember} onChange={(e) => setForm({ ...form, remember: e.target.checked })} />
+              <Link to="/forgot-password" className="text-sm font-medium text-brand-600 hover:underline">Forgot Password?</Link>
+            </div>
+            <Button type="submit" size="lg" className="w-full" loading={busy}>Login</Button>
+          </form>
+        )}
         <p className="mt-6 text-center text-sm text-ink-500">New to BIAN? <Link to="/register" className="font-semibold text-brand-600 hover:underline">Register here →</Link></p>
       </Card>
     </AuthShell>
@@ -203,7 +273,7 @@ export function Register() {
       type="button"
       onClick={() => setForm({ ...form, category: c.key })}
       aria-pressed={form.category === c.key}
-      className={cx('flex flex-col items-center gap-2 rounded-xl border bg-white p-5 text-center transition', form.category === c.key ? 'border-brand-500 ring-2 ring-brand-500/25' : 'border-ink-900/10 hover:border-brand-200')}
+      className={cx('flex flex-col items-center gap-2 rounded-xl border bg-card p-5 text-center transition', form.category === c.key ? 'border-brand-500 ring-2 ring-brand-500/25' : 'border-ink-900/10 hover:border-brand-200')}
     >
       <c.icon className="size-9 text-brand-700" />
       <span className="text-sm font-semibold text-ink-900">{c.title}</span>

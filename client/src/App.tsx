@@ -3,6 +3,10 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { FeedbackProvider, Loading } from './components/ui'
 import PublicLayout from './layouts/PublicLayout'
 import { AuthProvider } from './lib/auth'
+import { ThemeProvider } from './lib/theme'
+import Appearance from './pages/Appearance'
+import Notifications from './pages/Notifications'
+import { NotificationsProvider } from './lib/notifications'
 import { ForgotPassword, Login, Register, ResetPassword, VerifyEmail } from './pages/auth/Auth'
 import { AccountSettings, Dashboard, Learning, MemberLayout, MyEvents, MyFeedback, MyOpportunities, PostOpportunity, Profile, Requests, Saved } from './pages/member/Member'
 import Contact from './pages/public/Contact'
@@ -51,7 +55,9 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <ThemeProvider>
         <FeedbackProvider>
+          <NotificationsProvider>
           <Suspense fallback={<Loading />}>
           <Routes>
             <Route element={<PublicLayout />}>
@@ -79,6 +85,7 @@ export default function App() {
               <Route path="verify-email" element={<VerifyEmail />} />
               <Route path="forgot-password" element={<ForgotPassword />} />
               <Route path="reset-password" element={<ResetPassword />} />
+              <Route path="appearance" element={<div className="mx-auto max-w-7xl px-4 py-8 sm:px-6"><Appearance /></div>} />
               <Route path="*" element={<NotFound />} />
             </Route>
 
@@ -93,6 +100,8 @@ export default function App() {
               <Route path="requests" element={<Requests />} />
               <Route path="feedback" element={<MyFeedback />} />
               <Route path="settings" element={<AccountSettings />} />
+              <Route path="appearance" element={<Appearance />} />
+              <Route path="notifications" element={<Notifications />} />
             </Route>
 
             <Route path="admin" element={<AdminLayout />}>
@@ -116,10 +125,13 @@ export default function App() {
               <Route path="media" element={<MediaLibrary />} />
               <Route path="audit" element={<AuditLog />} />
               <Route path="settings" element={<SiteSettingsPage />} />
+              <Route path="appearance" element={<Appearance />} />
             </Route>
           </Routes>
           </Suspense>
+          </NotificationsProvider>
         </FeedbackProvider>
+        </ThemeProvider>
       </AuthProvider>
     </BrowserRouter>
   )

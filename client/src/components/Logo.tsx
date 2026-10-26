@@ -5,9 +5,9 @@ import { cx } from '../lib/cx'
 export function LogoMark({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 40 40" className={cx('size-10 shrink-0', className)} aria-hidden>
-      <circle cx="20" cy="20" r="19" fill="#0b4d3b" />
+      <circle cx="20" cy="20" r="19" className="fill-[var(--brand-l-700)]" />
       <path d="M13 9c8 4 8 18 14 22M27 9c-8 4-8 18-14 22" stroke="#8bd346" strokeWidth="2.6" fill="none" strokeLinecap="round" />
-      <path d="M15 15h10M14 20h12M15 25h10" stroke="#d5ecdc" strokeWidth="1.6" strokeLinecap="round" />
+      <path d="M15 15h10M14 20h12M15 25h10" className="stroke-[var(--brand-l-100)]" strokeWidth="1.6" strokeLinecap="round" />
     </svg>
   )
 }

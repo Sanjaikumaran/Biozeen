@@ -1,0 +1,201 @@
+[
+  {
+    "_id": {
+      "$oid": "6adf0bca3bcd5c045c6e4cee"
+    },
+    "title": "Fundamentals of Bioprocessing",
+    "slug": "fundamentals-of-bioprocessing",
+    "summary": "A short introductory course on upstream and downstream bioprocessing.",
+    "description": "Sample course demonstrating modules, lessons, progress tracking and lesson-level feedback.",
+    "level": "beginner",
+    "objectives": [
+      "Describe the stages of a bioprocess",
+      "Explain key upstream parameters",
+      "Outline common downstream purification steps"
+    ],
+    "modules": [
+      {
+        "title": "Upstream processing",
+        "lessons": [
+          {
+            "title": "Cell lines and media",
+            "durationMinutes": {
+              "$numberInt": "15"
+            },
+            "blocks": [
+              {
+                "id": "9b071ded-1ea7-41f0-8b12-cd602c816744",
+                "type": "richText",
+                "data": {
+                  "html": "<p>Sample lesson content.</p>"
+                }
+              },
+              {
+                "id": "efc83bb5-73a1-4ae8-b6ef-0abe243ff5be",
+                "type": "list",
+                "data": {
+                  "ordered": true,
+                  "items": [
+                    "Cell line selection",
+                    "Media design",
+                    "Seed train"
+                  ]
+                }
+              }
+            ],
+            "feedbackForm": {
+              "$oid": "6adf0bca3bcd5c045c6e4cc0"
+            },
+            "_id": {
+              "$oid": "6adf0bca3bcd5c045c6e4cf0"
+            }
+          },
+          {
+            "title": "Bioreactor operations",
+            "durationMinutes": {
+              "$numberInt": "20"
+            },
+            "blocks": [
+              {
+                "id": "26449673-8dcc-47ab-b2a3-12b372243eeb",
+                "type": "richText",
+                "data": {
+                  "html": "<p>Sample lesson content.</p>"
+                }
+              },
+              {
+                "id": "8d4ded4e-57dc-4f58-b87f-6c45b7cbf027",
+                "type": "table",
+                "data": {
+                  "headers": [
+                    "Parameter",
+                    "Typical control"
+                  ],
+                  "rows": [
+                    [
+                      "Temperature",
+                      "36–37 °C"
+                    ],
+                    [
+                      "pH",
+                      "6.8–7.2"
+                    ],
+                    [
+                      "Dissolved O₂",
+                      "30–60 %"
+                    ]
+                  ]
+                }
+              }
+            ],
+            "feedbackForm": {
+              "$oid": "6adf0bca3bcd5c045c6e4cc0"
+            },
+            "_id": {
+              "$oid": "6adf0bca3bcd5c045c6e4cf1"
+            }
+          }
+        ],
+        "_id": {
+          "$oid": "6adf0bca3bcd5c045c6e4cef"
+        }
+      },
+      {
+        "title": "Downstream processing",
+        "lessons": [
+          {
+            "title": "Harvest and clarification",
+            "durationMinutes": {
+              "$numberInt": "15"
+            },
+            "blocks": [
+              {
+                "id": "6e615f57-670e-4cda-8733-e22ee0572e21",
+                "type": "richText",
+                "data": {
+                  "html": "<p>Sample lesson content.</p>"
+                }
+              }
+            ],
+            "feedbackForm": {
+              "$oid": "6adf0bca3bcd5c045c6e4cc0"
+            },
+            "_id": {
+              "$oid": "6adf0bca3bcd5c045c6e4cf3"
+            }
+          },
+          {
+            "title": "Chromatography basics",
+            "durationMinutes": {
+              "$numberInt": "25"
+            },
+            "blocks": [
+              {
+                "id": "58d5c472-31a3-4bfd-88bd-2360a1038786",
+                "type": "richText",
+                "data": {
+                  "html": "<p>Sample lesson content.</p>"
+                }
+              },
+              {
+                "id": "7e3cc3ed-ed27-4837-a0a8-304d202b17f8",
+                "type": "callout",
+                "data": {
+                  "tone": "success",
+                  "title": "Tip",
+                  "text": "Mark lessons complete to track your progress."
+                }
+              }
+            ],
+            "feedbackForm": {
+              "$oid": "6adf0bca3bcd5c045c6e4cc0"
+            },
+            "_id": {
+              "$oid": "6adf0bca3bcd5c045c6e4cf4"
+            }
+          }
+        ],
+        "_id": {
+          "$oid": "6adf0bca3bcd5c045c6e4cf2"
+        }
+      }
+    ],
+    "categories": [
+      {
+        "$oid": "6adf0bc93bcd5c045c6e4c93"
+      }
+    ],
+    "linkedContent": [],
+    "author": {
+      "$oid": "6adf0bca3bcd5c045c6e4cad"
+    },
+    "status": "published",
+    "publishedAt": {
+      "$date": {
+        "$numberLong": "1793002442042"
+      }
+    },
+    "access": {
+      "visibility": "authenticated",
+      "roles": [],
+      "organizations": []
+    },
+    "feedbackForm": {
+      "$oid": "6adf0bca3bcd5c045c6e4cd0"
+    },
+    "trackCompletion": true,
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002442054"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002442054"
+      }
+    },
+    "__v": {
+      "$numberInt": "0"
+    }
+  }
+]

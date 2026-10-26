@@ -11,6 +11,8 @@ import { FeedbackForm, FeedbackSubmission } from "../models/feedback.js";
 import { Organization, Role, USER_STATUSES, User } from "../models/identity.js";
 import { Enrollment, EventRegistration, Expert } from "../models/learning.js";
 import { CATEGORY_ROLE } from "./auth.js";
+import { notify } from "../lib/notify.js";
+import { disconnectUser } from "../lib/realtime.js";
 
 export const adminRouter = Router();
 adminRouter.use(requirePermission(PERMISSIONS.adminAccess));
@@ -221,6 +223,7 @@ usersAdmin.patch("/:id", async (req, res) => {
     if (data.status !== "active") user.tokenVersion += 1; // end any live sessions
   }
   await user.save();
+  if (user.status !== "active") disconnectUser(String(user._id));
   await audit(req, "member.update", "User", user._id, `Updated member ${user.email}`, {
     before,
     after: { status: user.status, roles: user.roles.map(String), category: user.category },
@@ -247,6 +250,7 @@ usersAdmin.post("/:id/approve", async (req, res) => {
   await user.save();
   if (user.organization) await Organization.updateOne({ _id: user.organization, status: "pending" }, { status: "approved" });
   await audit(req, "member.approve", "User", user._id, `Approved ${user.email}`);
+  await notify([user._id], { kind: "membership", title: "Welcome to BIAN! Your membership is approved", body: "Explore opportunities, experts and the Knowledge Hub from your dashboard.", link: "/dashboard" });
   res.json(user);
 });
 

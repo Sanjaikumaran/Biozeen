@@ -1,6 +1,6 @@
 import {
   ArrowRight, Bell, Bookmark, BookOpen, Briefcase, CalendarDays, CheckCircle2, ClipboardList, GraduationCap, LayoutDashboard,
-  MessageSquare, MessagesSquare, PlusCircle, Search, Settings, ShieldCheck, Star, UserRound, UserSearch, Users,
+  MessageSquare, MessagesSquare, Palette, PlusCircle, Search, Settings, ShieldCheck, Star, UserRound, UserSearch, Users,
 } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
@@ -24,8 +24,10 @@ const NAV: NavItem[] = [
   { to: '/dashboard/learning', label: 'My Learning', icon: BookOpen },
   { to: '/dashboard/saved', label: 'Saved', icon: Bookmark },
   { to: '/dashboard/events', label: 'My Events', icon: CalendarDays },
+  { to: '/dashboard/notifications', label: 'Notifications', icon: Bell },
   { to: '/dashboard/requests', label: 'Requests & Messages', icon: MessagesSquare },
   { to: '/dashboard/feedback', label: 'My Feedback', icon: Star },
+  { to: '/dashboard/appearance', label: 'Appearance', icon: Palette },
   { to: '/dashboard/settings', label: 'Settings', icon: Settings },
 ]
 
@@ -62,7 +64,7 @@ export function Dashboard() {
           <p className="text-sm text-ink-500">Here's what's happening in your network.</p>
         </div>
         <Card className="flex items-center gap-3 px-4 py-2.5">
-          <span className="grid size-9 place-items-center rounded-full bg-ink-900 text-white"><UserRound className="size-4" /></span>
+          <span className="grid size-9 place-items-center rounded-full bg-navy text-white"><UserRound className="size-4" /></span>
           <div>
             <p className="text-sm font-semibold text-ink-900">{user?.organization?.name ?? user?.name}</p>
             <p className="text-xs text-ink-500">{label(user?.category)} member</p>

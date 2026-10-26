@@ -31,16 +31,18 @@ interface RequestRow {
 
 export function Requests() {
   useDocumentTitle('Requests')
-  const [f, setF] = useQueryState({ status: '', type: '', q: '', page: '1' })
+  const [f, setF] = useQueryState({ status: '', type: '', q: '', page: '1', open: '' })
   const q = useDebounced(f.q)
   const { data, error, loading, reload } = useAsync(() => api.get<Paged<RequestRow> & { statusCounts: Record<string, number> }>('/admin/contacts', { status: f.status, type: f.type, q, page: f.page }), [f.status, f.type, q, f.page])
-  const [openId, setOpenId] = useState<string | null>(null)
+  // The open request lives in the URL so notification links can open it directly.
+  const openId = f.open || null
+  const setOpenId = (id: string | null) => setF({ open: id ?? '', page: f.page })
   return (
     <div>
       <PageHeader title="Contact & Collaboration Requests" actions={<Button variant="outline" onClick={() => downloadUrl('/admin/contacts/export.csv', { status: f.status, type: f.type, q })}><Download className="size-4" />Export CSV</Button>} />
       <Tabs value={f.status} onChange={(status) => setF({ status })} tabs={[{ value: '', label: 'All' }, ...['new', 'in_progress', 'responded', 'closed'].map((s) => ({ value: s, label: label(s), count: data?.statusCounts?.[s] ?? 0 }))]} />
       <div className="my-4 flex flex-wrap gap-2">
-        <input aria-label="Search" value={f.q} onChange={(e) => setF({ q: e.target.value })} placeholder="Search name, email, message…" className="h-10 w-72 rounded-lg border border-ink-300/70 bg-white px-3 text-sm" />
+        <input aria-label="Search" value={f.q} onChange={(e) => setF({ q: e.target.value })} placeholder="Search name, email, message…" className="h-10 w-72 rounded-lg border border-ink-300/70 bg-card px-3 text-sm" />
         <Select aria-label="Type" value={f.type} onChange={(e) => setF({ type: e.target.value })} className="h-10 w-56"><option value="">All types</option>{['general', 'collaboration', 'partnership', 'expert_connect', 'requirement', 'training', 'support'].map((t) => <option key={t} value={t}>{label(t)}</option>)}</Select>
       </div>
       {loading ? <Loading /> : error ? <ErrorState error={error} onRetry={reload} /> : !data?.items.length ? <Empty icon={<Inbox className="size-8" />} title="No requests" /> : (
@@ -257,7 +259,7 @@ export function AuditLog() {
     <div>
       <PageHeader title="Audit Log" subtitle="Administrative actions on sensitive records. Secrets are never recorded." />
       <div className="mb-4 flex flex-wrap gap-2">
-        <input aria-label="Search" value={f.q} onChange={(e) => setF({ q: e.target.value })} placeholder="Search summary or actor…" className="h-10 w-72 rounded-lg border border-ink-300/70 bg-white px-3 text-sm" />
+        <input aria-label="Search" value={f.q} onChange={(e) => setF({ q: e.target.value })} placeholder="Search summary or actor…" className="h-10 w-72 rounded-lg border border-ink-300/70 bg-card px-3 text-sm" />
         <Select aria-label="Entity" value={f.entityType} onChange={(e) => setF({ entityType: e.target.value })} className="h-10 w-48"><option value="">All records</option>{data?.entityTypes.map((t) => <option key={t}>{t}</option>)}</Select>
       </div>
       {loading ? <Loading /> : error ? <ErrorState error={error} onRetry={reload} /> : !data?.items.length ? <Empty icon={<History className="size-8" />} title="No entries" /> : (

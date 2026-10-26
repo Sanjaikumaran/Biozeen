@@ -75,7 +75,7 @@ export default function Knowledge() {
         <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
           <h1 className="text-3xl font-bold text-white sm:text-4xl">Knowledge Hub</h1>
           <p className="mt-1 text-brand-100">Explore. Learn. Share. Grow.</p>
-          <form className="mt-6 flex gap-2 rounded-xl bg-white p-2" onSubmit={(e) => { e.preventDefault(); setF({ q: draft, tab: 'resources' }) }}>
+          <form className="mt-6 flex gap-2 rounded-xl bg-card p-2" onSubmit={(e) => { e.preventDefault(); setF({ q: draft, tab: 'resources' }) }}>
             <label className="relative flex-1">
               <span className="sr-only">Search resources</span>
               <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-300" />
@@ -93,7 +93,7 @@ export default function Knowledge() {
               key={key}
               aria-pressed={f.section === key}
               onClick={() => setF({ section: f.section === key ? '' : key, tab: 'resources' })}
-              className={cx('flex flex-col items-center gap-1.5 rounded-xl border bg-white p-4 text-center transition', f.section === key ? 'border-brand-500 ring-2 ring-brand-500/20' : 'border-ink-900/8 hover:border-brand-200')}
+              className={cx('flex flex-col items-center gap-1.5 rounded-xl border bg-card p-4 text-center transition', f.section === key ? 'border-brand-500 ring-2 ring-brand-500/20' : 'border-ink-900/8 hover:border-brand-200')}
             >
               <Icon className="size-7 text-brand-600" />
               <span className="text-sm font-semibold text-ink-900">{label(key)}</span>

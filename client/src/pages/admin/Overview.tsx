@@ -1,6 +1,6 @@
 import {
   Activity, BarChart3, BookOpen, Building2, CalendarDays, ClipboardCheck, Database, FileText, FolderTree, GraduationCap, Handshake,
-  History, Image, Inbox, LayoutDashboard, ListChecks, MessageSquareHeart, Settings, ShieldCheck, UserCheck, Users, UserSearch,
+  History, Image, Inbox, Palette, LayoutDashboard, ListChecks, MessageSquareHeart, Settings, ShieldCheck, UserCheck, Users, UserSearch,
 } from 'lucide-react'
 import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { Link } from 'react-router-dom'
@@ -10,6 +10,7 @@ import { WorkspaceLayout, type NavItem } from '../../layouts/WorkspaceLayout'
 import { api } from '../../lib/api'
 import { label } from '../../lib/format'
 import { useAsync, useDocumentTitle, useQueryState } from '../../lib/hooks'
+import { useChartColors } from '../../lib/theme'
 
 interface Metric { total: number; recent: number; change: number | null }
 interface Stats {
@@ -51,6 +52,7 @@ export function AdminLayout() {
     { to: '/admin/media', label: 'Media Library', icon: Image, permission: 'media.upload' },
     { to: '/admin/audit', label: 'Audit Log', icon: History, permission: 'audit.view' },
     { to: '/admin/settings', label: 'Site Settings', icon: Settings, permission: 'settings.manage' },
+    { to: '/admin/appearance', label: 'Appearance', icon: Palette },
   ]
   return (
     <LookupsProvider>
@@ -59,7 +61,6 @@ export function AdminLayout() {
   )
 }
 
-const BRAND = '#136445'
 const monthLabel = (m: string) => new Date(`${m}-01T00:00:00Z`).toLocaleDateString('en-IN', { month: 'short', timeZone: 'UTC' })
 
 function ChartCard({ title, children, empty }: { title: string; children: React.ReactNode; empty?: boolean }) {
@@ -71,9 +72,9 @@ function ChartCard({ title, children, empty }: { title: string; children: React.
   )
 }
 
-const tooltipStyle = { borderRadius: 8, border: '1px solid rgb(15 42 74 / 0.1)', fontSize: 12 }
 
 export function Overview() {
+  const chart = useChartColors()
   useDocumentTitle('Admin overview')
   const [f, setF] = useQueryState({ days: '30' })
   const { data, error, loading, reload } = useAsync(() => api.get<Stats>('/admin/stats', { days: f.days }), [f.days])
@@ -107,33 +108,33 @@ export function Overview() {
             <ChartCard title="Membership growth" empty={!data.membershipGrowth.some((m) => m.total)}>
               <ResponsiveContainer>
                 <LineChart data={data.membershipGrowth} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
-                  <CartesianGrid stroke="#e7ebef" vertical={false} />
-                  <XAxis dataKey="month" tickFormatter={monthLabel} tick={{ fontSize: 11, fill: '#5d6b7c' }} axisLine={false} tickLine={false} />
-                  <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: '#5d6b7c' }} axisLine={false} tickLine={false} />
-                  <Tooltip contentStyle={tooltipStyle} labelFormatter={(m) => new Date(`${m}-01`).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })} formatter={(v, n) => [v, n === 'total' ? 'Total members' : 'Joined']} />
-                  <Line type="monotone" dataKey="total" stroke={BRAND} strokeWidth={2} dot={false} activeDot={{ r: 5 }} />
+                  <CartesianGrid stroke={chart.grid} vertical={false} />
+                  <XAxis dataKey="month" tickFormatter={monthLabel} tick={{ fontSize: 11, fill: chart.tick }} axisLine={false} tickLine={false} />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: chart.tick }} axisLine={false} tickLine={false} />
+                  <Tooltip contentStyle={chart.tooltip} labelFormatter={(m) => new Date(`${m}-01`).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })} formatter={(v, n) => [v, n === 'total' ? 'Total members' : 'Joined']} />
+                  <Line type="monotone" dataKey="total" stroke={chart.series} strokeWidth={2} dot={false} activeDot={{ r: 5 }} />
                 </LineChart>
               </ResponsiveContainer>
             </ChartCard>
             <ChartCard title="Active members by category" empty={!data.membersByCategory.length}>
               <ResponsiveContainer>
                 <BarChart data={data.membersByCategory.map((c) => ({ ...c, name: label(c.category) }))} layout="vertical" margin={{ top: 0, right: 16, left: 8, bottom: 0 }}>
-                  <CartesianGrid stroke="#e7ebef" horizontal={false} />
-                  <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11, fill: '#5d6b7c' }} axisLine={false} tickLine={false} />
-                  <YAxis type="category" dataKey="name" width={120} tick={{ fontSize: 11, fill: '#33475e' }} axisLine={false} tickLine={false} tickFormatter={(v: string) => (v.length > 18 ? `${v.slice(0, 17)}…` : v)} />
-                  <Tooltip contentStyle={tooltipStyle} cursor={{ fill: 'rgb(19 100 69 / 0.06)' }} formatter={(v) => [v, 'Members']} />
-                  <Bar dataKey="count" fill={BRAND} radius={[0, 4, 4, 0]} barSize={14} />
+                  <CartesianGrid stroke={chart.grid} horizontal={false} />
+                  <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11, fill: chart.tick }} axisLine={false} tickLine={false} />
+                  <YAxis type="category" dataKey="name" width={120} tick={{ fontSize: 11, fill: chart.label }} axisLine={false} tickLine={false} tickFormatter={(v: string) => (v.length > 18 ? `${v.slice(0, 17)}…` : v)} />
+                  <Tooltip contentStyle={chart.tooltip} cursor={{ fill: chart.cursor }} formatter={(v) => [v, 'Members']} />
+                  <Bar dataKey="count" fill={chart.series} radius={[0, 4, 4, 0]} barSize={14} />
                 </BarChart>
               </ResponsiveContainer>
             </ChartCard>
             <ChartCard title="Opportunities created per month" empty={!data.opportunityTrend.some((m) => m.count)}>
               <ResponsiveContainer>
                 <BarChart data={data.opportunityTrend} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
-                  <CartesianGrid stroke="#e7ebef" vertical={false} />
-                  <XAxis dataKey="month" tickFormatter={monthLabel} tick={{ fontSize: 11, fill: '#5d6b7c' }} axisLine={false} tickLine={false} />
-                  <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: '#5d6b7c' }} axisLine={false} tickLine={false} />
-                  <Tooltip contentStyle={tooltipStyle} cursor={{ fill: 'rgb(19 100 69 / 0.06)' }} labelFormatter={(m) => new Date(`${m}-01`).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })} formatter={(v) => [v, 'Opportunities']} />
-                  <Bar dataKey="count" fill={BRAND} radius={[4, 4, 0, 0]} barSize={18} />
+                  <CartesianGrid stroke={chart.grid} vertical={false} />
+                  <XAxis dataKey="month" tickFormatter={monthLabel} tick={{ fontSize: 11, fill: chart.tick }} axisLine={false} tickLine={false} />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: chart.tick }} axisLine={false} tickLine={false} />
+                  <Tooltip contentStyle={chart.tooltip} cursor={{ fill: chart.cursor }} labelFormatter={(m) => new Date(`${m}-01`).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })} formatter={(v) => [v, 'Opportunities']} />
+                  <Bar dataKey="count" fill={chart.series} radius={[4, 4, 0, 0]} barSize={18} />
                 </BarChart>
               </ResponsiveContainer>
             </ChartCard>

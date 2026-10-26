@@ -6,6 +6,7 @@ import { isId, notFound, oid, paged, pagination, parse, searchRegex, str, toCsv,
 import { PERMISSIONS } from "../lib/permissions.js";
 import { requirePermission } from "../middleware/auth.js";
 import { CONTACT_STATUSES, CONTACT_TYPES, ContactRequest } from "../models/admin.js";
+import { notify, notifyPermission } from "../lib/notify.js";
 
 export const contactRouter = Router();
 export const adminContactsRouter = Router();
@@ -35,7 +36,7 @@ contactRouter.post("/", contactLimiter, async (req, res) => {
   // Submissions completed implausibly fast are treated as automated, but acknowledged identically.
   const tooFast = data.startedAt && Date.now() - data.startedAt < 2500;
   if (!tooFast) {
-    await ContactRequest.create({
+    const request = await ContactRequest.create({
       type: data.type as (typeof CONTACT_TYPES)[number],
       name: data.name,
       email: data.email,
@@ -46,6 +47,12 @@ contactRouter.post("/", contactLimiter, async (req, res) => {
       message: data.message,
       user: req.user?._id,
       ip: req.ip,
+    });
+    await notifyPermission(PERMISSIONS.contactsManage, {
+      kind: "request",
+      title: `New ${request.type.replace("_", " ")} request from ${request.name}`,
+      body: request.subject ?? request.message.slice(0, 140),
+      link: `/admin/requests?open=${request._id}`,
     });
   }
   res.status(201).json({ message: "Thank you for reaching out. The BIAN secretariat will get back to you shortly." });
@@ -117,6 +124,7 @@ adminContactsRouter.patch("/:id", async (req, res) => {
   const item = await ContactRequest.findById(oid(String(req.params.id)));
   if (!item) throw notFound("Request");
   const before = item.status;
+  const previousResponse = item.response ?? "";
   if (data.status) item.status = data.status;
   if (data.assignedTo !== undefined) item.set("assignedTo", data.assignedTo);
   if (data.response !== undefined) {
@@ -125,6 +133,17 @@ adminContactsRouter.patch("/:id", async (req, res) => {
   }
   await item.save();
   await audit(req, "contact.update", "ContactRequest", item._id, `Request from ${item.email}: ${before} → ${item.status}`);
+  if (item.user) {
+    const replied = !!item.response && item.response !== previousResponse;
+    if (replied || item.status !== before) {
+      await notify([item.user], {
+        kind: "request_update",
+        title: replied ? `The BIAN secretariat replied to "${item.subject ?? "your request"}"` : `Your request is now ${item.status.replace("_", " ")}`,
+        body: replied ? item.response!.slice(0, 200) : item.subject ?? undefined,
+        link: "/dashboard/requests",
+      }, req.user!._id);
+    }
+  }
   res.json(item);
 });
 

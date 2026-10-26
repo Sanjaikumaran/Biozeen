@@ -1,0 +1,337 @@
+[
+  {
+    "_id": {
+      "$oid": "6adf0bc93bcd5c045c6e4c87"
+    },
+    "name": "super_admin",
+    "displayName": "Biozeen Administrator",
+    "description": "Full platform access",
+    "permissions": [
+      "admin.access",
+      "content.manage",
+      "content.publish",
+      "members.manage",
+      "roles.manage",
+      "organizations.manage",
+      "experts.manage",
+      "feedback.manage",
+      "feedback.view",
+      "feedback.viewIdentified",
+      "contacts.manage",
+      "audit.view",
+      "settings.manage",
+      "media.upload",
+      "opportunities.post",
+      "experts.contact"
+    ],
+    "isSystem": true,
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002441507"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002441507"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bc93bcd5c045c6e4c88"
+    },
+    "name": "content_editor",
+    "displayName": "Content Editor",
+    "description": "Creates content and submits it for review",
+    "permissions": [
+      "admin.access",
+      "content.manage",
+      "media.upload",
+      "feedback.manage",
+      "feedback.view"
+    ],
+    "isSystem": false,
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002441507"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002441507"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bc93bcd5c045c6e4c89"
+    },
+    "name": "content_publisher",
+    "displayName": "Content Publisher",
+    "description": "Reviews and publishes content",
+    "permissions": [
+      "admin.access",
+      "content.manage",
+      "content.publish",
+      "media.upload",
+      "feedback.manage",
+      "feedback.view"
+    ],
+    "isSystem": false,
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002441507"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002441507"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bc93bcd5c045c6e4c8a"
+    },
+    "name": "member_manager",
+    "displayName": "Membership Manager",
+    "description": "Approves members and manages directories",
+    "permissions": [
+      "admin.access",
+      "members.manage",
+      "organizations.manage",
+      "experts.manage",
+      "contacts.manage"
+    ],
+    "isSystem": false,
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002441507"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002441507"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bc93bcd5c045c6e4c8b"
+    },
+    "name": "member",
+    "displayName": "Member",
+    "description": "Every approved BIAN member",
+    "permissions": [
+      "opportunities.post",
+      "experts.contact"
+    ],
+    "isSystem": true,
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002441508"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002441508"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bc93bcd5c045c6e4c8c"
+    },
+    "name": "industry",
+    "displayName": "Industry Member",
+    "description": "Industry organisation representatives",
+    "permissions": [
+      "opportunities.post",
+      "experts.contact"
+    ],
+    "isSystem": true,
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002441508"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002441508"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bc93bcd5c045c6e4c8d"
+    },
+    "name": "academia",
+    "displayName": "Academia & Research",
+    "description": "Academic and research institution representatives",
+    "permissions": [
+      "opportunities.post",
+      "experts.contact"
+    ],
+    "isSystem": true,
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002441508"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002441508"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bc93bcd5c045c6e4c8e"
+    },
+    "name": "startup",
+    "displayName": "Startup & Innovation",
+    "description": "Startups, incubators and innovation ecosystems",
+    "permissions": [
+      "opportunities.post",
+      "experts.contact"
+    ],
+    "isSystem": true,
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002441508"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002441508"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bc93bcd5c045c6e4c8f"
+    },
+    "name": "expert",
+    "displayName": "Individual Expert (SME)",
+    "description": "Subject-matter experts",
+    "permissions": [
+      "opportunities.post",
+      "experts.contact"
+    ],
+    "isSystem": true,
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002441508"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002441508"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bc93bcd5c045c6e4c90"
+    },
+    "name": "alumni",
+    "displayName": "Alumni",
+    "description": "Programme alumni",
+    "permissions": [
+      "opportunities.post",
+      "experts.contact"
+    ],
+    "isSystem": true,
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002441508"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002441508"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bc93bcd5c045c6e4c91"
+    },
+    "name": "student",
+    "displayName": "Student",
+    "description": "Students and trainees",
+    "permissions": [
+      "experts.contact"
+    ],
+    "isSystem": true,
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002441508"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002441508"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bc93bcd5c045c6e4c92"
+    },
+    "name": "professional",
+    "displayName": "Professional",
+    "description": "Working professionals",
+    "permissions": [
+      "opportunities.post",
+      "experts.contact"
+    ],
+    "isSystem": true,
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002441508"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002441508"
+      }
+    }
+  }
+]

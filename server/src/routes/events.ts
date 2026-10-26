@@ -11,6 +11,7 @@ import { requireAuth, requirePermission } from "../middleware/auth.js";
 import { PUBLICATION_STATUSES } from "../models/common.js";
 import { FeedbackForm } from "../models/feedback.js";
 import { EVENT_TYPES, Event, EventRegistration } from "../models/learning.js";
+import { afterStatusChange } from "../lib/notify.js";
 
 export const eventsRouter = Router();
 export const adminEventsRouter = Router();
@@ -192,6 +193,7 @@ adminEventsRouter.post("/", async (req, res) => {
   applyStatus(doc, data.status, req.user!);
   await doc.save();
   await afterEventSave(doc);
+  await afterStatusChange(doc, "draft", req.user!._id, true);
   await audit(req, "event.create", "Event", doc._id, `Created event "${doc.title}"`);
   res.status(201).json(doc);
 });
@@ -201,10 +203,12 @@ adminEventsRouter.put("/:id", async (req, res) => {
   if (!doc) throw notFound("Event");
   const data = parse(eventInput, req.body);
   if (data.slug && data.slug !== doc.slug) doc.slug = await uniqueEventSlug(data.slug, doc._id);
+  const fromStatus = doc.status;
   applyEvent(doc, data);
   applyStatus(doc, data.status, req.user!);
   await doc.save();
   await afterEventSave(doc);
+  await afterStatusChange(doc, fromStatus, req.user!._id, true);
   await audit(req, "event.update", "Event", doc._id, `Updated event "${doc.title}" (${doc.status})`);
   res.json(doc);
 });

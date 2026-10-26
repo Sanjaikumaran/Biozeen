@@ -12,6 +12,7 @@ import { PUBLICATION_STATUSES } from "../models/common.js";
 import { CONTENT_TYPES, Category, Content, KNOWLEDGE_SECTIONS, OPPORTUNITY_TYPES, Tag } from "../models/content.js";
 import { FeedbackForm } from "../models/feedback.js";
 import { User } from "../models/identity.js";
+import { notifyPermission, afterStatusChange } from "../lib/notify.js";
 
 export const contentsRouter = Router();
 export const adminContentsRouter = Router();
@@ -160,6 +161,7 @@ contentsRouter.post("/submissions", requirePermission(PERMISSIONS.opportunitiesP
     },
   });
   await audit(req, "content.submit", "Content", item._id, `Submitted opportunity "${item.title}" for review`);
+  await notifyPermission(PERMISSIONS.contentPublish, { kind: "content_review", title: `Opportunity to review: ${item.title}`, body: `Submitted by ${req.user!.name}`, link: `/admin/content/${item._id}` }, req.user!._id);
   res.status(201).json({ _id: item._id, message: "Submitted. The BIAN team will review it before publication." });
 });
 
@@ -248,6 +250,7 @@ adminContentsRouter.post("/", async (req, res) => {
   applyStatus(doc, data.status, req.user!);
   await doc.save();
   await afterSave(doc);
+  await afterStatusChange(doc, "draft", req.user!._id);
   await audit(req, "content.create", "Content", doc._id, `Created ${doc.type} "${doc.title}" (${doc.status})`);
   res.status(201).json(doc);
 });
@@ -262,6 +265,7 @@ adminContentsRouter.put("/:id", async (req, res) => {
   applyStatus(doc, data.status, req.user!);
   await doc.save();
   await afterSave(doc);
+  await afterStatusChange(doc, before.status, req.user!._id);
   await audit(req, "content.update", "Content", doc._id, `Updated ${doc.type} "${doc.title}"`, {
     before,
     after: { status: doc.status, visibility: doc.access?.visibility },
@@ -276,6 +280,7 @@ adminContentsRouter.post("/:id/status", async (req, res) => {
   const from = doc.status;
   applyStatus(doc, status, req.user!);
   await doc.save();
+  await afterStatusChange(doc, from, req.user!._id);
   await audit(req, "content.status", "Content", doc._id, `"${doc.title}": ${from} → ${doc.status}`);
   res.json(doc);
 });

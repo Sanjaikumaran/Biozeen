@@ -9,6 +9,7 @@ import { can, requireAuth, requirePermission } from "../middleware/auth.js";
 import { ContactRequest } from "../models/admin.js";
 import { EXPERT_TYPES, Expert } from "../models/learning.js";
 import { Organization, User } from "../models/identity.js";
+import { notify, notifyPermission } from "../lib/notify.js";
 
 export const partnersRouter = Router();
 export const expertsRouter = Router();
@@ -117,6 +118,12 @@ expertsRouter.post("/:id/connect", connectLimiter, requirePermission(PERMISSIONS
     user: req.user!._id,
     targetExpert: expert._id,
   });
+  await notifyPermission(PERMISSIONS.contactsManage, {
+    kind: "request",
+    title: `${req.user!.name} wants to connect with ${expertName}`,
+    body: `${purpose[0]!.toUpperCase()}${purpose.slice(1)} request`,
+    link: `/admin/requests?open=${request._id}`,
+  });
   res.status(201).json({ _id: request._id, message: "Request sent. The BIAN secretariat will coordinate the introduction." });
 });
 
@@ -149,6 +156,7 @@ expertsRouter.put("/me/profile", requireAuth, async (req, res) => {
     return res.json(existing);
   }
   const created = await Expert.create({ ...data, user: req.user!._id, status: "pending" });
+  await notifyPermission(PERMISSIONS.expertsManage, { kind: "approval_needed", title: `Expert profile to review: ${req.user!.name}`, body: created.headline, link: "/admin/experts" }, req.user!._id);
   res.status(201).json(created);
 });
 
@@ -281,6 +289,9 @@ expertsAdmin.put("/:id", async (req, res) => {
   const before = expert.status;
   expert.set(data);
   await expert.save();
+  if (before !== "approved" && expert.status === "approved") {
+    await notify([expert.user], { kind: "expert_profile", title: "Your expert profile is approved and listed in the Experts Network", link: `/experts/${expert._id}` }, req.user!._id);
+  }
   await audit(req, "expert.update", "Expert", expert._id, `Updated expert "${expert.headline}" (${before} → ${expert.status})`);
   res.json(expert);
 });

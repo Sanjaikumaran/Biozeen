@@ -1,0 +1,27 @@
+[
+  {
+    "_id": {
+      "$oid": "6adf0df11d541bc7ea5d7110"
+    },
+    "event": {
+      "$oid": "6adf0bca3bcd5c045c6e4cf6"
+    },
+    "user": {
+      "$oid": "6adf0bca3bcd5c045c6e4cad"
+    },
+    "status": "registered",
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002993451"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002993451"
+      }
+    },
+    "__v": {
+      "$numberInt": "0"
+    }
+  }
+]

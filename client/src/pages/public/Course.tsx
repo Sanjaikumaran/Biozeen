@@ -96,7 +96,7 @@ export function CoursePage() {
       <section className="hero-bg text-white">
         <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:px-6 md:grid-cols-[1fr_320px]">
           <div>
-            <Link to="/knowledge?tab=courses" className="mb-4 inline-flex items-center gap-1 text-sm text-brand-100 hover:text-white"><ArrowLeft className="size-4" />All courses</Link>
+            <Link to="/knowledge?tab=courses" className="mb-4 flex w-fit items-center gap-1 text-sm text-brand-100 hover:text-white"><ArrowLeft className="size-4" />All courses</Link>
             <Badge tone="lime">{label(data.level)} course</Badge>
             <h1 className="mt-3 text-3xl font-bold text-white sm:text-4xl">{data.title}</h1>
             <p className="mt-3 text-lg text-brand-100">{data.summary}</p>

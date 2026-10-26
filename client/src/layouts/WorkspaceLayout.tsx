@@ -5,6 +5,7 @@ import { Loading } from '../components/ui'
 import { cx } from '../lib/cx'
 import { useAuth } from '../lib/auth'
 import { SiteHeader } from './PublicLayout'
+import { PageErrorBoundary } from '../components/ErrorBoundary'
 
 export interface NavItem {
   to: string
@@ -61,15 +62,15 @@ export function WorkspaceLayout({ title, items, requirePermission }: { title: st
     <div className="flex min-h-screen flex-col">
       <SiteHeader />
       <div className="flex flex-1">
-        <div className="hidden w-60 shrink-0 bg-brand-900 lg:block">
+        <div className="on-brand hidden w-60 shrink-0 bg-brand-900 lg:block">
           <aside className="sticky top-16 max-h-[calc(100vh-4rem)] overflow-y-auto">
             <p className="px-6 pt-5 text-sm font-bold uppercase tracking-wider text-white">{title}</p>
             {nav}
           </aside>
         </div>
         {open && (
-          <div className="fixed inset-0 z-40 bg-ink-900/40 lg:hidden" onClick={() => setOpen(false)}>
-            <aside className="h-full w-64 overflow-y-auto bg-brand-900" onClick={(e) => e.stopPropagation()}>
+          <div className="fixed inset-0 z-40 bg-black/50 lg:hidden" onClick={() => setOpen(false)}>
+            <aside className="on-brand h-full w-64 overflow-y-auto bg-brand-900" onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center justify-between px-6 pt-5">
                 <p className="text-sm font-bold uppercase tracking-wider text-white">{title}</p>
                 <button onClick={() => setOpen(false)} className="text-white" aria-label="Close menu"><X className="size-5" /></button>
@@ -79,10 +80,10 @@ export function WorkspaceLayout({ title, items, requirePermission }: { title: st
           </div>
         )}
         <main id="main" className="min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-8">
-          <button onClick={() => setOpen(true)} className="mb-4 inline-flex items-center gap-2 rounded-lg border border-ink-900/10 bg-white px-3 py-1.5 text-sm font-medium lg:hidden">
+          <button onClick={() => setOpen(true)} className="mb-4 inline-flex items-center gap-2 rounded-lg border border-ink-900/10 bg-card px-3 py-1.5 text-sm font-medium lg:hidden">
             <Menu className="size-4" /> {title} menu
           </button>
-          <Outlet />
+          <PageErrorBoundary><Outlet /></PageErrorBoundary>
         </main>
       </div>
     </div>

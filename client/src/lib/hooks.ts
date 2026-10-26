@@ -7,7 +7,17 @@ export function useAsync<T>(fn: () => Promise<T>, deps: unknown[]) {
   const [data, setData] = useState<T | null>(null)
   const [error, setError] = useState<ApiError | null>(null)
   const [loading, setLoading] = useState(true)
+  const [loadedDeps, setLoadedDeps] = useState(deps)
   const seq = useRef(0)
+
+  // When the inputs change, drop the old result during render. Otherwise the next render
+  // pairs new inputs (say, a different tab) with data of the wrong shape before the effect runs.
+  if (deps.length !== loadedDeps.length || deps.some((d, i) => !Object.is(d, loadedDeps[i]))) {
+    setLoadedDeps(deps)
+    setData(null)
+    setError(null)
+    setLoading(true)
+  }
 
   const run = useCallback(() => {
     const id = ++seq.current

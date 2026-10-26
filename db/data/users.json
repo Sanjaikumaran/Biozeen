@@ -1,0 +1,477 @@
+[
+  {
+    "_id": {
+      "$oid": "6adf0bca3bcd5c045c6e4cad"
+    },
+    "email": "admin@bian.local",
+    "passwordHash": "$2b$12$85h0I3SLf99TAEMxwR9ta.gJ8ZlxwNWjwSmU9SGMlSYDWjATgZWyK",
+    "name": "Biozeen Administrator",
+    "accountType": "individual",
+    "category": "other",
+    "organization": {
+      "$oid": "6adf0bc93bcd5c045c6e4ca1"
+    },
+    "profile": {
+      "interests": []
+    },
+    "roles": [
+      {
+        "$oid": "6adf0bc93bcd5c045c6e4c87"
+      },
+      {
+        "$oid": "6adf0bc93bcd5c045c6e4c8b"
+      }
+    ],
+    "status": "active",
+    "emailVerified": true,
+    "tokenVersion": {
+      "$numberInt": "0"
+    },
+    "savedContents": [],
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002442031"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793005464119"
+      }
+    },
+    "__v": {
+      "$numberInt": "0"
+    },
+    "lastLoginAt": {
+      "$date": {
+        "$numberLong": "1793005464119"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bca3bcd5c045c6e4cae"
+    },
+    "email": "industry@demo.bian.local",
+    "passwordHash": "$2b$12$SJpmyqWt.qvdh9W6ioSHOOq3LqaZ6l5TxfmqsJbUtAkqCJsrTOHQa",
+    "name": "BioPharma Solutions",
+    "accountType": "organization",
+    "category": "industry",
+    "organization": {
+      "$oid": "6adf0bc93bcd5c045c6e4cac"
+    },
+    "profile": {
+      "designation": "Industry Member",
+      "interests": []
+    },
+    "roles": [
+      {
+        "$oid": "6adf0bc93bcd5c045c6e4c8b"
+      },
+      {
+        "$oid": "6adf0bc93bcd5c045c6e4c8c"
+      }
+    ],
+    "status": "active",
+    "emailVerified": true,
+    "tokenVersion": {
+      "$numberInt": "0"
+    },
+    "savedContents": [],
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002442032"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793004432674"
+      }
+    },
+    "lastLoginAt": {
+      "$date": {
+        "$numberLong": "1793004432674"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bca3bcd5c045c6e4caf"
+    },
+    "email": "student@demo.bian.local",
+    "passwordHash": "$2b$12$SJpmyqWt.qvdh9W6ioSHOOq3LqaZ6l5TxfmqsJbUtAkqCJsrTOHQa",
+    "name": "Ananya Student",
+    "accountType": "individual",
+    "category": "student",
+    "profile": {
+      "interests": [
+        "Fermentation"
+      ],
+      "institution": "IIT Madras"
+    },
+    "roles": [
+      {
+        "$oid": "6adf0bc93bcd5c045c6e4c8b"
+      },
+      {
+        "$oid": "6adf0bc93bcd5c045c6e4c91"
+      }
+    ],
+    "status": "active",
+    "emailVerified": true,
+    "tokenVersion": {
+      "$numberInt": "0"
+    },
+    "savedContents": [],
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002442032"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793005465511"
+      }
+    },
+    "lastLoginAt": {
+      "$date": {
+        "$numberLong": "1793005465511"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bca3bcd5c045c6e4cb0"
+    },
+    "email": "editor@demo.bian.local",
+    "passwordHash": "$2b$12$SJpmyqWt.qvdh9W6ioSHOOq3LqaZ6l5TxfmqsJbUtAkqCJsrTOHQa",
+    "name": "Content Editor",
+    "accountType": "individual",
+    "category": "other",
+    "profile": {
+      "interests": []
+    },
+    "roles": [
+      {
+        "$oid": "6adf0bc93bcd5c045c6e4c88"
+      },
+      {
+        "$oid": "6adf0bc93bcd5c045c6e4c8b"
+      }
+    ],
+    "status": "active",
+    "emailVerified": true,
+    "tokenVersion": {
+      "$numberInt": "0"
+    },
+    "savedContents": [],
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002442033"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002442033"
+      }
+    },
+    "__v": {
+      "$numberInt": "0"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bca3bcd5c045c6e4cb1"
+    },
+    "email": "pending@demo.bian.local",
+    "passwordHash": "$2b$12$SJpmyqWt.qvdh9W6ioSHOOq3LqaZ6l5TxfmqsJbUtAkqCJsrTOHQa",
+    "name": "Pending Startup Founder",
+    "accountType": "organization",
+    "category": "startup",
+    "organization": {
+      "$oid": "6adf0bc93bcd5c045c6e4cab"
+    },
+    "profile": {
+      "interests": []
+    },
+    "roles": [],
+    "status": "pending",
+    "emailVerified": true,
+    "tokenVersion": {
+      "$numberInt": "0"
+    },
+    "savedContents": [],
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002442034"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002442034"
+      }
+    },
+    "__v": {
+      "$numberInt": "0"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bca3bcd5c045c6e4cb2"
+    },
+    "email": "priya.sharma@demo.bian.local",
+    "passwordHash": "$2b$12$SJpmyqWt.qvdh9W6ioSHOOq3LqaZ6l5TxfmqsJbUtAkqCJsrTOHQa",
+    "name": "Dr. Priya Sharma",
+    "accountType": "individual",
+    "category": "sme",
+    "profile": {
+      "interests": []
+    },
+    "roles": [
+      {
+        "$oid": "6adf0bc93bcd5c045c6e4c8b"
+      },
+      {
+        "$oid": "6adf0bc93bcd5c045c6e4c8f"
+      }
+    ],
+    "status": "active",
+    "emailVerified": true,
+    "tokenVersion": {
+      "$numberInt": "0"
+    },
+    "savedContents": [],
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002442034"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002442034"
+      }
+    },
+    "__v": {
+      "$numberInt": "0"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bca3bcd5c045c6e4cb4"
+    },
+    "email": "arvind.rao@demo.bian.local",
+    "passwordHash": "$2b$12$SJpmyqWt.qvdh9W6ioSHOOq3LqaZ6l5TxfmqsJbUtAkqCJsrTOHQa",
+    "name": "Dr. Arvind Rao",
+    "accountType": "individual",
+    "category": "sme",
+    "profile": {
+      "interests": []
+    },
+    "roles": [
+      {
+        "$oid": "6adf0bc93bcd5c045c6e4c8b"
+      },
+      {
+        "$oid": "6adf0bc93bcd5c045c6e4c8f"
+      }
+    ],
+    "status": "active",
+    "emailVerified": true,
+    "tokenVersion": {
+      "$numberInt": "0"
+    },
+    "savedContents": [],
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002442035"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002442035"
+      }
+    },
+    "__v": {
+      "$numberInt": "0"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bca3bcd5c045c6e4cb6"
+    },
+    "email": "neha.mehta@demo.bian.local",
+    "passwordHash": "$2b$12$SJpmyqWt.qvdh9W6ioSHOOq3LqaZ6l5TxfmqsJbUtAkqCJsrTOHQa",
+    "name": "Ms. Neha Mehta",
+    "accountType": "individual",
+    "category": "sme",
+    "profile": {
+      "interests": []
+    },
+    "roles": [
+      {
+        "$oid": "6adf0bc93bcd5c045c6e4c8b"
+      },
+      {
+        "$oid": "6adf0bc93bcd5c045c6e4c8f"
+      }
+    ],
+    "status": "active",
+    "emailVerified": true,
+    "tokenVersion": {
+      "$numberInt": "0"
+    },
+    "savedContents": [],
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002442036"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002442036"
+      }
+    },
+    "__v": {
+      "$numberInt": "0"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bca3bcd5c045c6e4cb8"
+    },
+    "email": "kavita.iyer@demo.bian.local",
+    "passwordHash": "$2b$12$SJpmyqWt.qvdh9W6ioSHOOq3LqaZ6l5TxfmqsJbUtAkqCJsrTOHQa",
+    "name": "Dr. Kavita Iyer",
+    "accountType": "individual",
+    "category": "sme",
+    "profile": {
+      "interests": []
+    },
+    "roles": [
+      {
+        "$oid": "6adf0bc93bcd5c045c6e4c8b"
+      },
+      {
+        "$oid": "6adf0bc93bcd5c045c6e4c8f"
+      }
+    ],
+    "status": "active",
+    "emailVerified": true,
+    "tokenVersion": {
+      "$numberInt": "0"
+    },
+    "savedContents": [],
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002442037"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002442037"
+      }
+    },
+    "__v": {
+      "$numberInt": "0"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bca3bcd5c045c6e4cba"
+    },
+    "email": "rohan.kapoor@demo.bian.local",
+    "passwordHash": "$2b$12$SJpmyqWt.qvdh9W6ioSHOOq3LqaZ6l5TxfmqsJbUtAkqCJsrTOHQa",
+    "name": "Mr. Rohan Kapoor",
+    "accountType": "individual",
+    "category": "sme",
+    "profile": {
+      "interests": []
+    },
+    "roles": [
+      {
+        "$oid": "6adf0bc93bcd5c045c6e4c8b"
+      },
+      {
+        "$oid": "6adf0bc93bcd5c045c6e4c8f"
+      }
+    ],
+    "status": "active",
+    "emailVerified": true,
+    "tokenVersion": {
+      "$numberInt": "0"
+    },
+    "savedContents": [],
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002442038"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002442038"
+      }
+    },
+    "__v": {
+      "$numberInt": "0"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0c3c1d541bc7ea5d710b"
+    },
+    "email": "riya@example.com",
+    "passwordHash": "$2b$12$gLxiL67.hB38fl67EKUxW.XDzWZpzRzXHxSvw7HM6TXAixYiwTGZm",
+    "name": "Riya Test",
+    "accountType": "individual",
+    "category": "student",
+    "profile": {
+      "interests": [],
+      "institution": "IIT Madras"
+    },
+    "roles": [
+      {
+        "$oid": "6adf0bc93bcd5c045c6e4c8b"
+      },
+      {
+        "$oid": "6adf0bc93bcd5c045c6e4c91"
+      }
+    ],
+    "status": "active",
+    "emailVerified": true,
+    "tokenVersion": {
+      "$numberInt": "0"
+    },
+    "savedContents": [],
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002556370"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002559290"
+      }
+    },
+    "__v": {
+      "$numberInt": "1"
+    },
+    "approvedAt": {
+      "$date": {
+        "$numberLong": "1793002558019"
+      }
+    },
+    "approvedBy": {
+      "$oid": "6adf0bca3bcd5c045c6e4cad"
+    },
+    "lastLoginAt": {
+      "$date": {
+        "$numberLong": "1793002559290"
+      }
+    }
+  }
+]

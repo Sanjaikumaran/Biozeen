@@ -39,7 +39,7 @@ export function ContentList() {
         <label className="relative">
           <span className="sr-only">Search</span>
           <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-300" />
-          <input value={f.q} onChange={(e) => setF({ q: e.target.value })} placeholder="Search titles…" className="h-10 w-72 rounded-lg border border-ink-300/70 bg-white pl-9 pr-3 text-sm" />
+          <input value={f.q} onChange={(e) => setF({ q: e.target.value })} placeholder="Search titles…" className="h-10 w-72 rounded-lg border border-ink-300/70 bg-card pl-9 pr-3 text-sm" />
         </label>
       </div>
       {loading ? <Loading /> : error ? <ErrorState error={error} onRetry={reload} /> : !data?.items.length ? <Empty title="Nothing here yet" /> : (

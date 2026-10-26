@@ -1,0 +1,162 @@
+[
+  {
+    "_id": {
+      "$oid": "6adf0bc93bcd5c045c6e4c99"
+    },
+    "name": "GMP",
+    "slug": "gmp",
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002441512"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002441512"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bc93bcd5c045c6e4c9a"
+    },
+    "name": "Fermentation",
+    "slug": "fermentation",
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002441513"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002441513"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bc93bcd5c045c6e4c9b"
+    },
+    "name": "Downstream",
+    "slug": "downstream",
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002441513"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002441513"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bc93bcd5c045c6e4c9c"
+    },
+    "name": "Cell Culture",
+    "slug": "cell-culture",
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002441513"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002441513"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bc93bcd5c045c6e4c9d"
+    },
+    "name": "Biologics",
+    "slug": "biologics",
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002441513"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002441513"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bc93bcd5c045c6e4c9e"
+    },
+    "name": "Drug Discovery",
+    "slug": "drug-discovery",
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002441513"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002441513"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bc93bcd5c045c6e4c9f"
+    },
+    "name": "Compliance",
+    "slug": "compliance",
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002441513"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002441513"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bc93bcd5c045c6e4ca0"
+    },
+    "name": "Bioprocess",
+    "slug": "bioprocess",
+    "__v": {
+      "$numberInt": "0"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002441513"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002441513"
+      }
+    }
+  }
+]

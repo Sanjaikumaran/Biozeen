@@ -55,7 +55,7 @@ export function AccessEditor({ value, onChange, errors }: { value: Access; onCha
           <div className="flex max-h-48 flex-wrap gap-1.5 overflow-y-auto">
             {roles.map((r) => {
               const on = value.roles?.includes(r._id)
-              return <button key={r._id} type="button" aria-pressed={on} onClick={() => toggle('roles', r._id)} className={cx('rounded-full border px-2.5 py-1 text-xs font-medium', on ? 'border-brand-600 bg-brand-600 text-white' : 'border-ink-900/15 bg-white text-ink-700')}>{r.displayName}</button>
+              return <button key={r._id} type="button" aria-pressed={on} onClick={() => toggle('roles', r._id)} className={cx('rounded-full border px-2.5 py-1 text-xs font-medium', on ? 'border-brand-600 bg-brand-600 text-white' : 'border-ink-900/15 bg-card text-ink-700')}>{r.displayName}</button>
             })}
           </div>
           {errors?.['access.roles'] && <p className="mt-1 text-xs text-red-600">{errors['access.roles']}</p>}
@@ -67,7 +67,7 @@ export function AccessEditor({ value, onChange, errors }: { value: Access; onCha
           <div className="flex max-h-48 flex-wrap gap-1.5 overflow-y-auto">
             {organizations.map((o) => {
               const on = value.organizations?.includes(o._id)
-              return <button key={o._id} type="button" aria-pressed={on} onClick={() => toggle('organizations', o._id)} className={cx('rounded-full border px-2.5 py-1 text-xs font-medium', on ? 'border-brand-600 bg-brand-600 text-white' : 'border-ink-900/15 bg-white text-ink-700')}>{o.name}</button>
+              return <button key={o._id} type="button" aria-pressed={on} onClick={() => toggle('organizations', o._id)} className={cx('rounded-full border px-2.5 py-1 text-xs font-medium', on ? 'border-brand-600 bg-brand-600 text-white' : 'border-ink-900/15 bg-card text-ink-700')}>{o.name}</button>
             })}
           </div>
           {errors?.['access.organizations'] && <p className="mt-1 text-xs text-red-600">{errors['access.organizations']}</p>}

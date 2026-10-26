@@ -1,0 +1,203 @@
+[
+  {
+    "_id": {
+      "$oid": "6adf0bca3bcd5c045c6e4cb3"
+    },
+    "user": {
+      "$oid": "6adf0bca3bcd5c045c6e4cb2"
+    },
+    "headline": "Bioprocess Expert",
+    "bio": "Profile summary to be completed by the expert.",
+    "expertType": "industry_expert",
+    "domain": "Biopharma",
+    "skills": [
+      "Downstream",
+      "Process Dev"
+    ],
+    "expertiseAreas": [
+      "Bioprocess development",
+      "Scale-up"
+    ],
+    "yearsExperience": {
+      "$numberInt": "15"
+    },
+    "location": "Bangalore, India",
+    "visibility": "public",
+    "shareEmail": false,
+    "mentoringAvailable": true,
+    "status": "approved",
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002442035"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002442035"
+      }
+    },
+    "__v": {
+      "$numberInt": "0"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bca3bcd5c045c6e4cb5"
+    },
+    "user": {
+      "$oid": "6adf0bca3bcd5c045c6e4cb4"
+    },
+    "headline": "Research Scientist",
+    "bio": "Profile summary to be completed by the expert.",
+    "expertType": "research_expert",
+    "domain": "Drug Discovery",
+    "skills": [
+      "Immunology",
+      "Cell Culture"
+    ],
+    "expertiseAreas": [
+      "Assay development"
+    ],
+    "yearsExperience": {
+      "$numberInt": "12"
+    },
+    "location": "Hyderabad, India",
+    "visibility": "public",
+    "shareEmail": false,
+    "mentoringAvailable": false,
+    "status": "approved",
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002442036"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002442036"
+      }
+    },
+    "__v": {
+      "$numberInt": "0"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bca3bcd5c045c6e4cb7"
+    },
+    "user": {
+      "$oid": "6adf0bca3bcd5c045c6e4cb6"
+    },
+    "headline": "Regulatory Consultant",
+    "bio": "Profile summary to be completed by the expert.",
+    "expertType": "consultant",
+    "domain": "Global Regulatory",
+    "skills": [
+      "GMP",
+      "Compliance"
+    ],
+    "expertiseAreas": [
+      "Regulatory submissions"
+    ],
+    "yearsExperience": {
+      "$numberInt": "10"
+    },
+    "location": "Mumbai, India",
+    "visibility": "public",
+    "shareEmail": false,
+    "mentoringAvailable": false,
+    "status": "approved",
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002442037"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002442037"
+      }
+    },
+    "__v": {
+      "$numberInt": "0"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bca3bcd5c045c6e4cb9"
+    },
+    "user": {
+      "$oid": "6adf0bca3bcd5c045c6e4cb8"
+    },
+    "headline": "GMP Trainer",
+    "bio": "Profile summary to be completed by the expert.",
+    "expertType": "trainer",
+    "domain": "Quality",
+    "skills": [
+      "GMP",
+      "Validation"
+    ],
+    "expertiseAreas": [
+      "Quality systems training"
+    ],
+    "yearsExperience": {
+      "$numberInt": "18"
+    },
+    "location": "Chennai, India",
+    "visibility": "members",
+    "shareEmail": false,
+    "mentoringAvailable": false,
+    "status": "approved",
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002442038"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002442038"
+      }
+    },
+    "__v": {
+      "$numberInt": "0"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf0bca3bcd5c045c6e4cbb"
+    },
+    "user": {
+      "$oid": "6adf0bca3bcd5c045c6e4cba"
+    },
+    "headline": "Startup Mentor",
+    "bio": "Profile summary to be completed by the expert.",
+    "expertType": "mentor",
+    "domain": "Innovation",
+    "skills": [
+      "Fundraising",
+      "Go-to-market"
+    ],
+    "expertiseAreas": [
+      "Biotech venture building"
+    ],
+    "yearsExperience": {
+      "$numberInt": "20"
+    },
+    "location": "Pune, India",
+    "visibility": "members",
+    "shareEmail": false,
+    "mentoringAvailable": true,
+    "status": "approved",
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793002442038"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793002442038"
+      }
+    },
+    "__v": {
+      "$numberInt": "0"
+    }
+  }
+]
