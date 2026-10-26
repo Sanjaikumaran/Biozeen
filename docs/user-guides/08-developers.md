@@ -23,7 +23,11 @@ Shows how many features are switched off or limited, the server's environment se
 
 ![Feature control](../presentation/screens/dev-features.png)
 
-Every screen and feature is listed under four groups: **Public website**, **Member portal**, **Across the platform** and **Admin workspace**. Features are nested under the screen they belong to.
+Every screen and feature is listed under six groups: **Public website**, **Member portal**, **Across the platform**, **Publishing workflow**, **Page builder** and **Admin workspace**. Features are nested under the screen they belong to.
+
+- **Publishing workflow** covers each status an editor can choose (Drafts, Review & approval, Scheduled publishing, Unpublish, Archive), expiry dates, the editor's Preview tab, SEO settings and homepage featuring. *Published* is always available. Switching off Review & approval also stops members posting opportunities, because their posts need review.
+- **Page builder** covers each family of blocks: media, file downloads, layout, call-to-action, related content and inline feedback. Switched-off blocks disappear from the editor's block menu and from published pages; existing blocks are kept and come back when the feature is switched on.
+- **Admin workspace** includes each admin screen plus finer tools: overview analytics, CSV exports, registration lists, notes and assignment on requests, replies to members, feedback by member and the alumni database.
 
 For each feature you can:
 

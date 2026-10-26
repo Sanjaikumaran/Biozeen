@@ -5,7 +5,7 @@ import { audit } from "../lib/audit.js";
 import { cleanBlocks, mediaIdsInBlocks, safeUrl } from "../lib/blocks.js";
 import { HttpError, isId, notFound, oid, paged, pagination, parse, searchRegex, slugify, str, type Filter } from "../lib/http.js";
 import { PERMISSIONS } from "../lib/permissions.js";
-import { accessInput, applyStatus, dateInput, mediaIdFromUrl, syncMediaLinks } from "../lib/publishing.js";
+import { accessInput, applyStatus, dateInput, dropDisabledFields, mediaIdFromUrl, syncMediaLinks } from "../lib/publishing.js";
 import { publicForm, resolveBlocks } from "../lib/resolve.js";
 import { requireAuth, requirePermission } from "../middleware/auth.js";
 import { PUBLICATION_STATUSES } from "../models/common.js";
@@ -242,10 +242,10 @@ async function uniqueCourseSlug(wanted: string, excludeId?: unknown) {
 }
 
 adminCoursesRouter.post("/", async (req, res) => {
-  const data = parse(courseInput, req.body);
+  const data = await dropDisabledFields(parse(courseInput, req.body), req.user!);
   const doc = new Course({ author: req.user!._id, slug: await uniqueCourseSlug(data.slug || data.title) });
   applyCourse(doc, data);
-  applyStatus(doc, data.status, req.user!);
+  await applyStatus(doc, data.status, req.user!);
   await doc.save();
   await afterCourseSave(doc);
   await audit(req, "course.create", "Course", doc._id, `Created course "${doc.title}"`);
@@ -255,10 +255,10 @@ adminCoursesRouter.post("/", async (req, res) => {
 adminCoursesRouter.put("/:id", async (req, res) => {
   const doc = await Course.findById(oid(String(req.params.id)));
   if (!doc) throw notFound("Course");
-  const data = parse(courseInput, req.body);
+  const data = await dropDisabledFields(parse(courseInput, req.body), req.user!);
   if (data.slug && data.slug !== doc.slug) doc.slug = await uniqueCourseSlug(data.slug, doc._id);
   applyCourse(doc, data);
-  applyStatus(doc, data.status, req.user!);
+  await applyStatus(doc, data.status, req.user!);
   await doc.save();
   await afterCourseSave(doc);
   await audit(req, "course.update", "Course", doc._id, `Updated course "${doc.title}" (${doc.status})`);

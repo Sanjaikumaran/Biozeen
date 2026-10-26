@@ -6,7 +6,9 @@ import { useEffect, useRef, useState } from 'react'
 import { api, type Paged } from '../../lib/api'
 import { label } from '../../lib/format'
 import type { Block, BlockType, ContentCard } from '../../lib/types'
-import { Button, Card, Checkbox, Input, Select, Textarea } from '../ui'
+import { Badge, Button, Card, Checkbox, IconButton, Input, Select, Textarea } from '../ui'
+import { BLOCK_FEATURE } from '../../lib/blockFeatures'
+import { useFeatures } from '../../lib/features'
 import { cx } from '../../lib/cx'
 import type { MediaAsset } from '../../lib/media'
 import { MediaPicker } from './MediaPicker'
@@ -269,6 +271,8 @@ function BlockFields({ block, update, forms }: { block: Block; update: (d: Recor
 
 export function BlockEditor({ blocks, onChange, forms }: { blocks: Block[]; onChange: (b: Block[]) => void; forms: { _id: string; title: string }[] }) {
   const [adding, setAdding] = useState<number | null>(null)
+  const on = useFeatures()
+  const palette = PALETTE.filter((p) => on(BLOCK_FEATURE[p.type]))
   const insert = (type: BlockType, at: number) => {
     const next = [...blocks]
     next.splice(at, 0, { id: newId(), type, data: structuredClone(DEFAULTS[type]) })
@@ -286,7 +290,7 @@ export function BlockEditor({ blocks, onChange, forms }: { blocks: Block[]; onCh
       <Card className="p-3">
         <div className="mb-2 flex items-center justify-between"><p className="text-sm font-semibold">Add a block</p><button type="button" className="text-sm text-ink-500" onClick={() => setAdding(null)}>Cancel</button></div>
         <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3 lg:grid-cols-4">
-          {PALETTE.map((p) => (
+          {palette.map((p) => (
             <button key={p.type} type="button" onClick={() => insert(p.type, at)} className="flex items-center gap-2 rounded-lg border border-ink-900/8 px-3 py-2 text-left text-sm hover:border-brand-300 hover:bg-brand-50">
               <p.icon className="size-4 text-brand-600" />{p.label}
             </button>
@@ -312,11 +316,11 @@ export function BlockEditor({ blocks, onChange, forms }: { blocks: Block[]; onCh
             <Card className="p-3">
               <div className="mb-3 flex items-center gap-2">
                 <meta.icon className="size-4 text-brand-600" />
-                <span className="flex-1 text-xs font-semibold uppercase tracking-wider text-ink-500">{meta.label}</span>
-                <button type="button" aria-label="Move up" disabled={i === 0} onClick={() => move(i, -1)} className="rounded p-1 text-ink-500 hover:bg-ink-900/5 disabled:opacity-30"><ArrowUp className="size-4" /></button>
-                <button type="button" aria-label="Move down" disabled={i === blocks.length - 1} onClick={() => move(i, 1)} className="rounded p-1 text-ink-500 hover:bg-ink-900/5 disabled:opacity-30"><ArrowDown className="size-4" /></button>
-                <button type="button" aria-label="Duplicate" onClick={() => { const next = [...blocks]; next.splice(i + 1, 0, { ...structuredClone(b), id: newId() }); onChange(next) }} className="rounded p-1 text-ink-500 hover:bg-ink-900/5"><Copy className="size-4" /></button>
-                <button type="button" aria-label="Delete block" onClick={() => onChange(blocks.filter((x) => x.id !== b.id))} className="rounded p-1 text-ink-500 hover:bg-red-50 hover:text-red-600"><Trash2 className="size-4" /></button>
+                <span className="flex-1 text-xs font-semibold uppercase tracking-wider text-ink-500">{meta.label}{!on(BLOCK_FEATURE[b.type]) && <Badge tone="amber" className="ml-2 normal-case tracking-normal">Hidden: block type switched off</Badge>}</span>
+                <IconButton icon={ArrowUp} label="Move up" disabled={i === 0} onClick={() => move(i, -1)} />
+                <IconButton icon={ArrowDown} label="Move down" disabled={i === blocks.length - 1} onClick={() => move(i, 1)} />
+                <IconButton icon={Copy} tone="brand" label="Duplicate" onClick={() => { const next = [...blocks]; next.splice(i + 1, 0, { ...structuredClone(b), id: newId() }); onChange(next) }} />
+                <IconButton icon={Trash2} label="Delete block" tone="danger" onClick={() => onChange(blocks.filter((x) => x.id !== b.id))} />
               </div>
               <BlockFields block={b} forms={forms} update={(data) => onChange(blocks.map((x) => (x.id === b.id ? { ...x, data } : x)))} />
             </Card>

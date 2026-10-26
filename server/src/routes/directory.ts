@@ -214,7 +214,7 @@ orgsAdmin.get("/", async (req, res) => {
   res.json(paged(items, total, page, limit));
 });
 
-orgsAdmin.get("/export.csv", async (req, res) => {
+orgsAdmin.get("/export.csv", requireFeature("admin.exports"), async (req, res) => {
   const items = await Organization.find(orgFilter(req.query)).sort({ name: 1 }).lean();
   const rows = items.map((o) => ({ name: o.name, orgType: o.orgType, partnerTier: o.partnerTier, contactName: o.contact?.name, contactEmail: o.contact?.email, website: o.website, location: o.location, status: o.status, visibility: o.visibility, createdAt: o.createdAt }));
   await audit(req, "export", "Organization", null, `Exported ${rows.length} organizations`);
@@ -281,7 +281,7 @@ expertsAdmin.get("/", async (req, res) => {
   res.json(paged(items, total, page, limit));
 });
 
-expertsAdmin.get("/export.csv", async (req, res) => {
+expertsAdmin.get("/export.csv", requireFeature("admin.exports"), async (req, res) => {
   const items = await Expert.find(await expertFilter(req.query)).populate<{ user: { name: string; email: string } }>("user", "name email").lean();
   const rows = items.map((e) => ({ name: e.user?.name, email: e.user?.email, headline: e.headline, expertType: e.expertType, domain: e.domain, skills: e.skills.join("; "), yearsExperience: e.yearsExperience, location: e.location, visibility: e.access?.visibility, status: e.status }));
   await audit(req, "export", "Expert", null, `Exported ${rows.length} experts`);

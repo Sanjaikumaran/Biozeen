@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router, type NextFunction, type Request, type Response } from "express";
 import { z } from "zod";
 import { audit } from "../lib/audit.js";
 import { safeUrl } from "../lib/blocks.js";
@@ -16,7 +16,7 @@ import { CATEGORY_ROLE } from "./auth.js";
 const NOT_DEVELOPER: Filter = { isDeveloper: { $ne: true } };
 import { notify } from "../lib/notify.js";
 import { disconnectUser } from "../lib/realtime.js";
-import { requireFeature } from "../lib/features.js";
+import { featureOff, isFeatureOn, requireFeature } from "../lib/features.js";
 
 export const adminRouter = Router();
 adminRouter.use(requirePermission(PERMISSIONS.adminAccess));
@@ -48,6 +48,16 @@ adminRouter.get("/stats", async (req, res) => {
     return { total, recent: cur, change: delta(cur, prev) };
   }
 
+  const badges = await Promise.all([
+    User.countDocuments({ status: "pending", ...NOT_DEVELOPER }),
+    Content.countDocuments({ status: "pending_review" }),
+    ContactRequest.countDocuments({ status: "new" }),
+  ]);
+  // With overview analytics switched off only the sidebar badge counts are returned.
+  if (!(await isFeatureOn("admin.analytics", req.user))) {
+    res.json({ days, analytics: false, pendingApprovals: badges[0], pendingContent: badges[1], newRequests: badges[2] });
+    return;
+  }
   const [members, organizations, experts, opportunities, collaborations, trainingRequests, pendingApprovals, pendingContent, newRequests] = await Promise.all([
     metric(User, { status: "active", ...NOT_DEVELOPER }),
     metric(Organization, { status: "approved" }),
@@ -96,6 +106,7 @@ adminRouter.get("/stats", async (req, res) => {
 
   res.json({
     days,
+    analytics: true,
     members,
     organizations,
     experts,
@@ -142,7 +153,13 @@ function userFilter(query: Record<string, unknown>) {
   return f;
 }
 
-usersAdmin.get("/", async (req, res) => {
+/** The member list serves both the Members and the Member approvals screens. */
+async function membersOrApprovals(req: Request, _res: Response, next: NextFunction) {
+  if ((await isFeatureOn("admin.members", req.user)) || (await isFeatureOn("admin.approvals", req.user))) return next();
+  throw featureOff();
+}
+
+usersAdmin.get("/", membersOrApprovals, async (req, res) => {
   const { page, limit, skip } = pagination(req, 20);
   const f = userFilter(req.query);
   const sortKey = ["name", "createdAt", "lastLoginAt"].includes(String(req.query.sort)) ? String(req.query.sort) : "createdAt";
@@ -153,7 +170,7 @@ usersAdmin.get("/", async (req, res) => {
   res.json(paged(items, total, page, limit));
 });
 
-usersAdmin.get("/export.csv", async (req, res) => {
+usersAdmin.get("/export.csv", requireFeature("admin.members", "admin.exports"), async (req, res) => {
   const items = await User.find(userFilter(req.query)).populate<{ organization: { name: string } }>("organization", "name").populate<{ roles: { name: string }[] }>("roles", "name").lean();
   const rows = items.map((u) => ({
     name: u.name,
@@ -171,7 +188,7 @@ usersAdmin.get("/export.csv", async (req, res) => {
   res.type("text/csv").attachment("members.csv").send(toCsv(rows, ["name", "email", "category", "organization", "institution", "graduationYear", "roles", "status", "emailVerified", "createdAt"]));
 });
 
-usersAdmin.get("/:id", async (req, res) => {
+usersAdmin.get("/:id", membersOrApprovals, async (req, res) => {
   const user = await User.findOne({ _id: oid(String(req.params.id)), ...NOT_DEVELOPER }).populate("roles", "name displayName").populate("organization", "name slug").lean();
   if (!user) throw notFound("Member");
   const [expert, enrollments, requests] = await Promise.all([
@@ -204,7 +221,7 @@ const userUpdate = z.object({
   emailVerified: z.boolean().optional(),
 });
 
-usersAdmin.patch("/:id", async (req, res) => {
+usersAdmin.patch("/:id", requireFeature("admin.members"), async (req, res) => {
   const data = parse(userUpdate, req.body);
   const id = String(req.params.id);
   const user = await User.findOne({ _id: oid(id), ...NOT_DEVELOPER });
@@ -235,7 +252,7 @@ usersAdmin.patch("/:id", async (req, res) => {
   res.json(user);
 });
 
-usersAdmin.post("/:id/approve", async (req, res) => {
+usersAdmin.post("/:id/approve", requireFeature("admin.approvals"), async (req, res) => {
   const { roles } = parse(z.object({ roles: z.array(z.string().refine(isId)).optional() }), req.body ?? {});
   const user = await User.findOne({ _id: oid(String(req.params.id)), ...NOT_DEVELOPER });
   if (!user) throw notFound("Member");
@@ -258,7 +275,7 @@ usersAdmin.post("/:id/approve", async (req, res) => {
   res.json(user);
 });
 
-usersAdmin.post("/:id/reject", async (req, res) => {
+usersAdmin.post("/:id/reject", requireFeature("admin.approvals"), async (req, res) => {
   const user = await User.findOne({ _id: oid(String(req.params.id)), ...NOT_DEVELOPER });
   if (!user) throw notFound("Member");
   if (user.status !== "pending") throw new HttpError(400, "Only pending registrations can be rejected");
@@ -272,7 +289,7 @@ usersAdmin.post("/:id/reject", async (req, res) => {
 
 const rolesAdmin = Router();
 
-rolesAdmin.get("/", requirePermission(PERMISSIONS.membersManage), async (_req, res) => {
+rolesAdmin.get("/", requirePermission(PERMISSIONS.membersManage), requireFeature("admin.roles"), async (_req, res) => {
   const roles = await Role.find().sort({ isSystem: -1, displayName: 1 }).lean();
   const counts = await User.aggregate<{ _id: unknown; n: number }>([{ $unwind: "$roles" }, { $group: { _id: "$roles", n: { $sum: 1 } } }]);
   const byId = new Map(counts.map((c) => [String(c._id), c.n]));
@@ -289,7 +306,7 @@ const roleInput = z.object({
   permissions: z.array(z.enum(ALL_PERMISSIONS as [string, ...string[]])).default([]),
 });
 
-rolesAdmin.post("/", requirePermission(PERMISSIONS.rolesManage), async (req, res) => {
+rolesAdmin.post("/", requirePermission(PERMISSIONS.rolesManage), requireFeature("admin.roles"), async (req, res) => {
   const data = parse(roleInput, req.body);
   if (await Role.exists({ name: data.name })) throw new HttpError(409, "A role with this name exists", { name: "Already in use" });
   const role = await Role.create(data as Filter);
@@ -297,7 +314,7 @@ rolesAdmin.post("/", requirePermission(PERMISSIONS.rolesManage), async (req, res
   res.status(201).json(role);
 });
 
-rolesAdmin.put("/:id", requirePermission(PERMISSIONS.rolesManage), async (req, res) => {
+rolesAdmin.put("/:id", requirePermission(PERMISSIONS.rolesManage), requireFeature("admin.roles"), async (req, res) => {
   const data = parse(roleInput, req.body);
   const role = await Role.findById(oid(String(req.params.id)));
   if (!role) throw notFound("Role");
@@ -310,7 +327,7 @@ rolesAdmin.put("/:id", requirePermission(PERMISSIONS.rolesManage), async (req, r
   res.json(role);
 });
 
-rolesAdmin.delete("/:id", requirePermission(PERMISSIONS.rolesManage), async (req, res) => {
+rolesAdmin.delete("/:id", requirePermission(PERMISSIONS.rolesManage), requireFeature("admin.roles"), async (req, res) => {
   const role = await Role.findById(oid(String(req.params.id)));
   if (!role) throw notFound("Role");
   if (role.isSystem) throw new HttpError(400, "System roles cannot be deleted");
@@ -412,7 +429,7 @@ const settingsInput = z.object({
   social: z.object({ linkedin: z.string().max(300).optional(), twitter: z.string().max(300).optional(), youtube: z.string().max(300).optional() }).optional(),
 });
 
-adminRouter.put("/settings", requirePermission(PERMISSIONS.settingsManage), async (req, res) => {
+adminRouter.put("/settings", requirePermission(PERMISSIONS.settingsManage), requireFeature("admin.settings"), async (req, res) => {
   const data = parse(settingsInput, req.body);
   data.hero.videoUrl = safeUrl(data.hero.videoUrl);
   if (data.social) for (const k of ["linkedin", "twitter", "youtube"] as const) data.social[k] = safeUrl(data.social[k]);

@@ -1,16 +1,17 @@
 import { ArrowLeft, Eye, Plus, Save, Trash2 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import { AccessEditor, AudienceSummary, PublishPanel, useLookups, type PublishState } from '../../components/admin/Publishing'
+import { AccessEditor, AudienceSummary, PublishPanel, useDefaultStatus, useLookups, useStatuses, type PublishState } from '../../components/admin/Publishing'
 import { BlockEditor } from '../../components/admin/BlockEditor'
 import { MediaPicker } from '../../components/admin/MediaPicker'
 import { BlockRenderer } from '../../components/BlockRenderer'
-import { Alert, Badge, Button, Card, Checkbox, Empty, ErrorState, Input, LinkButton, Loading, PageHeader, Pagination, SearchInput, Select, StatusBadge, Tabs, Textarea, useFeedback } from '../../components/ui'
+import { Alert, Badge, Button, Card, Checkbox, Empty, ErrorState, Input, LinkButton, Loading, PageHeader, Pagination, RowActions, SearchInput, Select, StatusBadge, Tabs, Textarea, useFeedback } from '../../components/ui'
+import { useFeatures } from '../../lib/features'
 import { ApiError, api, type Paged } from '../../lib/api'
 import { useAuth } from '../../lib/auth'
 import { contentHref, formatDate, label, timeAgo } from '../../lib/format'
 import { useAsync, useDebounced, useDocumentTitle, useQueryState } from '../../lib/hooks'
-import type { Access, Block, ContentCard, PublicationStatus, Ref } from '../../lib/types'
+import type { Access, Block, ContentCard, Ref } from '../../lib/types'
 
 const GROUPS: Record<string, { title: string; types: string[] }> = {
   portfolio: { title: 'Portfolio', types: ['page', 'service', 'project', 'case_study'] },
@@ -18,11 +19,13 @@ const GROUPS: Record<string, { title: string; types: string[] }> = {
   knowledge: { title: 'Knowledge Hub', types: ['article', 'blog', 'tutorial'] },
   announcement: { title: 'Announcements', types: ['announcement'] },
 }
-const STATUSES: PublicationStatus[] = ['draft', 'pending_review', 'approved', 'scheduled', 'published', 'unpublished', 'archived']
 
 export function ContentList() {
   const [f, setF] = useQueryState({ type: 'opportunity', status: '', q: '', page: '1' })
   const group = GROUPS[f.type] ?? GROUPS.opportunity
+  const statuses = useStatuses()
+  const { can } = useAuth()
+  const { toast, confirm } = useFeedback()
   useDocumentTitle(group.title)
   const q = useDebounced(f.q)
   const { data, error, loading, reload } = useAsync(() => api.get<Paged<ContentCard>>('/admin/contents', { type: f.type, status: f.status, q, page: f.page }), [f.type, f.status, q, f.page])
@@ -34,7 +37,7 @@ export function ContentList() {
         subtitle="Create, review and publish content. Each item controls its own audience."
         actions={group.types.length === 1 ? <LinkButton to={`/admin/content/new?type=${group.types[0]}`}><Plus className="size-4" />New {label(group.types[0]).toLowerCase()}</LinkButton> : group.types.map((t) => <LinkButton key={t} variant="outline" to={`/admin/content/new?type=${t}`}><Plus className="size-4" />{label(t)}</LinkButton>)}
       />
-      <Tabs value={f.status} onChange={(status) => setF({ status })} tabs={[{ value: '', label: 'All' }, ...STATUSES.map((s) => ({ value: s, label: label(s) }))]} />
+      <Tabs value={f.status} onChange={(status) => setF({ status })} tabs={[{ value: '', label: 'All' }, ...statuses.map((s) => ({ value: s, label: label(s) }))]} />
       <div className="my-4 flex flex-wrap items-center gap-3">
         <SearchInput value={f.q} onChange={(q) => setF({ q })} placeholder="Search titles…" />
       </div>
@@ -56,7 +59,7 @@ export function ContentList() {
                     <td className="px-4 py-3 text-xs"><AudienceSummary access={c.access} /></td>
                     <td className="px-4 py-3"><StatusBadge status={c.status} />{c.status === 'scheduled' && c.publishAt && <span className="block text-xs text-ink-500">{formatDate(c.publishAt)}</span>}</td>
                     <td className="px-4 py-3 text-xs text-ink-500">{timeAgo(c.updatedAt)}</td>
-                    <td className="px-4 py-3 text-right"><Link to={contentHref(c)} target="_blank" className="text-xs font-semibold text-brand-600">Preview</Link></td>
+                    <td className="px-4 py-3"><RowActions label={c.title} viewTo={contentHref(c)} editTo={`/admin/content/${c._id}`} remove={can('content.publish') ? async () => { if (await confirm({ title: 'Delete this item?', message: <>“{c.title}” will be permanently deleted. Consider archiving instead to keep its history.</>, confirmLabel: 'Delete', danger: true })) { try { await api.del(`/admin/contents/${c._id}`); toast('Deleted'); reload() } catch (e) { toast((e as Error).message, 'error') } } } : undefined} removeUnavailable="Deleting requires publishing rights" /></td>
                   </tr>
                 ))}
               </tbody>
@@ -89,10 +92,10 @@ interface ContentForm {
   publish: PublishState
 }
 
-const EMPTY = (type: string): ContentForm => ({
+const EMPTY = (type: string, status: PublishState['status'] = 'draft'): ContentForm => ({
   type, title: '', slug: '', summary: '', featuredImage: '', blocks: [], categories: [], tags: [], featured: false, order: 0, seo: {},
   access: { visibility: type === 'opportunity' ? 'authenticated' : 'public', roles: [], organizations: [] },
-  feedbackForm: null, opportunity: {}, knowledge: {}, portfolio: {}, publish: { status: 'draft' },
+  feedbackForm: null, opportunity: {}, knowledge: {}, portfolio: {}, publish: { status },
 })
 
 const KNOWLEDGE_SECTIONS = ['industry_insights', 'research_repository', 'regulatory_corner', 'learning_center', 'funding_opportunities', 'innovation_center', 'templates_downloads', 'success_stories']
@@ -106,6 +109,8 @@ export function ContentEditor() {
   const { toast, confirm } = useFeedback()
   const { can } = useAuth()
   const { forms } = useLookups()
+  const on = useFeatures()
+  const defaultStatus = useDefaultStatus()
   const { data: tax } = useAsync(() => api.get<{ categories: Ref[]; tags: Ref[] }>('/contents/taxonomy'), [])
   const { data: orgs } = useAsync(() => api.get<{ organizations: { _id: string; name: string }[] }>('/admin/lookups'), [])
   const existing = useAsync(() => (isNew ? Promise.resolve(null) : api.get<ContentCard & { blocks: Block[]; seo: ContentForm['seo']; feedbackForm?: string; order: number }>(`/admin/contents/${id}`)), [id])
@@ -121,7 +126,7 @@ export function ContentEditor() {
   const [syncedSource, setSyncedSource] = useState<unknown>(null)
   if (formSource && formSource !== syncedSource) {
     setSyncedSource(formSource)
-    if (isNew) setForm(EMPTY(params.get('type') ?? 'article'))
+    if (isNew) setForm(EMPTY(params.get('type') ?? 'article', defaultStatus))
     else if (existing.data) {
       const c = existing.data
       const org = c.opportunity?.organization
@@ -222,9 +227,9 @@ export function ContentEditor() {
             <Input label="Title" required value={form.title} onChange={(e) => update({ title: e.target.value })} error={errors.title} />
             <Textarea label="Summary" value={form.summary} onChange={(e) => update({ summary: e.target.value })} rows={2} hint="Shown on cards and in search results" error={errors.summary} />
           </Card>
-          <Tabs value={tab} onChange={setTab} tabs={[{ value: 'content', label: 'Page builder' }, { value: 'details', label: 'Details & SEO' }, { value: 'preview', label: 'Preview' }]} />
+          <Tabs value={tab} onChange={setTab} tabs={[{ value: 'content', label: 'Page builder' }, { value: 'details', label: on('publishing.seo') ? 'Details & SEO' : 'Details' }, ...(on('publishing.preview') ? [{ value: 'preview' as const, label: 'Preview' }] : [])]} />
           {tab === 'content' && <BlockEditor blocks={form.blocks} onChange={(blocks) => update({ blocks })} forms={forms} />}
-          {tab === 'preview' && (
+          {tab === 'preview' && on('publishing.preview') && (
             <Card className="p-6">
               <p className="mb-4 text-xs font-semibold uppercase tracking-wider text-ink-500">Preview — renders exactly as published (feedback blocks are inactive until saved)</p>
               <h1 className="text-3xl font-bold">{form.title || 'Untitled'}</h1>
@@ -272,13 +277,13 @@ export function ContentEditor() {
                 {form.featuredImage && <img src={form.featuredImage} alt="" className="max-h-40 rounded-lg" />}
               </div>
               <Input label="URL slug" value={form.slug} onChange={(e) => update({ slug: e.target.value })} hint="Leave blank to generate from the title" />
-              <div className="grid gap-4 sm:grid-cols-2">
+              {on('publishing.seo') && <><div className="grid gap-4 sm:grid-cols-2">
                 <Input label="SEO title" value={form.seo.title ?? ''} onChange={(e) => update({ seo: { ...form.seo, title: e.target.value } })} />
                 <Input label="SEO description" value={form.seo.description ?? ''} onChange={(e) => update({ seo: { ...form.seo, description: e.target.value } })} />
               </div>
-              <Checkbox label="Ask search engines not to index this page" checked={!!form.seo.noIndex} onChange={(e) => update({ seo: { ...form.seo, noIndex: e.target.checked } })} />
+              <Checkbox label="Ask search engines not to index this page" checked={!!form.seo.noIndex} onChange={(e) => update({ seo: { ...form.seo, noIndex: e.target.checked } })} /></>}
               <div className="grid gap-4 sm:grid-cols-2">
-                <Checkbox label="Feature on the homepage" checked={form.featured} onChange={(e) => update({ featured: e.target.checked })} />
+                {on('publishing.featured') && <Checkbox label="Feature on the homepage" checked={form.featured} onChange={(e) => update({ featured: e.target.checked })} />}
                 <Input label="Sort order" type="number" value={form.order} onChange={(e) => update({ order: Number(e.target.value) })} />
               </div>
             </Card>

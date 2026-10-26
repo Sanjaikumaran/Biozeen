@@ -100,6 +100,24 @@
   --brand-l-50: #fcf1ec; --brand-l-100: #f7ddd1; --brand-l-200: #eebba3; --brand-l-300: #e2916d; --brand-l-500: #b9532b;
   --brand-l-600: #994322; --brand-l-700: #7a361c; --brand-l-800: #5e2a16; --brand-l-900: #401c0e;
 }
+[data-accent="custom"] {
+  /* A colour the user picked (set as --custom-base on the element); every shade is derived from it.
+     Where relative colours are supported the base is kept dark enough for white text. */
+  --custom-600: var(--custom-base, #136445);
+  --hl-500: color-mix(in oklab, var(--custom-600) 50%, white);
+  --brand-l-50: color-mix(in oklab, var(--custom-600) 7%, white); --brand-l-100: color-mix(in oklab, var(--custom-600) 17%, white);
+  --brand-l-200: color-mix(in oklab, var(--custom-600) 36%, white); --brand-l-300: color-mix(in oklab, var(--custom-600) 62%, white);
+  --brand-l-500: color-mix(in oklab, var(--custom-600) 84%, white); --brand-l-600: var(--custom-600);
+  --brand-l-700: color-mix(in oklab, var(--custom-600) 78%, black); --brand-l-800: color-mix(in oklab, var(--custom-600) 60%, black);
+  --brand-l-900: color-mix(in oklab, var(--custom-600) 42%, black);
+  --hl-400: color-mix(in oklab, var(--hl-500) 70%, white); --hl-600: color-mix(in oklab, var(--hl-500) 85%, black);
+}
+@supports (color: oklch(from red l c h)) {
+  [data-accent="custom"] {
+    --custom-600: oklch(from var(--custom-base, #136445) clamp(0.3, l, 0.5) c h);
+    --hl-500: oklch(from var(--custom-base, #136445) 0.8 clamp(0.08, c, 0.17) h);
+  }
+}
 
 /* Light mode. Also re-applied on dark-green surfaces (hero, sidebars), which look the same in both modes. */
 [data-accent], .hero-bg, .on-brand {
@@ -147,3 +165,59 @@
 .drawer-panel { animation: drawer-in 0.22s cubic-bezier(0.2, 0.8, 0.2, 1); }
 .drawer-backdrop { animation: backdrop-in 0.18s ease-out; }
 @media (prefers-reduced-motion: reduce) { .drawer-panel, .drawer-backdrop { animation: none; } }
+
+/* Data-visualisation palette: a fixed, colour-blind-checked categorical order, independent of the
+   theme accent so charts read the same in every theme. Dark mode uses the same hues stepped for
+   the dark surface. */
+:root {
+  --viz-1: #2a78d6;
+  --viz-2: #eb6834;
+  --viz-3: #1baf7a;
+  --viz-4: #eda100;
+  --viz-5: #e87ba4;
+  --viz-6: #008300;
+  --viz-7: #6250d6;
+  --viz-8: #e34948;
+}
+[data-accent][data-mode="dark"] {
+  --viz-1: #3987e5;
+  --viz-2: #d95926;
+  --viz-3: #199e70;
+  --viz-4: #c98500;
+  --viz-5: #d55181;
+  --viz-6: #008300;
+  --viz-7: #9085e9;
+  --viz-8: #e66767;
+}
+
+/* Chart entrance: bars grow from the baseline, lines and areas fade in. */
+@keyframes viz-grow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+@keyframes viz-fade { from { opacity: 0; } to { opacity: 1; } }
+.viz-grow { transform-box: fill-box; transform-origin: bottom; animation: viz-grow 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.viz-fade { animation: viz-fade 0.7s ease-out both; }
+@media (prefers-reduced-motion: reduce) { .viz-grow, .viz-fade { animation: none; } }
+
+/* Selects: one chevron, inset from the edge, instead of each browser's native arrow. Padding on
+   the right is set by the Select component (pr-9). */
+@layer base {
+  select:not([multiple]):not([size]) {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238d9aab' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1rem;
+    cursor: pointer;
+  }
+  select:disabled { cursor: not-allowed; }
+}
+
+/* Theme changes crossfade instead of snapping: inside theme previews always, and across the whole
+   page for a moment after the theme is applied (lib/theme.tsx adds .theme-switching). */
+.swatch { transition: border-color 0.2s ease, box-shadow 0.2s ease; }
+.theme-fade, .theme-fade *,
+.theme-switching, .theme-switching *, .theme-switching *::before, .theme-switching *::after {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, fill 0.3s ease, stroke 0.3s ease, box-shadow 0.3s ease !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .swatch, .theme-fade, .theme-fade *, .theme-switching, .theme-switching * { transition: none !important; }
+}

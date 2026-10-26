@@ -57,7 +57,7 @@ export default function Opportunities() {
               <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-300" />
               <input value={draft.q} onChange={(e) => setDraft({ ...draft, q: e.target.value })} placeholder="Search opportunities by keyword…" className="h-11 w-full rounded-lg pl-9 pr-3 text-sm text-ink-900 outline-none" />
             </label>
-            <select aria-label="Category" value={f.category} onChange={(e) => setF({ category: e.target.value })} className="h-11 rounded-lg border border-ink-300/50 px-3 text-sm text-ink-900">
+            <select aria-label="Category" value={f.category} onChange={(e) => setF({ category: e.target.value })} className="h-11 rounded-lg border border-ink-300/50 bg-card pl-3 pr-9 text-sm text-ink-900">
               <option value="">All Categories</option>
               {tax?.categories.map((c) => <option key={c._id} value={c._id}>{c.name}</option>)}
             </select>

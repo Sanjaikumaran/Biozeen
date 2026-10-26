@@ -121,9 +121,9 @@ export default function App() {
 
             <Route path="admin" element={<AdminLayout />}>
               <Route index element={<Overview />} />
-              <Route path="approvals" element={<Approvals />} />
-              <Route path="members" element={<Members />} />
-              <Route path="roles" element={<Roles />} />
+              <Route path="approvals" element={gate('admin.approvals', <Approvals />)} />
+              <Route path="members" element={gate('admin.members', <Members />)} />
+              <Route path="roles" element={gate('admin.roles', <Roles />)} />
               <Route path="directory" element={gate('admin.directory', <Directory />)} />
               <Route path="experts" element={gate('admin.experts', <Directory initialTab="experts" />)} />
               <Route path="content" element={<ContentList />} />
@@ -139,7 +139,7 @@ export default function App() {
               <Route path="taxonomy" element={gate('admin.taxonomy', <Taxonomy />)} />
               <Route path="media" element={gate('admin.media', <MediaLibrary />)} />
               <Route path="audit" element={gate('admin.audit', <AuditLog />)} />
-              <Route path="settings" element={<SiteSettingsPage />} />
+              <Route path="settings" element={gate('admin.settings', <SiteSettingsPage />)} />
               <Route path="account" element={<AccountSettings />} />
             </Route>
           </Routes>

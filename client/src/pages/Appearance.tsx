@@ -1,4 +1,4 @@
-import { Check, Monitor, Moon, Sun } from 'lucide-react'
+import { Check, Monitor, Moon, Pipette, Sun } from 'lucide-react'
 import { useState } from 'react'
 import { LogoMark } from '../components/Logo'
 import { Badge, Button, Card, PageHeader, useFeedback } from '../components/ui'
@@ -6,7 +6,7 @@ import { useAuth } from '../lib/auth'
 import { cx } from '../lib/cx'
 import { useDocumentTitle } from '../lib/hooks'
 import { useTheme } from '../lib/theme'
-import { ACCENTS, DEFAULT_THEME, type Accent, type ThemeChoice, type ThemeMode } from '../lib/themes'
+import { ACCENTS, DEFAULT_CUSTOM, DEFAULT_THEME, type Accent, type ThemeChoice, type ThemeMode } from '../lib/themes'
 
 const MODES: { key: ThemeMode; label: string; hint: string; icon: typeof Sun }[] = [
   { key: 'light', label: 'Light', hint: 'Bright backgrounds', icon: Sun },
@@ -15,10 +15,12 @@ const MODES: { key: ThemeMode; label: string; hint: string; icon: typeof Sun }[]
 ]
 
 /** A small mock of the site, rendered with any theme. The data attributes scope the theme to this box. */
-function ThemePreview({ accent, mode, compact }: { accent: Accent; mode: 'light' | 'dark'; compact?: boolean }) {
+function ThemePreview({ accent, mode, compact, custom }: { accent: Accent; mode: 'light' | 'dark'; compact?: boolean; custom?: string }) {
+  // A custom accent reads its base colour from this variable, so the preview can show an unsaved pick.
+  const style = accent === 'custom' ? ({ '--custom-base': custom ?? DEFAULT_CUSTOM } as React.CSSProperties) : undefined
   if (compact) {
     return (
-      <div data-accent={accent} data-mode={mode} className="flex h-20 overflow-hidden rounded-lg bg-surface" aria-hidden>
+      <div data-accent={accent} data-mode={mode} style={style} className="theme-fade flex h-20 overflow-hidden rounded-lg bg-surface" aria-hidden>
         <div className="on-brand w-5 bg-brand-900" />
         <div className="flex-1 space-y-1.5 p-2">
           <div className="hero-bg h-5 rounded" />
@@ -32,7 +34,7 @@ function ThemePreview({ accent, mode, compact }: { accent: Accent; mode: 'light'
     )
   }
   return (
-    <div data-accent={accent} data-mode={mode} className="overflow-hidden rounded-xl border border-ink-900/10 bg-surface text-ink-700" aria-label={`Preview: ${accent} accent, ${mode} mode`}>
+    <div data-accent={accent} data-mode={mode} style={style} className="theme-fade overflow-hidden rounded-xl border border-ink-900/10 bg-surface text-ink-700" aria-label={`Preview: ${accent} accent, ${mode} mode`}>
       <div className="flex items-center gap-2 border-b border-ink-900/8 bg-card px-4 py-2.5">
         <LogoMark className="size-7" />
         <span className="font-extrabold tracking-tight text-ink-900">BIAN</span>
@@ -90,13 +92,15 @@ export default function Appearance({ embedded = false }: { embedded?: boolean })
   const [draft, setDraft] = useState<ThemeChoice>(theme)
   const [saving, setSaving] = useState(false)
   const resolve = (m: ThemeMode) => (m === 'system' ? (systemDark ? 'dark' : 'light') : m)
-  const changed = draft.mode !== theme.mode || draft.accent !== theme.accent
+  const changed = draft.mode !== theme.mode || draft.accent !== theme.accent || (draft.accent === 'custom' && (draft.custom ?? DEFAULT_CUSTOM) !== (theme.custom ?? DEFAULT_CUSTOM))
+  const customOn = draft.accent === 'custom'
+  const customHex = draft.custom ?? DEFAULT_CUSTOM
 
   const save = async (t: ThemeChoice) => {
     setSaving(true)
     try {
       await setTheme(t)
-      toast(user ? 'Appearance saved to your account' : 'Appearance saved on this device')
+      toast(user ? 'Appearance saved to your account' : 'Appearance applied for this browser session')
     } catch (e) {
       toast((e as Error).message, 'error')
     } finally {
@@ -114,7 +118,7 @@ export default function Appearance({ embedded = false }: { embedded?: boolean })
       ) : (
         <PageHeader
           title="Appearance"
-          subtitle={user ? 'Choose how BIAN looks for you. Your choice is saved to your account and applies on every device you sign in on.' : 'Choose how BIAN looks on this device.'}
+          subtitle={user ? 'Choose how BIAN looks for you. Your choice is saved to your account and applies on every device you sign in on.' : 'Choose how BIAN looks in this browser session. Sign in to keep your choice on every device.'}
         />
       )}
 
@@ -130,15 +134,15 @@ export default function Appearance({ embedded = false }: { embedded?: boolean })
                 role="radio"
                 aria-checked={on}
                 onClick={() => setDraft({ ...draft, mode: m.key })}
-                className={cx('rounded-xl border p-3 text-left transition', on ? 'border-brand-500 ring-2 ring-brand-500/25' : 'border-ink-900/10 hover:border-brand-200')}
+                className={cx('swatch rounded-xl border p-3 text-left outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40', on ? 'border-brand-500 shadow-[0_0_0_3px] shadow-brand-500/25' : 'border-ink-900/10 hover:border-brand-200')}
               >
                 {m.key === 'system' ? (
                   <div className="grid grid-cols-2 gap-1">
-                    <ThemePreview accent={draft.accent} mode="light" compact />
-                    <ThemePreview accent={draft.accent} mode="dark" compact />
+                    <ThemePreview accent={draft.accent} custom={draft.custom} mode="light" compact />
+                    <ThemePreview accent={draft.accent} custom={draft.custom} mode="dark" compact />
                   </div>
                 ) : (
-                  <ThemePreview accent={draft.accent} mode={m.key} compact />
+                  <ThemePreview accent={draft.accent} custom={draft.custom} mode={m.key} compact />
                 )}
                 <p className="mt-3 flex items-center gap-2 text-sm font-semibold text-ink-900"><m.icon className="size-4" />{m.label}{on && <Check className="ml-auto size-4 text-brand-600" />}</p>
                 <p className="text-xs text-ink-500">{m.key === 'system' ? `${m.hint} (now ${systemDark ? 'dark' : 'light'})` : m.hint}</p>
@@ -161,14 +165,38 @@ export default function Appearance({ embedded = false }: { embedded?: boolean })
                 role="radio"
                 aria-checked={on}
                 onClick={() => setDraft({ ...draft, accent: a.key })}
-                className={cx('flex w-24 flex-col items-center gap-2 rounded-xl border p-3 text-xs font-medium text-ink-900 transition', on ? 'border-brand-500 ring-2 ring-brand-500/25' : 'border-ink-900/10 hover:border-brand-200')}
+                className={cx('swatch flex w-24 flex-col items-center gap-2 rounded-xl border p-3 text-xs font-medium text-ink-900 outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40', on ? 'border-brand-500 shadow-[0_0_0_3px] shadow-brand-500/25' : 'border-ink-900/10 hover:border-brand-200')}
               >
-                <span className="grid size-9 place-items-center rounded-full text-white ring-2 ring-card" style={{ background: `linear-gradient(135deg, ${a.swatch} 55%, ${a.highlight} 55%)` }}>{on && <Check className="size-4" />}</span>
+                <span className="grid size-9 place-items-center rounded-full text-white ring-2 ring-card" style={{ background: `linear-gradient(135deg, ${a.swatch} 55%, ${a.highlight} 55%)` }}><Check className={cx('size-4 transition-all duration-200', on ? 'scale-100 opacity-100' : 'scale-50 opacity-0')} /></span>
                 {a.label}
               </button>
             )
           })}
+          <label
+            className={cx('swatch relative flex w-24 cursor-pointer flex-col items-center gap-2 rounded-xl border p-3 text-xs font-medium text-ink-900 focus-within:ring-2 focus-within:ring-brand-500/40', customOn ? 'border-brand-500 shadow-[0_0_0_3px] shadow-brand-500/25' : 'border-ink-900/10 hover:border-brand-200')}
+            title="Pick any colour"
+          >
+            <span className="grid size-9 place-items-center rounded-full text-white ring-2 ring-card" style={{ background: customOn ? customHex : 'conic-gradient(#e34948, #eda100, #1baf7a, #2a78d6, #6250d6, #e87ba4, #e34948)' }}>
+              {customOn ? <Check className="size-4" /> : <Pipette className="size-4 drop-shadow" />}
+            </span>
+            Custom
+            <input
+              type="color"
+              aria-label="Custom theme colour"
+              value={customHex}
+              onClick={() => !customOn && setDraft({ ...draft, accent: 'custom', custom: customHex })}
+              onChange={(e) => setDraft({ ...draft, accent: 'custom', custom: e.target.value })}
+              className="absolute inset-0 size-full cursor-pointer opacity-0"
+            />
+          </label>
         </div>
+        {customOn && (
+          <p className="mt-3 flex flex-wrap items-center gap-2 text-xs text-ink-500">
+            <span className="inline-block size-3 rounded-sm" style={{ background: customHex }} aria-hidden />
+            <span className="font-mono uppercase text-ink-700">{customHex}</span>
+            Very light colours are darkened automatically so text on buttons stays readable.
+          </p>
+        )}
       </Card>
 
       <Card className="p-6">
@@ -176,7 +204,7 @@ export default function Appearance({ embedded = false }: { embedded?: boolean })
           <h2 className="text-lg font-semibold">Preview</h2>
           {changed && <Badge tone="amber">Not saved yet</Badge>}
         </div>
-        <ThemePreview accent={draft.accent} mode={resolve(draft.mode)} />
+        <ThemePreview accent={draft.accent} custom={draft.custom} mode={resolve(draft.mode)} />
         <div className="mt-5 flex flex-wrap justify-end gap-2">
           <Button variant="ghost" onClick={() => { setDraft(DEFAULT_THEME); void save(DEFAULT_THEME) }} disabled={saving}>Reset to default</Button>
           {changed && <Button variant="outline" onClick={() => setDraft(theme)} disabled={saving}>Discard</Button>}

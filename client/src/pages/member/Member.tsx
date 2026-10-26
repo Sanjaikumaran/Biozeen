@@ -5,7 +5,7 @@ import {
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ContentTile, EventRow, OpportunityCard } from '../../components/Cards'
-import { Alert, Badge, Button, Card, Checkbox, Empty, ErrorState, Input, LinkButton, Loading, PageHeader, Select, StatTile, StatusBadge, TagInput, Textarea, useFeedback } from '../../components/ui'
+import { Alert, Badge, Button, Card, Checkbox, Empty, ErrorState, Input, LinkButton, Loading, PageHeader, RowActions, Select, StatTile, StatusBadge, TagInput, Textarea, useFeedback } from '../../components/ui'
 import { WorkspaceLayout, type NavItem } from '../../layouts/WorkspaceLayout'
 import { ApiError, api } from '../../lib/api'
 import { useAuth } from '../../lib/auth'
@@ -88,14 +88,14 @@ export function Dashboard() {
         </Card>
       )}
 
-      <div className="grid gap-6 xl:grid-cols-[1fr_320px]">
-        <div className="space-y-6">
-          {on('opportunities') && <Card className="p-5">
-            <div className="mb-4 flex items-center justify-between"><h2 className="font-semibold">Relevant opportunities</h2><Link to="/opportunities" className="text-sm font-semibold text-brand-600">View all →</Link></div>
+      <div className="grid gap-4 xl:grid-cols-[1fr_320px]">
+        <div className="space-y-4">
+          {on('opportunities') && <Card className="p-4">
+            <div className="mb-3 flex items-center justify-between"><h2 className="font-semibold">Relevant opportunities</h2><Link to="/opportunities" className="text-sm font-semibold text-brand-600">View all →</Link></div>
             {data.opportunities.length ? <div className="grid gap-3 md:grid-cols-2">{data.opportunities.map((o) => <OpportunityCard key={o._id} item={o} />)}</div> : <p className="text-sm text-ink-500">No opportunities available for your roles yet.</p>}
           </Card>}
-          {on('dashboard.learning') && <Card className="p-5">
-            <div className="mb-4 flex items-center justify-between"><h2 className="font-semibold">Continue learning</h2><Link to="/dashboard/learning" className="text-sm font-semibold text-brand-600">My learning →</Link></div>
+          {on('dashboard.learning') && <Card className="p-4">
+            <div className="mb-3 flex items-center justify-between"><h2 className="font-semibold">Continue learning</h2><Link to="/dashboard/learning" className="text-sm font-semibold text-brand-600">My learning →</Link></div>
             {data.enrollments.length ? (
               <div className="space-y-3">
                 {data.enrollments.map((e) => typeof e.course === 'object' && (
@@ -107,14 +107,14 @@ export function Dashboard() {
               </div>
             ) : <p className="text-sm text-ink-500">You haven't enrolled in a course yet. <Link to="/knowledge?tab=courses" className="font-semibold text-brand-600">Browse courses</Link></p>}
           </Card>}
-          {on('knowledge.resources') && <Card className="p-5">
-            <div className="mb-4 flex items-center justify-between"><h2 className="font-semibold">New in the Knowledge Hub</h2><Link to="/knowledge" className="text-sm font-semibold text-brand-600">Explore →</Link></div>
+          {on('knowledge.resources') && <Card className="p-4">
+            <div className="mb-3 flex items-center justify-between"><h2 className="font-semibold">New in the Knowledge Hub</h2><Link to="/knowledge" className="text-sm font-semibold text-brand-600">Explore →</Link></div>
             {data.knowledge.length ? <div className="grid gap-3 md:grid-cols-2">{data.knowledge.slice(0, 2).map((k) => <ContentTile key={k._id} item={k} />)}</div> : <p className="text-sm text-ink-500">Nothing new yet.</p>}
           </Card>}
         </div>
 
-        <div className="space-y-6">
-          <Card className="p-5">
+        <div className="space-y-4">
+          <Card className="p-4">
             <h2 className="mb-3 font-semibold">Quick Actions</h2>
             <div className="space-y-2">
               {can('opportunities.post') && on('opportunities.post') && <LinkButton to="/dashboard/post-opportunity" variant="outline" className="w-full justify-start"><PlusCircle className="size-4" />Post a Requirement</LinkButton>}
@@ -123,7 +123,7 @@ export function Dashboard() {
               {on('partners') && <LinkButton to="/partners?type=academia" variant="outline" className="w-full justify-start"><GraduationCap className="size-4" />Connect with Academia</LinkButton>}
             </div>
           </Card>
-          {on('dashboard.requests') && <Card className="p-5">
+          {on('dashboard.requests') && <Card className="p-4">
             <h2 className="mb-3 font-semibold">Recent requests</h2>
             {data.recentRequests.length ? (
               <ul className="space-y-3">
@@ -136,12 +136,12 @@ export function Dashboard() {
               </ul>
             ) : <p className="text-sm text-ink-500">No requests yet.</p>}
           </Card>}
-          {on('events.calendar') && <Card className="p-5">
+          {on('events.calendar') && <Card className="p-4">
             <div className="mb-3 flex items-center justify-between"><h2 className="font-semibold">Upcoming events</h2><Link to="/events" className="text-sm font-semibold text-brand-600">All →</Link></div>
             <div className="space-y-2">{data.events.length ? data.events.map((e) => <EventRow key={e._id} event={e} compact />) : <p className="text-sm text-ink-500">No upcoming events.</p>}</div>
           </Card>}
           {on('events.announcements') && data.announcements.length > 0 && (
-            <Card className="p-5">
+            <Card className="p-4">
               <h2 className="mb-3 font-semibold">Announcements</h2>
               <ul className="space-y-2 text-sm">{data.announcements.map((a) => <li key={a._id}><Link to={contentHref(a)} className="hover:text-brand-700">{a.title}</Link></li>)}</ul>
             </Card>
@@ -398,13 +398,13 @@ export function MyOpportunities() {
       {loading ? <Loading /> : error ? <ErrorState error={error} onRetry={reload} /> : !data?.length ? <Empty title="You haven't posted anything yet" action={<LinkButton to="/dashboard/post-opportunity">Post a requirement</LinkButton>} /> : (
         <Card className="divide-y divide-ink-900/8">
           {data.map((o) => (
-            <div key={o._id} className="flex flex-wrap items-center gap-3 px-4 py-3">
+            <div key={o._id} className="flex flex-wrap items-center gap-3 px-4 py-2.5">
               <div className="min-w-0 flex-1">
                 <p className="font-medium text-ink-900">{o.title}</p>
                 <p className="text-xs text-ink-500">{label(o.opportunity?.opportunityType)} · submitted {formatDate(o.createdAt)}</p>
               </div>
               <StatusBadge status={o.status} />
-              {o.status === 'published' && <Link to={contentHref(o)} className="text-sm font-semibold text-brand-600">View</Link>}
+              <RowActions label={o.title} viewTo={o.status === 'published' ? contentHref(o) : undefined} viewUnavailable="Visible once the BIAN team publishes it" />
             </div>
           ))}
         </Card>
@@ -420,22 +420,22 @@ export function Learning() {
     <div>
       <PageHeader title="My Learning" actions={<LinkButton to="/knowledge?tab=courses" variant="outline">Browse courses</LinkButton>} />
       {loading ? <Loading /> : error ? <ErrorState error={error} onRetry={reload} /> : !data?.length ? <Empty icon={<GraduationCap className="size-8" />} title="No courses yet" action={<LinkButton to="/knowledge?tab=courses">Find a course</LinkButton>} /> : (
-        <div className="grid gap-4 md:grid-cols-2">
+        <Card className="divide-y divide-ink-900/8">
           {data.map((e) => typeof e.course === 'object' && e.course && (
-            <Card key={e._id} className="p-5">
-              <div className="flex items-start justify-between gap-3">
-                <p className="font-semibold text-ink-900">{e.course.title}</p>
-                {e.status === 'completed' ? <Badge tone="green"><CheckCircle2 className="size-3" />Completed</Badge> : <Badge tone="blue">In progress</Badge>}
+            <div key={e._id} className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3">
+              <div className="min-w-0 flex-1 basis-64">
+                <Link to={`/courses/${e.course.slug}`} className="font-medium text-ink-900 hover:text-brand-700">{e.course.title}</Link>
+                <p className="truncate text-xs text-ink-500">{e.course.summary}</p>
               </div>
-              <p className="mt-1 text-sm text-ink-500">{e.course.summary}</p>
-              <div className="mt-4 flex items-center gap-3">
-                <div className="h-2 flex-1 overflow-hidden rounded-full bg-ink-900/8"><div className="h-full bg-brand-600" style={{ width: `${e.progress}%` }} /></div>
-                <span className="text-sm font-semibold tabular-nums">{e.progress}%</span>
+              <div className="flex w-48 items-center gap-2">
+                <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-ink-900/8"><div className="h-full bg-brand-600" style={{ width: `${e.progress}%` }} /></div>
+                <span className="w-9 text-right text-xs font-semibold tabular-nums">{e.progress}%</span>
               </div>
-              <Link to={`/courses/${e.course.slug}`} className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-brand-600">{e.progress ? 'Continue' : 'Start'} <ArrowRight className="size-4" /></Link>
-            </Card>
+              {e.status === 'completed' ? <Badge tone="green"><CheckCircle2 className="size-3" />Completed</Badge> : <Badge tone="blue">In progress</Badge>}
+              <LinkButton size="sm" variant="soft" to={`/courses/${e.course.slug}`}>{e.status === 'completed' ? 'Review' : e.progress ? 'Continue' : 'Start'}<ArrowRight className="size-4" /></LinkButton>
+            </div>
           ))}
-        </div>
+        </Card>
       )}
     </div>
   )
@@ -476,9 +476,9 @@ export function Requests() {
     <div className="max-w-4xl">
       <PageHeader title="Requests & Messages" subtitle="Contact, collaboration and expert-connect requests you've sent, with replies from the BIAN secretariat." actions={<LinkButton to="/contact">New request</LinkButton>} />
       {loading ? <Loading /> : error ? <ErrorState error={error} onRetry={reload} /> : !data?.length ? <Empty icon={<MessagesSquare className="size-8" />} title="No requests yet" /> : (
-        <div className="space-y-3">
+        <div className="space-y-2">
           {data.map((r) => (
-            <Card key={r._id} className="p-5">
+            <Card key={r._id} className="p-4">
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div>
                   <p className="font-semibold text-ink-900">{r.subject || label(r.type)}</p>
@@ -486,8 +486,8 @@ export function Requests() {
                 </div>
                 <StatusBadge status={r.status} />
               </div>
-              <p className="mt-3 whitespace-pre-line text-sm text-ink-700">{r.message}</p>
-              {r.response && <div className="mt-3 rounded-lg bg-brand-50 p-3 text-sm"><p className="mb-1 font-semibold text-brand-700">Reply from BIAN</p><p className="whitespace-pre-line">{r.response}</p></div>}
+              <p className="mt-2 line-clamp-3 whitespace-pre-line text-sm text-ink-700">{r.message}</p>
+              {r.response && <div className="mt-2 rounded-lg bg-brand-50 p-3 text-sm"><p className="mb-1 font-semibold text-brand-700">Reply from BIAN</p><p className="whitespace-pre-line">{r.response}</p></div>}
             </Card>
           ))}
         </div>

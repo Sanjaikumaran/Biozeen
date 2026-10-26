@@ -432,7 +432,7 @@ analyticsAdmin.get("/responses", async (req, res) => {
   res.json(paged(withLabels.map((i) => presentSubmission(i as never, identified)), total, page, limit));
 });
 
-analyticsAdmin.get("/users", requirePermission(PERMISSIONS.feedbackViewIdentified), async (req, res) => {
+analyticsAdmin.get("/users", requirePermission(PERMISSIONS.feedbackViewIdentified), requireFeature("admin.feedback.byMember"), async (req, res) => {
   const q = str(req.query.q);
   const users = await FeedbackSubmission.aggregate([
     { $match: { user: { $ne: null }, anonymous: false } },
@@ -446,7 +446,7 @@ analyticsAdmin.get("/users", requirePermission(PERMISSIONS.feedbackViewIdentifie
   res.json(users.map((u) => ({ userId: u._id, name: u.u.name, email: u.u.email, category: u.u.category, count: u.count, avg: u.avg ? Math.round(u.avg * 100) / 100 : null, last: u.last })));
 });
 
-analyticsAdmin.get("/export.csv", async (req, res) => {
+analyticsAdmin.get("/export.csv", requireFeature("admin.exports"), async (req, res) => {
   const f = submissionFilter(req);
   const identified = can(req.user, PERMISSIONS.feedbackViewIdentified);
   const items = await FeedbackSubmission.find(f).populate("form", "title").sort({ submittedAt: -1 }).limit(10000).lean();

@@ -4,7 +4,7 @@ import { Content, MediaAsset } from "../models/content.js";
 import { FeedbackForm } from "../models/feedback.js";
 import { visibleFilter } from "./access.js";
 import { isId } from "./http.js";
-import { allowedContentTypes, isFeatureOn } from "./features.js";
+import { BLOCK_FEATURE, allowedContentTypes, isFeatureOn } from "./features.js";
 import type { Filter } from "./http.js";
 
 export const CARD_FIELDS =
@@ -32,10 +32,14 @@ export function publicForm(form: {
 }
 
 /**
- * Expand blocks for rendering: related-content blocks only resolve items the viewer may
+ * Expand blocks for rendering: switched-off block types are dropped, related-content blocks only resolve items the viewer may
  * see, file blocks get metadata, feedback blocks get their form definition.
  */
-export async function resolveBlocks(blocks: Block[], user?: AuthUser) {
+export async function resolveBlocks(all: Block[], user?: AuthUser) {
+  // Blocks whose page-builder feature is switched off for this viewer are left out.
+  const offTypes = new Set<string>();
+  for (const [type, key] of Object.entries(BLOCK_FEATURE)) if (!(await isFeatureOn(key, user))) offTypes.add(type);
+  const blocks = all.filter((b) => !offTypes.has(b.type));
   const relatedIds = blocks.flatMap((b) => (b.type === "related" ? (b.data.contentIds as string[]) : []));
   const mediaIds = blocks.flatMap((b) => (b.type === "file" && isId(b.data.mediaId) ? [b.data.mediaId as string] : []));
   const formIds = blocks.flatMap((b) => (b.type === "feedback" && isId(b.data.formId) ? [b.data.formId as string] : []));

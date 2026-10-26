@@ -17,7 +17,7 @@ export type RoleDoc = HydratedDocument<InferSchemaType<typeof roleSchema>>;
 export const USER_STATUSES = ["pending", "active", "suspended", "inactive", "rejected"] as const;
 
 export const THEME_MODES = ["light", "dark", "system"] as const;
-export const THEME_ACCENTS = ["forest", "ocean", "teal", "indigo", "plum", "terracotta"] as const;
+export const THEME_ACCENTS = ["forest", "ocean", "teal", "indigo", "plum", "terracotta", "custom"] as const;
 
 const userSchema = new Schema(
   {
@@ -63,6 +63,7 @@ const userSchema = new Schema(
     preferences: {
       themeMode: { type: String, enum: THEME_MODES },
       accent: { type: String, enum: THEME_ACCENTS },
+      customColor: { type: String, match: /^#[0-9a-fA-F]{6}$/ },
     },
     lastLoginAt: Date,
     approvedBy: { type: Schema.Types.ObjectId, ref: "User" },

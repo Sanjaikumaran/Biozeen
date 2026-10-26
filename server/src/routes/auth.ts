@@ -401,14 +401,19 @@ authRouter.get("/me", async (req, res) => {
       permissions: [...req.user.permissions],
       profile: user?.profile ?? {},
       phone: user?.phone,
-      preferences: { themeMode: user?.preferences?.themeMode ?? null, accent: user?.preferences?.accent ?? null },
+      preferences: { themeMode: user?.preferences?.themeMode ?? null, accent: user?.preferences?.accent ?? null, customColor: user?.preferences?.customColor ?? null },
       isDeveloper: req.user.isDeveloper,
     },
   });
 });
 
 authRouter.put("/me/preferences", requireAuth, requireFeature("appearance"), async (req, res) => {
-  const data = parse(z.object({ themeMode: z.enum(THEME_MODES), accent: z.enum(THEME_ACCENTS) }), req.body);
+  const data = parse(
+    z
+      .object({ themeMode: z.enum(THEME_MODES), accent: z.enum(THEME_ACCENTS), customColor: z.string().regex(/^#[0-9a-fA-F]{6}$/, "Use a #rrggbb colour").optional() })
+      .refine((d) => d.accent !== "custom" || !!d.customColor, { message: "Choose a colour", path: ["customColor"] }),
+    req.body,
+  );
   await User.updateOne({ _id: req.user!._id }, { $set: { preferences: data } });
   res.json({ preferences: data });
 });

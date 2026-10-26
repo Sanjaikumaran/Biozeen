@@ -22,7 +22,7 @@ export interface FeatureDef {
   key: string;
   label: string;
   description: string;
-  group: "Public website" | "Member portal" | "Across the platform" | "Admin workspace";
+  group: "Public website" | "Member portal" | "Across the platform" | "Publishing workflow" | "Page builder" | "Admin workspace";
   scope: FeatureScope;
   parent?: string;
   requires?: string[];
@@ -38,7 +38,7 @@ export const FEATURES: FeatureDef[] = [
   { key: "partners.profiles", group: "Public website", scope: "public", parent: "partners", label: "Partner profiles", description: "Individual partner pages" },
   { key: "partners.enquire", group: "Public website", scope: "public", parent: "partners.profiles", requires: ["contact"], label: "Partnership enquiries", description: "“Enquire about partnership” on partner profiles" },
   { key: "opportunities", group: "Public website", scope: "public", label: "Opportunities Hub", description: "Opportunity listings and detail pages" },
-  { key: "opportunities.post", group: "Public website", scope: "member", parent: "opportunities", requires: ["dashboard"], label: "Post a requirement", description: "Members submit opportunities for review" },
+  { key: "opportunities.post", group: "Public website", scope: "member", parent: "opportunities", requires: ["dashboard", "publishing.review"], label: "Post a requirement", description: "Members submit opportunities for review" },
   { key: "opportunities.save", group: "Public website", scope: "member", parent: "opportunities", requires: ["saved"], label: "Save opportunities", description: "Bookmark opportunities to the dashboard" },
   { key: "knowledge", group: "Public website", scope: "public", label: "Knowledge Hub", description: "The Knowledge Hub screen" },
   { key: "knowledge.resources", group: "Public website", scope: "public", parent: "knowledge", label: "Resources", description: "Articles, blogs and tutorials" },
@@ -53,7 +53,7 @@ export const FEATURES: FeatureDef[] = [
   { key: "events.announcements", group: "Public website", scope: "public", parent: "events", label: "Announcements", description: "News and announcements" },
   { key: "contact", group: "Public website", scope: "public", label: "Contact & Collaboration Center", description: "Contact form and every request to the secretariat" },
   { key: "search", group: "Public website", scope: "public", label: "Site search", description: "Search across all sections" },
-  { key: "registration", group: "Public website", scope: "staff", label: "Membership registration", description: "New members can join (switching off closes registration)" },
+  { key: "registration", group: "Public website", scope: "staff", requires: ["admin.approvals"], label: "Membership registration", description: "New members can join (switching off closes registration)" },
   // ------------------------------------------------------------ member portal
   { key: "dashboard", group: "Member portal", scope: "member", label: "Member Portal", description: "The member dashboard and its pages" },
   { key: "saved", group: "Member portal", scope: "member", parent: "dashboard", label: "Saved items", description: "Bookmarks and the Saved page" },
@@ -67,17 +67,45 @@ export const FEATURES: FeatureDef[] = [
   { key: "notifications", group: "Across the platform", scope: "member", label: "Notifications", description: "In-app notifications: bell, list and pop-ups" },
   { key: "notifications.live", group: "Across the platform", scope: "member", parent: "notifications", label: "Live delivery", description: "Push notifications instantly instead of on page load" },
   { key: "appearance", group: "Across the platform", scope: "public", label: "Appearance settings", description: "Theme colour and light/dark mode" },
+  // ------------------------------------------------------------ publishing workflow (content, courses, events)
+  { key: "publishing.drafts", group: "Publishing workflow", scope: "staff", label: "Drafts", description: "Save work in progress as a draft before it goes live" },
+  { key: "publishing.review", group: "Publishing workflow", scope: "staff", label: "Review & approval", description: "Pending review and Approved statuses, and member submissions for review" },
+  { key: "publishing.scheduled", group: "Publishing workflow", scope: "staff", label: "Scheduled publishing", description: "Publish dates and the Scheduled status: items go live automatically" },
+  { key: "publishing.expiry", group: "Publishing workflow", scope: "staff", label: "Expiry dates", description: "Hide items from members automatically after a date" },
+  { key: "publishing.unpublish", group: "Publishing workflow", scope: "staff", label: "Unpublish", description: "Take live items offline while keeping them editable" },
+  { key: "publishing.archive", group: "Publishing workflow", scope: "staff", label: "Archive", description: "Retire items while keeping their history and feedback" },
+  { key: "publishing.preview", group: "Publishing workflow", scope: "staff", label: "Editor preview", description: "The Preview tab in the content editor" },
+  { key: "publishing.seo", group: "Publishing workflow", scope: "staff", label: "SEO settings", description: "SEO title, description and search-engine indexing per item" },
+  { key: "publishing.featured", group: "Publishing workflow", scope: "staff", requires: ["home"], label: "Homepage featuring", description: "“Feature on the homepage” and featured-first ordering" },
+  // ------------------------------------------------------------ page builder blocks
+  { key: "blocks.media", group: "Page builder", scope: "public", label: "Media blocks", description: "Image, gallery and video blocks" },
+  { key: "blocks.files", group: "Page builder", scope: "public", label: "File downloads", description: "Downloadable file blocks" },
+  { key: "blocks.layout", group: "Page builder", scope: "public", label: "Layout blocks", description: "Columns, cards, tables and FAQ accordions" },
+  { key: "blocks.cta", group: "Page builder", scope: "public", label: "Call-to-action blocks", description: "Highlighted buttons linking elsewhere" },
+  { key: "blocks.related", group: "Page builder", scope: "public", label: "Related content blocks", description: "Lists of related items inside a page" },
+  { key: "blocks.feedback", group: "Page builder", scope: "public", requires: ["feedback"], label: "Inline feedback blocks", description: "Feedback forms placed inside a page or lesson" },
   // ------------------------------------------------------------ admin workspace
+  { key: "admin.analytics", group: "Admin workspace", scope: "staff", label: "Overview analytics", description: "Statistics and charts on the admin overview" },
+  { key: "admin.approvals", group: "Admin workspace", scope: "staff", label: "Member approvals", description: "Approve or reject new registrations" },
+  { key: "admin.members", group: "Admin workspace", scope: "staff", label: "Member management", description: "Member list, editing, roles and suspension" },
+  { key: "admin.roles", group: "Admin workspace", scope: "staff", label: "Roles & permissions", description: "Create and edit roles" },
+  { key: "admin.exports", group: "Admin workspace", scope: "staff", label: "CSV exports", description: "Export members, directories, requests and feedback" },
+  { key: "admin.settings", group: "Admin workspace", scope: "staff", label: "Site settings", description: "Homepage hero and secretariat contact details" },
   { key: "admin.portfolio", group: "Admin workspace", scope: "staff", requires: ["portfolio"], label: "Portfolio editor", description: "Manage portfolio pages" },
   { key: "admin.opportunities", group: "Admin workspace", scope: "staff", requires: ["opportunities"], label: "Opportunities editor", description: "Manage opportunities and review submissions" },
   { key: "admin.knowledge", group: "Admin workspace", scope: "staff", requires: ["knowledge.resources"], label: "Knowledge editor", description: "Manage articles, blogs and tutorials" },
   { key: "admin.announcements", group: "Admin workspace", scope: "staff", requires: ["events.announcements"], label: "Announcements editor", description: "Manage announcements" },
   { key: "admin.courses", group: "Admin workspace", scope: "staff", requires: ["knowledge.courses"], label: "Course builder", description: "Courses, modules and lessons" },
-  { key: "admin.events", group: "Admin workspace", scope: "staff", requires: ["events.calendar"], label: "Events manager", description: "Events and registrations" },
+  { key: "admin.events", group: "Admin workspace", scope: "staff", requires: ["events.calendar"], label: "Events manager", description: "Create and edit events" },
+  { key: "admin.registrations", group: "Admin workspace", scope: "staff", parent: "admin.events", requires: ["events.registration"], label: "Registration lists", description: "Who registered for each event" },
   { key: "admin.feedback", group: "Admin workspace", scope: "staff", requires: ["feedback"], label: "Feedback forms & analytics", description: "Form builder and analytics" },
+  { key: "admin.feedback.byMember", group: "Admin workspace", scope: "staff", parent: "admin.feedback", label: "Feedback by member", description: "Identified feedback grouped per member" },
   { key: "admin.requests", group: "Admin workspace", scope: "staff", requires: ["contact"], label: "Requests inbox", description: "Contact, collaboration and expert-connect requests" },
+  { key: "admin.requests.notes", group: "Admin workspace", scope: "staff", parent: "admin.requests", label: "Notes & assignment", description: "Internal notes and assigning requests to staff" },
+  { key: "admin.requests.reply", group: "Admin workspace", scope: "staff", parent: "admin.requests", requires: ["dashboard.requests"], label: "Replies to members", description: "Replies shown in the member's Requests & Messages" },
   { key: "admin.directory", group: "Admin workspace", scope: "staff", label: "Master Database", description: "Organisation, expert and alumni directories" },
   { key: "admin.experts", group: "Admin workspace", scope: "staff", parent: "admin.directory", requires: ["experts"], label: "Expert directory", description: "Review and edit expert profiles" },
+  { key: "admin.alumni", group: "Admin workspace", scope: "staff", parent: "admin.directory", label: "Alumni database", description: "Alumni records in the Master Database" },
   { key: "admin.media", group: "Admin workspace", scope: "staff", label: "Media library", description: "Uploaded files and their access" },
   { key: "admin.taxonomy", group: "Admin workspace", scope: "staff", label: "Categories & tags", description: "Content taxonomy" },
   { key: "admin.audit", group: "Admin workspace", scope: "staff", label: "Audit log", description: "History of changes" },
@@ -174,6 +202,31 @@ export function contentFeature(type: string) {
   if (type === "article" || type === "blog" || type === "tutorial") return "knowledge.resources";
   return "portfolio";
 }
+
+/** Publication statuses and the feature that offers them; "published" is always available. */
+export const STATUS_FEATURE: Record<string, string> = {
+  draft: "publishing.drafts",
+  pending_review: "publishing.review",
+  approved: "publishing.review",
+  scheduled: "publishing.scheduled",
+  unpublished: "publishing.unpublish",
+  archived: "publishing.archive",
+};
+
+/** Page-builder block types and the feature that offers them; text blocks are always available. */
+export const BLOCK_FEATURE: Record<string, string> = {
+  image: "blocks.media",
+  gallery: "blocks.media",
+  video: "blocks.media",
+  file: "blocks.files",
+  columns: "blocks.layout",
+  cards: "blocks.layout",
+  table: "blocks.layout",
+  faq: "blocks.layout",
+  cta: "blocks.cta",
+  related: "blocks.related",
+  feedback: "blocks.feedback",
+};
 
 /** Content types whose screen is on for this viewer; used to filter listings, search and related items. */
 export async function allowedContentTypes(user?: AuthUser) {

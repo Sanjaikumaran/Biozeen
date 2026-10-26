@@ -320,7 +320,15 @@ describe("account preferences", () => {
     assert.equal((await student.put("/api/auth/me/preferences", { themeMode: "neon", accent: "ocean" })).status, 400);
     assert.equal((await student.put("/api/auth/me/preferences", { themeMode: "dark", accent: "ocean" })).status, 200);
     const me = await student.get("/api/auth/me");
-    assert.deepEqual(me.body.user.preferences, { themeMode: "dark", accent: "ocean" });
+    assert.deepEqual(me.body.user.preferences, { themeMode: "dark", accent: "ocean", customColor: null });
+  });
+
+  it("saves a custom theme colour, which must be a hex colour", async () => {
+    assert.equal((await student.put("/api/auth/me/preferences", { themeMode: "light", accent: "custom" })).status, 400);
+    assert.equal((await student.put("/api/auth/me/preferences", { themeMode: "light", accent: "custom", customColor: "red" })).status, 400);
+    assert.equal((await student.put("/api/auth/me/preferences", { themeMode: "light", accent: "custom", customColor: "#c2185b" })).status, 200);
+    const me = await student.get("/api/auth/me");
+    assert.deepEqual(me.body.user.preferences, { themeMode: "light", accent: "custom", customColor: "#c2185b" });
   });
 });
 
@@ -522,6 +530,41 @@ describe("developer console", () => {
     const audit = (await admin.get("/api/admin/audit")).body;
     assert.ok(!audit.items.some((a: { entityType: string }) => a.entityType === "FeatureSetting"));
     assert.ok((await developer.get("/api/developer/overview")).body.history.length > 0);
+  });
+
+  it("switches publishing statuses, page-builder blocks and admin tools off", async () => {
+    await developer.put("/api/developer/features/publishing.drafts", { enabled: false, audience: [] });
+    const draft = await admin.post("/api/admin/contents", { type: "article", title: "Workflow switch check", status: "draft", access: { visibility: "public" } });
+    assert.equal(draft.status, 400);
+    const live = await admin.post("/api/admin/contents", {
+      type: "article", title: "Workflow switch check", status: "published", access: { visibility: "public" },
+      blocks: [{ type: "heading", data: { text: "Hello", level: 2 } }, { type: "cta", data: { title: "Join", label: "Go", href: "/register" } }],
+    });
+    assert.equal(live.status, 201);
+    await developer.put("/api/developer/features/publishing.drafts", { enabled: true, audience: [] });
+
+    // Review off: no pending-review status, and members can no longer submit opportunities.
+    await developer.put("/api/developer/features/publishing.review", { enabled: false, audience: [] });
+    assert.equal((await admin.put(`/api/admin/contents/${live.body._id}`, { type: "article", title: "Workflow switch check", status: "pending_review" })).status, 400);
+    assert.equal((await industry.get("/api/features")).body.features["opportunities.post"], false);
+    await developer.put("/api/developer/features/publishing.review", { enabled: true, audience: [] });
+
+    // Block types: switched-off blocks are left out of the page.
+    await developer.put("/api/developer/features/blocks.cta", { enabled: false, audience: [] });
+    const page = (await anon.get(`/api/contents/by-slug/knowledge/${live.body.slug}`)).body;
+    assert.deepEqual(page.blocks.map((b: { type: string }) => b.type), ["heading"]);
+    await developer.put("/api/developer/features/blocks.cta", { enabled: true, audience: [] });
+
+    // Admin tools.
+    await developer.put("/api/developer/features/admin.exports", { enabled: false, audience: [] });
+    assert.equal((await admin.get("/api/admin/users/export.csv")).status, 403);
+    await developer.put("/api/developer/features/admin.analytics", { enabled: false, audience: [] });
+    const stats = (await admin.get("/api/admin/stats")).body;
+    assert.equal(stats.analytics, false);
+    assert.equal(stats.membershipGrowth, undefined);
+    assert.equal(typeof stats.pendingApprovals, "number");
+    await developer.post("/api/developer/features/reset");
+    await admin.del(`/api/admin/contents/${live.body._id}`);
   });
 
   it("rejects unknown features and audiences", async () => {

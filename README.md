@@ -58,11 +58,11 @@ Seeded organisations, people, opportunities, events and announcements come from 
 ## Checks
 
 ```bash
-cd server && npm run typecheck && npm test   # 34 API integration tests (needs MongoDB; uses the bian_test database)
+cd server && npm run typecheck && npm test   # 36 API integration tests (needs MongoDB; uses the bian_test database)
 cd client && npm run lint && npm run build
 ```
 
-The tests cover audience filtering on listings, direct URLs, search, courses and events; editor and publisher rights; HTML sanitising; session revocation on suspension; the registration → verification → approval flow; protected file downloads; upload type checks; anonymous feedback privacy; lesson-level analytics; identity hiding in feedback reports; account theme preferences; sign-in codes (expiry, lockout, replay); notifications (who is told, the live socket, rejection without a session); expert audiences; and the developer console (isolation from member management, chained disabling, category limits, closing registration).
+The tests cover audience filtering on listings, direct URLs, search, courses and events; editor and publisher rights; HTML sanitising; session revocation on suspension; the registration → verification → approval flow; protected file downloads; upload type checks; anonymous feedback privacy; lesson-level analytics; identity hiding in feedback reports; account theme preferences; sign-in codes (expiry, lockout, replay); notifications (who is told, the live socket, rejection without a session); expert audiences; and the developer console (isolation from member management, chained disabling, category limits, closing registration, publishing statuses, page-builder blocks and admin tools).
 
 ## What's included
 
@@ -70,7 +70,7 @@ The tests cover audience filtering on listings, direct URLs, search, courses and
 
 **Accounts:** 3-step registration by category (organisation or individual), email verification, admin approval, login with "remember me", an optional emailed 6-digit sign-in code, forgot/reset password, change password, and sign out of all devices.
 
-**For every user:** live in-app notifications in a right-hand panel from the header bell, for approvals, replies, reviews, publications and new requests; a Settings page with appearance (six theme colours that also recolour highlights, light/dark/system mode, live preview, saved to the account), password and signed-in devices. Forms and details open in right-hand drawers.
+**For every user:** live in-app notifications in a right-hand panel from the header bell, for approvals, replies, reviews, publications and new requests; a Settings page with appearance (six theme colours plus a custom colour picker, all of which also recolour highlights, light/dark/system mode, live preview, saved to the account), password and signed-in devices. Forms and details open in right-hand drawers.
 
 **Developer console:** a developer account (a flag on the user, not a role) switches every screen and feature on or off, or limits it to visitors and chosen member categories, with dependencies chained so that switching off a screen switches off everything that needs it. See [Developer console](#developer-console-and-feature-control).
 
@@ -99,12 +99,12 @@ The tests cover audience filtering on listings, direct URLs, search, courses and
 
 Developer accounts are flagged on the user (`isDeveloper`), not granted by a role. They hold every permission, never appear in Roles & Permissions, member lists, statistics or the admin audit log, and administrators can't edit or suspend them.
 
-The console at `/developer` lists 48 features in four groups (public website, member portal, across the platform, admin workspace), defined in [server/src/lib/features.ts](server/src/lib/features.ts). Each feature can be:
+The console at `/developer` lists 76 features in six groups (public website, member portal, across the platform, publishing workflow, page builder, admin workspace), defined in [server/src/lib/features.ts](server/src/lib/features.ts). Each feature can be:
 
 - **switched off**, for everyone except developers (staff included), or
 - **limited** to visitors and chosen member categories. Staff with admin access ignore audience limits.
 
-A feature is available only when it, its parent screen and every feature it `requires` are available. The API enforces this on every route (`requireFeature`), in listings, homepage sections, search, related content and notification delivery. The client hides the matching navigation, buttons and sections, and open sessions update live over the socket. Settings are stored in the `featureSettings` collection and can be exported and imported as JSON from the console.
+A feature is available only when it, its parent screen and every feature it `requires` are available. The API enforces this on every route (`requireFeature`), in listings, homepage sections, search, related content and notification delivery. The client hides the matching navigation, buttons and sections, and open sessions update live over the socket. Publishing statuses (draft, review and approval, scheduled, unpublished, archived), publish and expiry dates, SEO fields, homepage featuring and each family of page-builder blocks are features too: the API rejects a switched-off status, ignores switched-off fields and leaves switched-off blocks out of pages. Settings are stored in the `featureSettings` collection and can be exported and imported as JSON from the console.
 
 Experts use the same audience model as content (public, all members, selected roles, selected organisations, BIAN team only). Older `visibility` values are migrated automatically on start and after `db:import`.
 

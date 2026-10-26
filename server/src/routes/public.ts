@@ -42,7 +42,7 @@ publicRouter.get("/home", async (req, res) => {
   // Each homepage section is left empty when the screen it comes from is switched off for this viewer.
   const when = <T>(key: string, load: () => Promise<T>, off: T) => (on[key] ? load() : Promise.resolve(off));
   const cards = (type: string | { $in: string[] }, limit: number, extra = {}) =>
-    Content.find({ $and: [{ type, ...extra }, visible] }).select(CARD_FIELDS).sort({ featured: -1, publishedAt: -1 }).limit(limit).lean();
+    Content.find({ $and: [{ type, ...extra }, visible] }).select(CARD_FIELDS).sort(on["publishing.featured"] ? { featured: -1, publishedAt: -1 } : { publishedAt: -1 }).limit(limit).lean();
   const [stats, about, services, opportunities, knowledge, announcements, events, partners, settings] = await Promise.all([
     when("home.stats", () => publicStats(), null),
     when("portfolio", () => Content.findOne({ $and: [{ type: "page", slug: "about" }, visible] }).select("title summary featuredImage").lean(), null),

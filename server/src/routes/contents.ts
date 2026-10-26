@@ -5,7 +5,7 @@ import { audit } from "../lib/audit.js";
 import { cleanBlocks, mediaIdsInBlocks, safeUrl } from "../lib/blocks.js";
 import { HttpError, isId, notFound, oid, paged, pagination, parse, searchRegex, slugify, str, type Filter } from "../lib/http.js";
 import { PERMISSIONS } from "../lib/permissions.js";
-import { accessInput, applyStatus, dateInput, mediaIdFromUrl, syncMediaLinks } from "../lib/publishing.js";
+import { accessInput, applyStatus, dateInput, dropDisabledFields, mediaIdFromUrl, syncMediaLinks } from "../lib/publishing.js";
 import { CARD_FIELDS, publicForm, resolveBlocks } from "../lib/resolve.js";
 import { requireAuth, requirePermission } from "../middleware/auth.js";
 import { PUBLICATION_STATUSES } from "../models/common.js";
@@ -257,12 +257,12 @@ async function afterSave(doc: InstanceType<typeof Content>) {
 }
 
 adminContentsRouter.post("/", async (req, res) => {
-  const data = parse(contentInput, req.body);
+  const data = await dropDisabledFields(parse(contentInput, req.body), req.user!);
   await assertEditable(data.type, req.user);
   const doc = new Content({ type: data.type, author: req.user!._id, status: "draft" });
   doc.slug = await uniqueSlug(data.type, data.slug || data.title);
   applyInput(doc, data);
-  applyStatus(doc, data.status, req.user!);
+  await applyStatus(doc, data.status, req.user!);
   await doc.save();
   await afterSave(doc);
   await afterStatusChange(doc, "draft", req.user!._id);
@@ -274,11 +274,11 @@ adminContentsRouter.put("/:id", async (req, res) => {
   const doc = await Content.findById(oid(String(req.params.id)));
   if (!doc) throw notFound("Content");
   await assertEditable(doc.type, req.user);
-  const data = parse(contentInput, req.body);
+  const data = await dropDisabledFields(parse(contentInput, req.body), req.user!);
   const before = { status: doc.status, visibility: doc.access?.visibility };
   if (data.slug && data.slug !== doc.slug) doc.slug = await uniqueSlug(doc.type, data.slug, doc._id);
   applyInput(doc, data);
-  applyStatus(doc, data.status, req.user!);
+  await applyStatus(doc, data.status, req.user!);
   await doc.save();
   await afterSave(doc);
   await afterStatusChange(doc, before.status, req.user!._id);
@@ -295,7 +295,7 @@ adminContentsRouter.post("/:id/status", async (req, res) => {
   if (!doc) throw notFound("Content");
   await assertEditable(doc.type, req.user);
   const from = doc.status;
-  applyStatus(doc, status, req.user!);
+  await applyStatus(doc, status, req.user!);
   await doc.save();
   await afterStatusChange(doc, from, req.user!._id);
   await audit(req, "content.status", "Content", doc._id, `"${doc.title}": ${from} → ${doc.status}`);

@@ -8,11 +8,14 @@ Sign in as usual; you land on the **Admin workspace** (`/admin`). You can switch
 
 ![The admin overview](../presentation/screens/admin-overview.png)
 
-Live counts of members, organisations, experts and opportunities; collaboration and training requests; items awaiting action; and engagement (feedback, enrolments, event registrations, requests). Each count is compared with the previous period. Charts show membership growth, active members by category and opportunities per month. Choose the period (7 days to 12 months) at the top right.
+Live counts of members, organisations, experts and opportunities; collaboration and training requests; items awaiting action; and engagement (feedback, enrolments, event registrations, requests). Each count is compared with the previous period, and the member and opportunity tiles carry a 12-month trend line. Charts show membership growth (running total with members joined each month), active members by category (hover a slice or legend row) and opportunities per month with the monthly average. Hover any month for exact figures. A **Waiting for you** panel links to pending approvals, content awaiting review and new requests. Choose the period (7 days to 12 months) at the top right.
 
 The sidebar shows red badges for pending approvals, content awaiting review and new requests. These update without reloading, and the bell notifies you as items arrive.
 
 ## Workspace map
+
+Every list uses the same action icons at the end of each row: **View** (eye) opens the public page or a details panel, **Edit** (pencil) and **Delete** (bin, turns red on hover). An action you can't use stays greyed out; hover it to see why.
+
 
 | Area | What you do there |
 |---|---|
@@ -25,7 +28,7 @@ The sidebar shows red badges for pending approvals, content awaiting review and 
 | Feedback Forms · Feedback Analytics | Build forms; analyse responses by item, course, lesson, member, date, rating and category |
 | Requests | Contact, collaboration and expert-connect requests: status, assignment, internal notes, replies |
 | Categories & Tags · Media Library | Taxonomy and uploaded files with access settings |
-| Audit Log | Who changed what and when |
+| Audit Log | Who changed what and when. Open an entry to see its full record as JSON, with a copy button |
 | Site Settings | Homepage hero, keywords, intro video, secretariat email/phone/address |
 | My settings | Your own appearance (theme colour, light/dark), password and devices |
 

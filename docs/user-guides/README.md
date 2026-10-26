@@ -58,10 +58,12 @@ Open **Settings** from your account menu (top right), or from the sidebar of you
 **Appearance**
 
 1. Choose a **mode**: *Light*, *Dark*, or *System* (follows your computer or phone).
-2. Choose a **theme colour**: Forest (the BIAN default), Ocean, Teal, Indigo, Plum or Terracotta.
+2. Choose a **theme colour**: Forest (the BIAN default), Ocean, Teal, Indigo, Plum, Terracotta, or **Custom** (the last option) to pick any colour. With a custom colour, every shade is worked out from your pick, and very light colours are darkened so button text stays readable.
 3. The **Preview** shows the header, banner, sidebar, cards, buttons and badges in your choice before you apply it.
 4. Click **Apply theme**. Your choice is saved to your account and follows you to any device you sign in on. **Reset to default** returns to Forest with System mode.
 
-Buttons, links, banners, the sidebar and highlights such as the selected menu item all follow the theme colour you choose.
+Buttons, links, banners, the sidebar and highlights such as the selected menu item all follow the theme colour you choose. Visitors who aren't signed in keep their choice only until they close the browser tab.
+
+Action icons use the same colours everywhere: **View** is blue, **Edit** amber, **Delete** red and **Analytics** violet.
 
 **Security**: change your password (other devices are signed out), or **sign out of all devices**.

@@ -5,6 +5,8 @@ import { contentHref, formatBytes } from '../lib/format'
 import type { Block, ContentCard } from '../lib/types'
 import { FeedbackWidget, type FeedbackTarget } from './FeedbackWidget'
 import { cx } from '../lib/cx'
+import { BLOCK_FEATURE } from '../lib/blockFeatures'
+import { useFeatures } from '../lib/features'
 
 function Video({ url, caption }: { url: string; caption?: string }) {
   if (!url) return null
@@ -35,9 +37,10 @@ function RelatedCard({ item }: { item: ContentCard }) {
 }
 
 export function BlockRenderer({ blocks, target }: { blocks: Block[]; target?: FeedbackTarget }) {
+  const on = useFeatures()
   return (
     <div className="prose-bian">
-      {blocks.map((b) => {
+      {blocks.filter((b) => on(BLOCK_FEATURE[b.type])).map((b) => {
         const d = b.data
         switch (b.type) {
           case 'heading': {

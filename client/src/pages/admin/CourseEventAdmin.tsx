@@ -1,10 +1,11 @@
-import { ArrowDown, ArrowLeft, ArrowUp, ChevronDown, ChevronRight, Eye, Plus, Save, Trash2, Users } from 'lucide-react'
+import { ArrowDown, ArrowLeft, ArrowUp, ChevronDown, ChevronRight, Eye, Pencil, Plus, Save, Trash2, Users } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { BlockEditor } from '../../components/admin/BlockEditor'
 import { MediaPicker } from '../../components/admin/MediaPicker'
-import { AccessEditor, AudienceSummary, PublishPanel, useLookups, type PublishState } from '../../components/admin/Publishing'
-import { Alert, Badge, Button, Card, Checkbox, Empty, ErrorState, Input, LinkButton, Loading, Modal, PageHeader, Pagination, Select, StatusBadge, Tabs, TagInput, Textarea, useFeedback } from '../../components/ui'
+import { AccessEditor, AudienceSummary, PublishPanel, useDefaultStatus, useLookups, useStatuses, type PublishState } from '../../components/admin/Publishing'
+import { useFeature } from '../../lib/features'
+import { Alert, Badge, Button, Card, Checkbox, Empty, ErrorState, IconButton, Input, LinkButton, Loading, Modal, PageHeader, Pagination, RowActions, Select, StatusBadge, Tabs, TagInput, Textarea, useFeedback } from '../../components/ui'
 import { ApiError, api, type Paged } from '../../lib/api'
 import { useAuth } from '../../lib/auth'
 import { formatDate, formatDateTime, fromLocalInput, label, toLocalInput } from '../../lib/format'
@@ -32,21 +33,25 @@ interface CourseRow { _id: string; title: string; slug: string; status: Publicat
 
 export function CourseList() {
   useDocumentTitle('Courses')
+  const { can } = useAuth()
+  const { toast, confirm } = useFeedback()
   const [f, setF] = useQueryState({ status: '', page: '1' })
+  const statuses = useStatuses()
   const { data, error, loading, reload } = useAsync(() => api.get<Paged<CourseRow>>('/admin/courses', { status: f.status, page: f.page }), [f.status, f.page])
   return (
     <div>
       <PageHeader title="Courses" subtitle="Courses, modules and lessons with progress tracking and lesson-level feedback." actions={<LinkButton to="/admin/courses/new"><Plus className="size-4" />New course</LinkButton>} />
-      <Tabs value={f.status} onChange={(status) => setF({ status })} tabs={[{ value: '', label: 'All' }, ...['draft', 'pending_review', 'scheduled', 'published', 'archived'].map((s) => ({ value: s, label: label(s) }))]} />
+      <Tabs value={f.status} onChange={(status) => setF({ status })} tabs={[{ value: '', label: 'All' }, ...statuses.map((s) => ({ value: s, label: label(s) }))]} />
       <div className="mt-4">
         {loading ? <Loading /> : error ? <ErrorState error={error} onRetry={reload} /> : !data?.items.length ? <Empty title="No courses yet" /> : (
           <Card className="divide-y divide-ink-900/8">
             {data.items.map((c) => (
-              <Link key={c._id} to={`/admin/courses/${c._id}`} className="flex flex-wrap items-center gap-3 px-4 py-3 hover:bg-brand-50/40">
-                <div className="min-w-0 flex-1"><p className="font-medium text-ink-900">{c.title}</p><p className="text-xs text-ink-500">{c.lessonCount} lessons · <AudienceSummary access={c.access} /></p></div>
-                <span className="inline-flex items-center gap-1 text-sm text-ink-500"><Users className="size-4" />{c.enrollments}</span>
+              <div key={c._id} className="flex flex-wrap items-center gap-3 px-4 py-2.5 hover:bg-brand-50/40">
+                <div className="min-w-0 flex-1"><Link to={`/admin/courses/${c._id}`} className="font-medium text-ink-900 hover:text-brand-700">{c.title}</Link><p className="text-xs text-ink-500">{c.lessonCount} lessons · <AudienceSummary access={c.access} /></p></div>
+                <span className="inline-flex items-center gap-1 text-sm text-ink-500" title="Enrolments"><Users className="size-4" />{c.enrollments}</span>
                 <StatusBadge status={c.status} />
-              </Link>
+                <RowActions label={c.title} viewTo={`/courses/${c.slug}`} editTo={`/admin/courses/${c._id}`} remove={can('content.publish') ? async () => { if (await confirm({ title: 'Delete course?', message: <>“{c.title}” will be permanently deleted. All enrolments and progress are removed too.</>, confirmLabel: 'Delete', danger: true })) { try { await api.del(`/admin/courses/${c._id}`); toast('Deleted'); reload() } catch (e) { toast((e as Error).message, 'error') } } } : undefined} removeUnavailable="Deleting requires publishing rights" />
+              </div>
             ))}
           </Card>
         )}
@@ -72,6 +77,7 @@ export function CourseEditor() {
   const { toast, confirm } = useFeedback()
   const { can } = useAuth()
   const { forms } = useLookups()
+  const defaultStatus = useDefaultStatus()
   const existing = useAsync(() => (isNew ? Promise.resolve(null) : api.get<Record<string, any>>(`/admin/courses/${id}`)), [id]) // eslint-disable-line @typescript-eslint/no-explicit-any
   const [form, setForm] = useState<CourseForm | null>(null)
   const [open, setOpen] = useState<{ m: number; l: number } | null>(null)
@@ -85,7 +91,7 @@ export function CourseEditor() {
   if (formSource && formSource !== syncedSource) {
     setSyncedSource(formSource)
     const c = existing.data
-    if (isNew) setForm({ title: '', slug: '', summary: '', description: '', thumbnail: '', level: 'beginner', objectives: [], modules: [], access: { visibility: 'authenticated', roles: [], organizations: [] }, feedbackForm: null, trackCompletion: true, publish: { status: 'draft' } })
+    if (isNew) setForm({ title: '', slug: '', summary: '', description: '', thumbnail: '', level: 'beginner', objectives: [], modules: [], access: { visibility: 'authenticated', roles: [], organizations: [] }, feedbackForm: null, trackCompletion: true, publish: { status: defaultStatus } })
     else if (c)
       setForm({
         title: c.title, slug: c.slug, summary: c.summary ?? '', description: c.description ?? '', thumbnail: c.thumbnail ?? '', level: c.level, objectives: c.objectives ?? [],
@@ -165,9 +171,9 @@ export function CourseEditor() {
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-semibold text-ink-500">M{mi + 1}</span>
                     <input aria-label="Module title" className="h-9 flex-1 rounded-lg border border-ink-300/70 px-3 text-sm font-semibold" value={m.title} onChange={(e) => setModules(form.modules.map((x, i) => (i === mi ? { ...x, title: e.target.value } : x)))} />
-                    <button aria-label="Move module up" disabled={mi === 0} onClick={() => setModules(moveIn(form.modules, mi, -1))} className="p-1 text-ink-500 disabled:opacity-30"><ArrowUp className="size-4" /></button>
-                    <button aria-label="Move module down" disabled={mi === form.modules.length - 1} onClick={() => setModules(moveIn(form.modules, mi, 1))} className="p-1 text-ink-500 disabled:opacity-30"><ArrowDown className="size-4" /></button>
-                    <button aria-label="Delete module" onClick={async () => { if (!m.lessons.length || (await confirm({ title: 'Delete module?', message: `“${m.title}” and its ${m.lessons.length} lessons will be removed when you save.`, danger: true, confirmLabel: 'Delete' }))) setModules(form.modules.filter((_, i) => i !== mi)) }} className="p-1 text-ink-500 hover:text-red-600"><Trash2 className="size-4" /></button>
+                    <IconButton icon={ArrowUp} label="Move module up" disabled={mi === 0} onClick={() => setModules(moveIn(form.modules, mi, -1))} />
+                    <IconButton icon={ArrowDown} label="Move module down" disabled={mi === form.modules.length - 1} onClick={() => setModules(moveIn(form.modules, mi, 1))} />
+                    <IconButton icon={Trash2} label="Delete module" tone="danger" onClick={async () => { if (!m.lessons.length || (await confirm({ title: 'Delete module?', message: `“${m.title}” and its ${m.lessons.length} lessons will be removed when you save.`, danger: true, confirmLabel: 'Delete' }))) setModules(form.modules.filter((_, i) => i !== mi)) }} />
                   </div>
                   <ul className="mt-2 space-y-1 pl-6">
                     {m.lessons.map((l, li) => (
@@ -176,9 +182,10 @@ export function CourseEditor() {
                           <ChevronRight className="size-4 text-ink-300" />{l.title || 'Untitled lesson'}
                           <span className="text-xs text-ink-500">{l.blocks.length} blocks{l.feedbackForm ? ' · feedback' : ''}</span>
                         </button>
-                        <button aria-label="Move lesson up" disabled={li === 0} onClick={() => setModules(form.modules.map((x, i) => (i === mi ? { ...x, lessons: moveIn(x.lessons, li, -1) } : x)))} className="p-1 text-ink-500 disabled:opacity-30"><ArrowUp className="size-3.5" /></button>
-                        <button aria-label="Move lesson down" disabled={li === m.lessons.length - 1} onClick={() => setModules(form.modules.map((x, i) => (i === mi ? { ...x, lessons: moveIn(x.lessons, li, 1) } : x)))} className="p-1 text-ink-500 disabled:opacity-30"><ArrowDown className="size-3.5" /></button>
-                        <button aria-label="Delete lesson" onClick={() => setModules(form.modules.map((x, i) => (i === mi ? { ...x, lessons: x.lessons.filter((_, j) => j !== li) } : x)))} className="p-1 text-ink-500 hover:text-red-600"><Trash2 className="size-3.5" /></button>
+                        <IconButton icon={Pencil} tone="edit" label="Edit lesson" onClick={() => setOpen({ m: mi, l: li })} />
+                        <IconButton icon={ArrowUp} label="Move lesson up" disabled={li === 0} onClick={() => setModules(form.modules.map((x, i) => (i === mi ? { ...x, lessons: moveIn(x.lessons, li, -1) } : x)))} />
+                        <IconButton icon={ArrowDown} label="Move lesson down" disabled={li === m.lessons.length - 1} onClick={() => setModules(form.modules.map((x, i) => (i === mi ? { ...x, lessons: moveIn(x.lessons, li, 1) } : x)))} />
+                        <IconButton icon={Trash2} label="Delete lesson" tone="danger" onClick={() => setModules(form.modules.map((x, i) => (i === mi ? { ...x, lessons: x.lessons.filter((_, j) => j !== li) } : x)))} />
                       </li>
                     ))}
                   </ul>
@@ -220,22 +227,26 @@ export function CourseEditor() {
 
 export function EventList() {
   useDocumentTitle('Events')
+  const { can } = useAuth()
+  const { toast, confirm } = useFeedback()
   const [f, setF] = useQueryState({ status: '', page: '1' })
+  const statuses = useStatuses()
   const { data, error, loading, reload } = useAsync(() => api.get<Paged<EventItem & { registrations: number }>>('/admin/events', { status: f.status, page: f.page }), [f.status, f.page])
   return (
     <div>
       <PageHeader title="Events" subtitle="Programs, webinars, workshops, conferences and industry visits." actions={<LinkButton to="/admin/events/new"><Plus className="size-4" />New event</LinkButton>} />
-      <Tabs value={f.status} onChange={(status) => setF({ status })} tabs={[{ value: '', label: 'All' }, ...['draft', 'pending_review', 'scheduled', 'published', 'archived'].map((s) => ({ value: s, label: label(s) }))]} />
+      <Tabs value={f.status} onChange={(status) => setF({ status })} tabs={[{ value: '', label: 'All' }, ...statuses.map((s) => ({ value: s, label: label(s) }))]} />
       <div className="mt-4">
         {loading ? <Loading /> : error ? <ErrorState error={error} onRetry={reload} /> : !data?.items.length ? <Empty title="No events yet" /> : (
           <Card className="divide-y divide-ink-900/8">
             {data.items.map((e) => (
-              <Link key={e._id} to={`/admin/events/${e._id}`} className="flex flex-wrap items-center gap-3 px-4 py-3 hover:bg-brand-50/40">
+              <div key={e._id} className="flex flex-wrap items-center gap-3 px-4 py-2.5 hover:bg-brand-50/40">
                 <div className="w-24 shrink-0 text-sm font-semibold text-ink-900">{formatDate(e.startAt)}</div>
-                <div className="min-w-0 flex-1"><p className="font-medium text-ink-900">{e.title}</p><p className="text-xs text-ink-500">{label(e.eventType)} · <AudienceSummary access={e.access} /></p></div>
+                <div className="min-w-0 flex-1"><Link to={`/admin/events/${e._id}`} className="font-medium text-ink-900 hover:text-brand-700">{e.title}</Link><p className="text-xs text-ink-500">{label(e.eventType)} · <AudienceSummary access={e.access} /></p></div>
                 {e.registration?.enabled && <Badge><Users className="size-3" />{e.registrations}{e.registration.capacity ? `/${e.registration.capacity}` : ''}</Badge>}
                 <StatusBadge status={e.status} />
-              </Link>
+                <RowActions label={e.title} viewTo={`/events/${e.slug}`} editTo={`/admin/events/${e._id}`} remove={can('content.publish') ? async () => { if (await confirm({ title: 'Delete event?', message: <>“{e.title}” will be permanently deleted. Registrations are removed too.</>, confirmLabel: 'Delete', danger: true })) { try { await api.del(`/admin/events/${e._id}`); toast('Deleted'); reload() } catch (err) { toast((err as Error).message, 'error') } } } : undefined} removeUnavailable="Deleting requires publishing rights" />
+              </div>
             ))}
           </Card>
         )}
@@ -259,8 +270,10 @@ export function EventEditor() {
   const { toast, confirm } = useFeedback()
   const { can } = useAuth()
   const { forms } = useLookups()
+  const defaultStatus = useDefaultStatus()
+  const regsOn = useFeature('admin.registrations') && can('members.manage')
   const existing = useAsync(() => (isNew ? Promise.resolve(null) : api.get<Record<string, any>>(`/admin/events/${id}`)), [id]) // eslint-disable-line @typescript-eslint/no-explicit-any
-  const regs = useAsync(() => (isNew || !can('members.manage') ? Promise.resolve([]) : api.get<{ _id: string; user: { name: string; email: string; category: string } | null; status: string; createdAt: string }[]>(`/admin/events/${id}/registrations`)), [id])
+  const regs = useAsync(() => (isNew || !regsOn ? Promise.resolve([]) : api.get<{ _id: string; user: { name: string; email: string; category: string } | null; status: string; createdAt: string }[]>(`/admin/events/${id}/registrations`)), [id])
   const [form, setForm] = useState<EventForm | null>(null)
   const [tab, setTab] = useState<'details' | 'content' | 'registrations'>('details')
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -273,7 +286,7 @@ export function EventEditor() {
   if (formSource && formSource !== syncedSource) {
     setSyncedSource(formSource)
     const e = existing.data
-    if (isNew) setForm({ title: '', slug: '', summary: '', eventType: 'webinar', startAt: '', endAt: '', location: { mode: 'online' }, registration: { enabled: true }, featuredImage: '', blocks: [], access: { visibility: 'public', roles: [], organizations: [] }, feedbackForm: null, publish: { status: 'draft' } })
+    if (isNew) setForm({ title: '', slug: '', summary: '', eventType: 'webinar', startAt: '', endAt: '', location: { mode: 'online' }, registration: { enabled: true }, featuredImage: '', blocks: [], access: { visibility: 'public', roles: [], organizations: [] }, feedbackForm: null, publish: { status: defaultStatus } })
     else if (e)
       setForm({
         title: e.title, slug: e.slug, summary: e.summary ?? '', eventType: e.eventType, startAt: e.startAt, endAt: e.endAt ?? '', location: e.location ?? { mode: 'in_person' },
@@ -324,7 +337,7 @@ export function EventEditor() {
       {errors._ && <div className="mb-4"><Alert tone="error">{errors._}</Alert></div>}
       <div className="grid gap-6 xl:grid-cols-[1fr_320px]">
         <div className="space-y-4">
-          <Tabs value={tab} onChange={setTab} tabs={[{ value: 'details', label: 'Details' }, { value: 'content', label: 'Page builder' }, ...(!isNew && can('members.manage') ? [{ value: 'registrations' as const, label: 'Registrations', count: regs.data?.filter((r) => r.status === 'registered').length }] : [])]} />
+          <Tabs value={tab} onChange={setTab} tabs={[{ value: 'details', label: 'Details' }, { value: 'content', label: 'Page builder' }, ...(!isNew && regsOn ? [{ value: 'registrations' as const, label: 'Registrations', count: regs.data?.filter((r) => r.status === 'registered').length }] : [])]} />
           {tab === 'details' && (
             <Card className="space-y-4 p-5">
               <Input label="Title" required value={form.title} onChange={(e) => update({ title: e.target.value })} error={errors.title} />
@@ -356,7 +369,7 @@ export function EventEditor() {
             </Card>
           )}
           {tab === 'content' && <BlockEditor blocks={form.blocks} onChange={(blocks) => update({ blocks })} forms={forms} />}
-          {tab === 'registrations' && (
+          {tab === 'registrations' && regsOn && (
             <Card className="overflow-x-auto">
               {!regs.data?.length ? <p className="p-6 text-sm text-ink-500">No registrations yet.</p> : (
                 <table className="w-full text-left text-sm">

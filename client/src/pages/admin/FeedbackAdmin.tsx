@@ -1,7 +1,9 @@
-import { ArrowDown, ArrowUp, Download, EyeOff, ListChecks, MessageSquareHeart, Plus, Star, Trash2, Users } from 'lucide-react'
+import { ArrowDown, ArrowUp, BarChart3, Download, EyeOff, ListChecks, MessageSquareHeart, Plus, Star, Trash2, Users } from 'lucide-react'
 import { Fragment, useState } from 'react'
 import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import { Alert, Badge, Button, Card, Checkbox, Empty, ErrorState, Input, Loading, Modal, PageHeader, Pagination, SearchInput, Select, StatTile, StatusBadge, Tabs, Textarea, useFeedback } from '../../components/ui'
+import { Alert, Badge, Button, Card, Checkbox, Empty, ErrorState, IconButton, Input, Loading, Modal, PageHeader, Pagination, RowActions, SearchInput, Select, StatTile, StatusBadge, Tabs, Textarea, useFeedback } from '../../components/ui'
+import { useFeatures } from '../../lib/features'
+import { useNavigate } from 'react-router-dom'
 import { ApiError, api, downloadUrl, type Paged } from '../../lib/api'
 import { useAuth } from '../../lib/auth'
 import { formatDate, formatDateTime, label } from '../../lib/format'
@@ -37,24 +39,36 @@ export function FeedbackForms() {
   const { toast, confirm } = useFeedback()
   const { data, error, loading, reload } = useAsync(() => api.get<FormRow[]>('/admin/feedback/forms'), [])
   const [editing, setEditing] = useState<Partial<FormRow> | null>(null)
+  const navigate = useNavigate()
   return (
     <div>
       <PageHeader title="Feedback Forms" subtitle="Build reusable forms, then attach them to opportunities, articles, courses, lessons or events." actions={<Button onClick={() => setEditing({ title: '', questions: [{ type: 'rating', label: 'How would you rate this?', required: true, options: [], scaleMax: 5 }], anonymity: 'identified', submissionPolicy: 'once', status: 'active' })}><Plus className="size-4" />New form</Button>} />
       {loading ? <Loading /> : error ? <ErrorState error={error} onRetry={reload} /> : !data?.length ? <Empty icon={<ListChecks className="size-8" />} title="No forms yet" /> : (
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {data.map((f) => (
-            <Card key={f._id} className="flex flex-col p-5">
-              <div className="flex items-start justify-between gap-2"><p className="font-semibold text-ink-900">{f.title}</p><StatusBadge status={f.status === 'active' ? 'active' : f.status} /></div>
-              <p className="mt-1 text-xs text-ink-500">{f.questions.length} questions · v{f.version} · {label(f.anonymity === 'optional' ? 'optional' : f.anonymity)} · {f.submissionPolicy === 'once' ? 'one response per person' : 'multiple responses'}</p>
-              <p className="mt-3 flex-1 text-sm text-ink-700">{f.responses} response{f.responses === 1 ? '' : 's'}</p>
-              <div className="mt-4 flex gap-2">
-                <Button size="sm" variant="outline" onClick={() => setEditing(f)}>Edit</Button>
-                <Button size="sm" variant="ghost" onClick={() => location.assign(`/admin/feedback?formId=${f._id}`)}>Analytics</Button>
-                {!f.responses && <Button size="sm" variant="ghost" aria-label="Delete" onClick={async () => { if (await confirm({ title: 'Delete form?', message: `“${f.title}” has no responses and will be deleted.`, danger: true, confirmLabel: 'Delete' })) { await api.del(`/admin/feedback/forms/${f._id}`); toast('Deleted'); reload() } }}><Trash2 className="size-4" /></Button>}
-              </div>
-            </Card>
-          ))}
-        </div>
+        <Card className="overflow-x-auto">
+          <table className="w-full min-w-[720px] text-left text-sm">
+            <thead className="border-b border-ink-900/8 bg-ink-900/[0.02] text-xs uppercase tracking-wider text-ink-500"><tr><th className="px-4 py-2.5">Form</th><th className="px-4 py-2.5">Respondents</th><th className="px-4 py-2.5 text-right">Responses</th><th className="px-4 py-2.5">Status</th><th className="px-4 py-2.5"><span className="sr-only">Actions</span></th></tr></thead>
+            <tbody className="divide-y divide-ink-900/8">
+              {data.map((f) => (
+                <tr key={f._id} className="hover:bg-brand-50/40">
+                  <td className="px-4 py-2.5"><button type="button" onClick={() => setEditing(f)} className="text-left font-medium text-ink-900 hover:text-brand-700">{f.title}</button><p className="text-xs text-ink-500">{f.questions.length} questions · v{f.version}</p></td>
+                  <td className="px-4 py-2.5 text-xs text-ink-700">{label(f.anonymity)} · {f.submissionPolicy === 'once' ? 'one each' : 'repeat allowed'}</td>
+                  <td className="px-4 py-2.5 text-right tabular-nums">{f.responses}</td>
+                  <td className="px-4 py-2.5"><StatusBadge status={f.status} /></td>
+                  <td className="px-4 py-2.5">
+                    <RowActions
+                      label={f.title}
+                      view={() => setEditing(f)}
+                      removeUnavailable="Forms with responses can't be deleted; close the form instead"
+                      remove={!f.responses ? async () => { if (await confirm({ title: 'Delete form?', message: `“${f.title}” has no responses and will be deleted.`, danger: true, confirmLabel: 'Delete' })) { await api.del(`/admin/feedback/forms/${f._id}`); toast('Deleted'); reload() } } : undefined}
+                    >
+                      <IconButton icon={BarChart3} tone="violet" label={`Analytics for ${f.title}`} onClick={() => navigate(`/admin/feedback?formId=${f._id}`)} />
+                    </RowActions>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Card>
       )}
       {editing && <FormBuilder form={editing} onClose={() => setEditing(null)} onSaved={() => { reload(); setEditing(null) }} />}
     </div>
@@ -108,9 +122,9 @@ function FormBuilder({ form, onClose, onSaved }: { form: Partial<FormRow>; onClo
                 <span className="text-xs font-semibold text-ink-500">Q{i + 1}</span>
                 <Select aria-label="Question type" value={q.type} onChange={(e) => setQ(i, { type: e.target.value as Question['type'], options: ['single_choice', 'multiple_choice'].includes(e.target.value) && !q.options?.length ? [{ label: 'Option 1' } as { _id: string; label: string }, { label: 'Option 2' } as { _id: string; label: string }] : q.options })} className="h-9 w-56">{QTYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}</Select>
                 <span className="flex-1" />
-                <button aria-label="Move up" disabled={i === 0} onClick={() => move(i, -1)} className="p-1 text-ink-500 disabled:opacity-30"><ArrowUp className="size-4" /></button>
-                <button aria-label="Move down" disabled={i === qs.length - 1} onClick={() => move(i, 1)} className="p-1 text-ink-500 disabled:opacity-30"><ArrowDown className="size-4" /></button>
-                <button aria-label="Delete question" onClick={() => setF({ ...f, questions: qs.filter((_, j) => j !== i) })} className="p-1 text-ink-500 hover:text-red-600"><Trash2 className="size-4" /></button>
+                <IconButton icon={ArrowUp} label="Move up" disabled={i === 0} onClick={() => move(i, -1)} />
+                <IconButton icon={ArrowDown} label="Move down" disabled={i === qs.length - 1} onClick={() => move(i, 1)} />
+                <IconButton icon={Trash2} label="Delete question" tone="danger" onClick={() => setF({ ...f, questions: qs.filter((_, j) => j !== i) })} />
               </div>
               <Input aria-label="Question" placeholder="Question" value={q.label} onChange={(e) => setQ(i, { label: e.target.value })} error={errors[`questions.${i}.label`]} />
               <Input aria-label="Help text" placeholder="Help text (optional)" value={q.help ?? ''} onChange={(e) => setQ(i, { help: e.target.value })} />
@@ -120,7 +134,7 @@ function FormBuilder({ form, onClose, onSaved }: { form: Partial<FormRow>; onClo
                   {(q.options ?? []).map((o, oi) => (
                     <div key={o._id ?? oi} className="flex gap-2">
                       <input aria-label={`Option ${oi + 1}`} className="h-9 flex-1 rounded-lg border border-ink-300/70 px-3 text-sm" value={o.label} onChange={(e) => setQ(i, { options: q.options.map((x, j) => (j === oi ? { ...x, label: e.target.value } : x)) })} />
-                      <button aria-label="Remove option" onClick={() => setQ(i, { options: q.options.filter((_, j) => j !== oi) })} className="p-1 text-ink-500 hover:text-red-600"><Trash2 className="size-4" /></button>
+                      <IconButton icon={Trash2} label="Remove option" tone="danger" onClick={() => setQ(i, { options: q.options.filter((_, j) => j !== oi) })} />
                     </div>
                   ))}
                   <Button size="sm" variant="ghost" onClick={() => setQ(i, { options: [...(q.options ?? []), { label: `Option ${(q.options?.length ?? 0) + 1}` } as { _id: string; label: string }] })}><Plus className="size-4" />Option</Button>
@@ -190,7 +204,9 @@ export function FeedbackAnalytics() {
   const chart = useChartColors()
   useDocumentTitle('Feedback analytics')
   const { can } = useAuth()
+  const on = useFeatures()
   const identified = can('feedback.viewIdentified')
+  const byMember = identified && on('admin.feedback.byMember')
   const [f, setF] = useQueryState({ view: 'summary', from: '', to: '', targetType: '', target: '', courseId: '', formId: '', userId: '', category: '', minRating: '', anonymous: '', q: '', page: '1' })
   const { data: meta } = useAsync(() => api.get<Targets>('/admin/feedback/analytics/targets'), [])
   const filters = {
@@ -201,14 +217,14 @@ export function FeedbackAnalytics() {
   const deps = [f.from, f.to, f.targetType, f.target, f.courseId, f.formId, f.userId, f.category, f.minRating, f.anonymous]
   const summary = useAsync(() => (f.view === 'summary' || f.view === 'courses' ? api.get<Summary>('/admin/feedback/analytics/summary', filters) : Promise.resolve(null)), [f.view, ...deps])
   const responses = useAsync(() => (f.view === 'responses' ? api.get<Paged<Response>>('/admin/feedback/analytics/responses', { ...filters, q: f.q, page: f.page }) : Promise.resolve(null)), [f.view, f.q, f.page, ...deps])
-  const users = useAsync(() => (f.view === 'users' && identified ? api.get<{ userId: string; name: string; email: string; category: string; count: number; avg: number | null; last: string }[]>('/admin/feedback/analytics/users') : Promise.resolve(null)), [f.view])
+  const users = useAsync(() => (f.view === 'users' && byMember ? api.get<{ userId: string; name: string; email: string; category: string; count: number; avg: number | null; last: string }[]>('/admin/feedback/analytics/users') : Promise.resolve(null)), [f.view])
   const [open, setOpen] = useState<Response | null>(null)
   const hasFilters = deps.some(Boolean)
   const course = meta?.courses.find((c) => c._id === f.courseId)
 
   return (
     <div className="space-y-5">
-      <PageHeader title="Feedback Analytics" subtitle="Based on stored responses. Anonymous responses never reveal who submitted them." actions={<Button variant="outline" onClick={() => downloadUrl('/admin/feedback/analytics/export.csv', filters)}><Download className="size-4" />Export CSV</Button>} />
+      <PageHeader title="Feedback Analytics" subtitle="Based on stored responses. Anonymous responses never reveal who submitted them." actions={on('admin.exports') && <Button variant="outline" onClick={() => downloadUrl('/admin/feedback/analytics/export.csv', filters)}><Download className="size-4" />Export CSV</Button>} />
 
       <Card className="grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4">
         <Input label="From" type="date" value={f.from} onChange={(e) => setF({ from: e.target.value })} />
@@ -223,7 +239,7 @@ export function FeedbackAnalytics() {
         {hasFilters && <div className="flex items-end"><Button variant="ghost" onClick={() => setF({ from: '', to: '', targetType: '', target: '', courseId: '', formId: '', userId: '', category: '', minRating: '', anonymous: '' })}>Reset filters</Button></div>}
       </Card>
 
-      <Tabs value={f.view} onChange={(view) => setF({ view })} tabs={[{ value: 'summary', label: 'Summary' }, { value: 'courses', label: 'Courses & lessons' }, { value: 'responses', label: 'Responses' }, ...(identified ? [{ value: 'users', label: 'By member' }] : [])]} />
+      <Tabs value={f.view} onChange={(view) => setF({ view })} tabs={[{ value: 'summary', label: 'Summary' }, { value: 'courses', label: 'Courses & lessons' }, { value: 'responses', label: 'Responses' }, ...(byMember ? [{ value: 'users', label: 'By member' }] : [])]} />
 
       {f.view === 'summary' && (summary.loading ? <Loading /> : summary.error ? <ErrorState error={summary.error} onRetry={summary.reload} /> : summary.data && (
         summary.data.total === 0 ? <Empty icon={<MessageSquareHeart className="size-8" />} title="No feedback matches these filters">Responses appear here as members submit feedback.</Empty> : (
@@ -346,13 +362,14 @@ export function FeedbackAnalytics() {
             <>
               <Card className="divide-y divide-ink-900/8">
                 {responses.data.items.map((r) => (
-                  <button key={r._id} onClick={() => setOpen(r)} className="flex w-full flex-wrap items-center gap-3 px-4 py-3 text-left hover:bg-brand-50/40">
+                  <div key={r._id} role="button" tabIndex={0} onClick={() => setOpen(r)} onKeyDown={(e) => e.key === 'Enter' && setOpen(r)} className="flex w-full cursor-pointer flex-wrap items-center gap-3 px-4 py-2.5 text-left hover:bg-brand-50/40">
                     <div className="min-w-0 flex-1">
                       <p className="font-medium text-ink-900">{r.targetTitle}</p>
                       <p className="text-xs text-ink-500">{r.form?.title} v{r.formVersion} · {formatDateTime(r.submittedAt)} · {r.anonymous ? 'Anonymous' : r.user ? `${r.user.name} (${label(r.respondentCategory)})` : 'Identity hidden'}</p>
                     </div>
                     <Stars value={r.ratingAvg} />
-                  </button>
+                    <RowActions label="response" view={() => setOpen(r)} />
+                  </div>
                 ))}
               </Card>
               <Pagination page={responses.data.page} pages={responses.data.pages} onChange={(p) => setF({ page: String(p) })} />
@@ -361,7 +378,7 @@ export function FeedbackAnalytics() {
         </div>
       )}
 
-      {f.view === 'users' && identified && (
+      {f.view === 'users' && byMember && (
         users.loading ? <Loading /> : !users.data?.length ? <Empty icon={<Users className="size-8" />} title="No identified feedback yet" /> : (
           <Card className="overflow-x-auto">
             <table className="w-full min-w-[560px] text-left text-sm">

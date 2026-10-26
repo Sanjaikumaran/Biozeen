@@ -8,7 +8,10 @@ export const ACCENTS = [
   { key: 'plum', label: 'Plum', swatch: '#7a3273', highlight: '#ec8fe4' },
   { key: 'terracotta', label: 'Terracotta', swatch: '#994322', highlight: '#fdab63' },
 ] as const
-export type Accent = (typeof ACCENTS)[number]['key']
-export interface ThemeChoice { mode: ThemeMode; accent: Accent }
+/** A preset accent, or 'custom' for a colour the user picks (stored as `custom`, a #rrggbb hex). */
+export type Accent = (typeof ACCENTS)[number]['key'] | 'custom'
+export interface ThemeChoice { mode: ThemeMode; accent: Accent; custom?: string }
 
 export const DEFAULT_THEME: ThemeChoice = { mode: 'system', accent: 'forest' }
+export const DEFAULT_CUSTOM = '#6d28d9'
+export const isHex = (v: unknown): v is string => typeof v === 'string' && /^#[0-9a-f]{6}$/i.test(v)

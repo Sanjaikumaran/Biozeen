@@ -7,6 +7,7 @@ import { useAsync } from '../../lib/hooks'
 import type { Access, PublicationStatus } from '../../lib/types'
 import { Alert, Card, Input, Select, StatusBadge } from '../ui'
 import { cx } from '../../lib/cx'
+import { useFeatures } from '../../lib/features'
 
 export interface Lookups {
   roles: { _id: string; name: string; displayName: string }[]
@@ -98,10 +99,34 @@ export interface PublishState {
   expireAt?: string | null
 }
 
+/** Publication statuses and the developer-console feature that offers each; "published" always exists. */
+const STATUS_FEATURE: Partial<Record<PublicationStatus, string>> = {
+  draft: 'publishing.drafts', pending_review: 'publishing.review', approved: 'publishing.review',
+  scheduled: 'publishing.scheduled', unpublished: 'publishing.unpublish', archived: 'publishing.archive',
+}
+// eslint-disable-next-line react-refresh/only-export-components
+export const ALL_STATUSES: PublicationStatus[] = ['draft', 'pending_review', 'approved', 'scheduled', 'published', 'unpublished', 'archived']
+
+/** Statuses that are switched on (optionally limited to a list), for status tabs and pickers. */
+// eslint-disable-next-line react-refresh/only-export-components
+export function useStatuses(list: PublicationStatus[] = ALL_STATUSES) {
+  const on = useFeatures()
+  return list.filter((s) => on(STATUS_FEATURE[s]))
+}
+
+/** Status a new item starts in: a draft when drafts are on, otherwise the first one this user may pick. */
+// eslint-disable-next-line react-refresh/only-export-components
+export function useDefaultStatus(): PublicationStatus {
+  const { can } = useAuth()
+  const statuses = useStatuses(can('content.publish') ? ALL_STATUSES : ['draft', 'pending_review'])
+  return statuses.includes('draft') ? 'draft' : statuses.includes('pending_review') ? 'pending_review' : statuses[0] ?? 'published'
+}
+
 export function PublishPanel({ value, onChange, errors }: { value: PublishState; onChange: (v: PublishState) => void; errors?: Record<string, string> }) {
   const { can } = useAuth()
+  const on = useFeatures()
   const canPublish = can('content.publish')
-  const statuses: PublicationStatus[] = canPublish ? ['draft', 'pending_review', 'approved', 'scheduled', 'published', 'unpublished', 'archived'] : ['draft', 'pending_review']
+  const statuses = useStatuses(canPublish ? ALL_STATUSES : ['draft', 'pending_review'])
   return (
     <Card className="space-y-3 p-4">
       <div className="flex items-center justify-between"><p className="font-semibold text-ink-900">Publishing</p><StatusBadge status={value.status} /></div>
@@ -109,9 +134,9 @@ export function PublishPanel({ value, onChange, errors }: { value: PublishState;
         {statuses.map((s) => <option key={s} value={s}>{label(s)}</option>)}
         {!statuses.includes(value.status) && <option value={value.status}>{label(value.status)}</option>}
       </Select>
-      {!canPublish && <Alert tone="info">You can save drafts and submit for review. A publisher will make it live.</Alert>}
-      <Input label="Publish date" type="datetime-local" value={toLocalInput(value.publishAt)} onChange={(e) => onChange({ ...value, publishAt: fromLocalInput(e.target.value) })} error={errors?.publishAt} hint={value.status === 'scheduled' ? 'Goes live automatically at this time' : 'Optional'} />
-      <Input label="Expiry date" type="datetime-local" value={toLocalInput(value.expireAt)} onChange={(e) => onChange({ ...value, expireAt: fromLocalInput(e.target.value) })} hint="Hidden from members after this time" />
+      {!canPublish && <Alert tone="info">{statuses.length ? 'You can save drafts and submit for review. A publisher will make it live.' : 'Drafts and reviews are switched off, so only publishers can save changes.'}</Alert>}
+      {on('publishing.scheduled') && <Input label="Publish date" type="datetime-local" value={toLocalInput(value.publishAt)} onChange={(e) => onChange({ ...value, publishAt: fromLocalInput(e.target.value) })} error={errors?.publishAt} hint={value.status === 'scheduled' ? 'Goes live automatically at this time' : 'Optional'} />}
+      {on('publishing.expiry') && <Input label="Expiry date" type="datetime-local" value={toLocalInput(value.expireAt)} onChange={(e) => onChange({ ...value, expireAt: fromLocalInput(e.target.value) })} hint="Hidden from members after this time" />}
     </Card>
   )
 }

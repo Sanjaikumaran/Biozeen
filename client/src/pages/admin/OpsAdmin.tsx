@@ -1,8 +1,9 @@
-import { Download, History, Inbox, Lock, Pencil, Plus, Trash2, Upload } from 'lucide-react'
+import { Copy, Download, History, Inbox, Lock, Plus, Upload } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { MediaIcon } from '../../components/admin/MediaPicker'
 import { uploadMedia, type MediaAsset } from '../../lib/media'
-import { Alert, Badge, Button, Card, Checkbox, Empty, ErrorState, Input, Loading, Modal, PageHeader, Pagination, SearchInput, Select, StatusBadge, Tabs, TagInput, Textarea, useFeedback } from '../../components/ui'
+import { Alert, Badge, Button, Card, Checkbox, Empty, ErrorState, IconButton, Input, Loading, Modal, PageHeader, Pagination, RowActions, SearchInput, Select, StatusBadge, Tabs, TagInput, Textarea, useFeedback } from '../../components/ui'
+import { useFeature } from '../../lib/features'
 import { ApiError, api, downloadUrl, type Paged } from '../../lib/api'
 import { formatBytes, formatDateTime, label, timeAgo } from '../../lib/format'
 import { useAsync, useDebounced, useDocumentTitle, useQueryState } from '../../lib/hooks'
@@ -31,6 +32,7 @@ interface RequestRow {
 
 export function Requests() {
   useDocumentTitle('Requests')
+  const exportsOn = useFeature('admin.exports')
   const [f, setF] = useQueryState({ status: '', type: '', q: '', page: '1', open: '' })
   const q = useDebounced(f.q)
   const { data, error, loading, reload } = useAsync(() => api.get<Paged<RequestRow> & { statusCounts: Record<string, number> }>('/admin/contacts', { status: f.status, type: f.type, q, page: f.page }), [f.status, f.type, q, f.page])
@@ -39,7 +41,7 @@ export function Requests() {
   const setOpenId = (id: string | null) => setF({ open: id ?? '', page: f.page })
   return (
     <div>
-      <PageHeader title="Contact & Collaboration Requests" actions={<Button variant="outline" onClick={() => downloadUrl('/admin/contacts/export.csv', { status: f.status, type: f.type, q })}><Download className="size-4" />Export CSV</Button>} />
+      <PageHeader title="Contact & Collaboration Requests" actions={exportsOn && <Button variant="outline" onClick={() => downloadUrl('/admin/contacts/export.csv', { status: f.status, type: f.type, q })}><Download className="size-4" />Export CSV</Button>} />
       <Tabs value={f.status} onChange={(status) => setF({ status })} tabs={[{ value: '', label: 'All' }, ...['new', 'in_progress', 'responded', 'closed'].map((s) => ({ value: s, label: label(s), count: data?.statusCounts?.[s] ?? 0 }))]} />
       <div className="my-4 flex flex-wrap items-center gap-3">
         <SearchInput value={f.q} onChange={(q) => setF({ q })} placeholder="Search name, email, message…" />
@@ -49,7 +51,7 @@ export function Requests() {
         <>
           <Card className="divide-y divide-ink-900/8">
             {data.items.map((r) => (
-              <button key={r._id} onClick={() => setOpenId(r._id)} className="flex w-full flex-wrap items-center gap-3 px-4 py-3 text-left hover:bg-brand-50/40">
+              <div key={r._id} role="button" tabIndex={0} onClick={() => setOpenId(r._id)} onKeyDown={(e) => e.key === 'Enter' && setOpenId(r._id)} className="flex w-full cursor-pointer flex-wrap items-center gap-3 px-4 py-2.5 text-left hover:bg-brand-50/40">
                 <div className="min-w-0 flex-1">
                   <p className="font-medium text-ink-900">{r.subject || label(r.type)}</p>
                   <p className="truncate text-xs text-ink-500">{r.name} · {r.email}{r.organization && ` · ${r.organization}`}{r.targetExpert?.user && ` → ${r.targetExpert.user.name}`}</p>
@@ -58,7 +60,8 @@ export function Requests() {
                 {r.assignedTo && <span className="text-xs text-ink-500">@{r.assignedTo.name}</span>}
                 <StatusBadge status={r.status} />
                 <span className="w-24 text-right text-xs text-ink-500">{timeAgo(r.createdAt)}</span>
-              </button>
+                <RowActions label={r.subject || label(r.type)} view={() => setOpenId(r._id)} />
+              </div>
             ))}
           </Card>
           <Pagination page={data.page} pages={data.pages} onChange={(p) => setF({ page: String(p) })} />
@@ -75,6 +78,8 @@ function RequestDetail({ id, onClose, onChanged }: { id: string; onClose: () => 
   const admins = useAsync(() => api.get<Paged<{ _id: string; name: string; roles: { name: string }[] }>>('/admin/users', { status: 'active', limit: 100 }).catch(() => null), [])
   const [note, setNote] = useState('')
   const [response, setResponse] = useState<string | null>(null)
+  const notesOn = useFeature('admin.requests.notes')
+  const replyOn = useFeature('admin.requests.reply')
   const staff = (admins.data?.items ?? []).filter((u) => u.roles.some((r) => !['member', 'industry', 'academia', 'startup', 'expert', 'alumni', 'student', 'professional'].includes(r.name)))
 
   async function patch(body: Record<string, unknown>, msg: string) {
@@ -105,15 +110,15 @@ function RequestDetail({ id, onClose, onChanged }: { id: string; onClose: () => 
           <p className="whitespace-pre-line rounded-lg bg-ink-900/[0.03] p-4">{data.message}</p>
           <div className="grid gap-3 sm:grid-cols-2">
             <Select label="Status" value={data.status} onChange={(e) => patch({ status: e.target.value }, 'Status updated')}>{['new', 'in_progress', 'responded', 'closed'].map((s) => <option key={s} value={s}>{label(s)}</option>)}</Select>
-            <Select label="Assigned to" value={data.assignedTo?._id ?? ''} onChange={(e) => patch({ assignedTo: e.target.value || null }, 'Assignment updated')}><option value="">Unassigned</option>{staff.map((u) => <option key={u._id} value={u._id}>{u.name}</option>)}</Select>
+            {notesOn && <Select label="Assigned to" value={data.assignedTo?._id ?? ''} onChange={(e) => patch({ assignedTo: e.target.value || null }, 'Assignment updated')}><option value="">Unassigned</option>{staff.map((u) => <option key={u._id} value={u._id}>{u.name}</option>)}</Select>}
           </div>
-          {data.user ? (
+          {!replyOn ? null : data.user ? (
             <div className="space-y-2">
               <Textarea label="Reply to member (visible in their dashboard)" value={response ?? data.response ?? ''} onChange={(e) => setResponse(e.target.value)} rows={3} />
               <Button size="sm" disabled={response === null} onClick={() => { patch({ response: response ?? '' }, 'Reply saved'); setResponse(null) }}>Save reply</Button>
             </div>
           ) : <Alert tone="info">This requester has no member account — reply by email at {data.email}.</Alert>}
-          <div>
+          {notesOn && <div>
             <p className="mb-2 font-semibold text-ink-900">Internal notes</p>
             <ul className="mb-2 space-y-2">
               {data.notes?.map((n) => <li key={n._id} className="rounded-lg bg-amber-50 p-3"><p className="whitespace-pre-line">{n.text}</p><p className="mt-1 text-xs text-ink-500">{n.author?.name} · {timeAgo(n.at)}</p></li>)}
@@ -123,7 +128,7 @@ function RequestDetail({ id, onClose, onChanged }: { id: string; onClose: () => 
               <input aria-label="New note" value={note} onChange={(e) => setNote(e.target.value)} placeholder="Add an internal note…" className="h-10 flex-1 rounded-lg border border-ink-300/70 px-3" />
               <Button disabled={!note.trim()} onClick={async () => { await api.post(`/admin/contacts/${id}/notes`, { text: note }); setNote(''); reload() }}>Add</Button>
             </div>
-          </div>
+          </div>}
         </div>
       )}
     </Modal>
@@ -154,15 +159,14 @@ export function Taxonomy() {
   }
 
   const section = (kind: 'categories' | 'tags', items: (Ref & { status?: string })[]) => (
-    <Card className="p-5">
-      <div className="mb-3 flex items-center justify-between"><h2 className="font-semibold">{kind === 'categories' ? 'Categories' : 'Tags'}</h2><Button size="sm" onClick={() => setEdit({ kind, name: '' })}><Plus className="size-4" />Add</Button></div>
+    <Card className="p-4">
+      <div className="mb-2 flex items-center justify-between"><h2 className="font-semibold">{kind === 'categories' ? 'Categories' : 'Tags'}</h2><Button size="sm" onClick={() => setEdit({ kind, name: '' })}><Plus className="size-4" />Add</Button></div>
       <ul className="divide-y divide-ink-900/8">
         {items.map((i) => (
-          <li key={i._id} className="flex items-center gap-2 py-2">
+          <li key={i._id} className="flex items-center gap-2 py-1.5">
             <span className="flex-1 text-sm">{i.name} <span className="text-xs text-ink-500">/{i.slug}</span></span>
             {i.status === 'inactive' && <Badge>Inactive</Badge>}
-            <Button size="sm" variant="ghost" aria-label="Edit" onClick={() => setEdit({ kind, ...i })}><Pencil className="size-4" /></Button>
-            <Button size="sm" variant="ghost" aria-label="Delete" onClick={async () => { if (await confirm({ title: `Delete ${i.name}?`, message: 'Items using it must be updated first.', danger: true, confirmLabel: 'Delete' })) { try { await api.del(`/admin/taxonomy/${kind}/${i._id}`); toast('Deleted'); reload() } catch (e) { toast((e as Error).message, 'error') } } }}><Trash2 className="size-4" /></Button>
+            <RowActions label={i.name} edit={() => setEdit({ kind, ...i })} remove={async () => { if (await confirm({ title: `Delete ${i.name}?`, message: 'Items using it must be updated first.', danger: true, confirmLabel: 'Delete' })) { try { await api.del(`/admin/taxonomy/${kind}/${i._id}`); toast('Deleted'); reload() } catch (e) { toast((e as Error).message, 'error') } } }} />
           </li>
         ))}
       </ul>
@@ -218,19 +222,25 @@ export function MediaLibrary() {
       </Card>
       {loading ? <Loading /> : error ? <ErrorState error={error} onRetry={reload} /> : !data?.items.length ? <Empty title="No files" /> : (
         <>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5 2xl:grid-cols-6">
             {data.items.map((m) => (
               <Card key={m._id} className="flex flex-col overflow-hidden">
                 <a href={m.url} target="_blank" rel="noopener noreferrer" className="relative block aspect-[4/3] overflow-hidden bg-ink-900/5" aria-label={`Open ${m.originalName}`}>
                   {m.kind === 'image' ? <img src={m.url} alt="" loading="lazy" className="absolute inset-0 size-full object-cover" /> : <span className="absolute inset-0 grid place-items-center"><MediaIcon kind={m.kind} className="size-8 text-ink-500" /></span>}
                 </a>
-                <div className="flex flex-1 flex-col gap-0.5 p-3">
+                <div className="flex flex-1 flex-col gap-0.5 p-2.5">
                   <p className="truncate text-sm font-medium text-ink-900" title={m.originalName}>{m.originalName}</p>
                   <p className="text-xs text-ink-500">{formatBytes(m.size)} · {m.linked.length ? `used by ${m.linked.length}` : 'unused'}</p>
                   <p className="text-xs text-ink-500">{m.inheritAccess && m.linked.length ? 'Follows linked content' : label(m.access.visibility)}</p>
-                  <div className="mt-auto flex items-center justify-between gap-1 border-t border-ink-900/8 pt-2">
-                    <Button size="sm" variant="ghost" className="-ml-2" onClick={() => setEditing(m)}><Lock className="size-3.5" />Access</Button>
-                    <Button size="sm" variant="ghost" className="-mr-2 hover:text-red-600" aria-label="Delete" onClick={async () => { if (await confirm({ title: 'Delete file?', message: m.originalName, danger: true, confirmLabel: 'Delete' })) { try { await api.del(`/admin/media/${m._id}`); toast('Deleted'); reload() } catch (e) { toast((e as Error).message, 'error') } } }}><Trash2 className="size-4" /></Button>
+                  <div className="mt-auto flex items-center justify-end border-t border-ink-900/8 pt-1.5">
+                    <RowActions
+                      label={m.originalName}
+                      viewHref={m.url}
+                      remove={async () => { if (await confirm({ title: 'Delete file?', message: m.originalName, danger: true, confirmLabel: 'Delete' })) { try { await api.del(`/admin/media/${m._id}`); toast('Deleted'); reload() } catch (e) { toast((e as Error).message, 'error') } } }}
+                    >
+                      <IconButton icon={Copy} tone="brand" label="Copy link" onClick={async () => { try { await navigator.clipboard.writeText(new URL(m.url, location.origin).href); toast('Link copied') } catch { toast('Could not copy the link', 'error') } }} />
+                      <IconButton icon={Lock} tone="violet" label="Access" onClick={() => setEditing(m)} />
+                    </RowActions>
                   </div>
                 </div>
               </Card>
@@ -253,11 +263,14 @@ export function MediaLibrary() {
 
 // ---------------------------------------------------------------- audit log
 
+interface AuditEntry { _id: string; at: string; actorEmail?: string; action: string; entityType: string; entityId?: string; summary?: string; meta?: unknown; ip?: string }
+
 export function AuditLog() {
   useDocumentTitle('Audit log')
   const [f, setF] = useQueryState({ entityType: '', q: '', page: '1' })
   const q = useDebounced(f.q)
-  const { data, error, loading, reload } = useAsync(() => api.get<Paged<{ _id: string; at: string; actorEmail?: string; action: string; entityType: string; summary?: string; meta?: unknown; ip?: string }> & { entityTypes: string[] }>('/admin/audit', { entityType: f.entityType, q, page: f.page }), [f.entityType, q, f.page])
+  const { data, error, loading, reload } = useAsync(() => api.get<Paged<AuditEntry> & { entityTypes: string[] }>('/admin/audit', { entityType: f.entityType, q, page: f.page }), [f.entityType, q, f.page])
+  const [open, setOpen] = useState<AuditEntry | null>(null)
   return (
     <div>
       <PageHeader title="Audit Log" subtitle="Administrative actions on sensitive records. Secrets are never recorded." />
@@ -269,14 +282,15 @@ export function AuditLog() {
         <>
           <Card className="overflow-x-auto">
             <table className="w-full min-w-[760px] text-left text-sm">
-              <thead className="border-b border-ink-900/8 bg-ink-900/[0.02] text-xs uppercase tracking-wider text-ink-500"><tr><th className="px-4 py-2.5">When</th><th className="px-4 py-2.5">Actor</th><th className="px-4 py-2.5">Action</th><th className="px-4 py-2.5">Summary</th></tr></thead>
+              <thead className="border-b border-ink-900/8 bg-ink-900/[0.02] text-xs uppercase tracking-wider text-ink-500"><tr><th className="px-4 py-2.5">When</th><th className="px-4 py-2.5">Actor</th><th className="px-4 py-2.5">Action</th><th className="px-4 py-2.5">Summary</th><th className="px-4 py-2.5"><span className="sr-only">Actions</span></th></tr></thead>
               <tbody className="divide-y divide-ink-900/8">
                 {data.items.map((a) => (
-                  <tr key={a._id}>
+                  <tr key={a._id} className="cursor-pointer hover:bg-brand-50/40" onClick={() => setOpen(a)}>
                     <td className="whitespace-nowrap px-4 py-2.5 text-xs text-ink-500">{formatDateTime(a.at)}</td>
                     <td className="px-4 py-2.5 text-xs">{a.actorEmail ?? 'system'}</td>
                     <td className="px-4 py-2.5"><Badge>{a.action}</Badge></td>
-                    <td className="px-4 py-2.5">{a.summary}{a.meta ? <details className="mt-1 text-xs text-ink-500"><summary className="cursor-pointer">Details</summary><pre className="mt-1 overflow-x-auto whitespace-pre-wrap">{JSON.stringify(a.meta, null, 2)}</pre></details> : null}</td>
+                    <td className="px-4 py-2.5">{a.summary}</td>
+                    <td className="px-4 py-2.5"><RowActions label="entry" view={() => setOpen(a)} /></td>
                   </tr>
                 ))}
               </tbody>
@@ -285,7 +299,46 @@ export function AuditLog() {
           <Pagination page={data.page} pages={data.pages} onChange={(p) => setF({ page: String(p) })} />
         </>
       )}
+      {open && <AuditDetail entry={open} onClose={() => setOpen(null)} />}
     </div>
+  )
+}
+
+function AuditDetail({ entry, onClose }: { entry: AuditEntry; onClose: () => void }) {
+  const { toast } = useFeedback()
+  const json = JSON.stringify(entry, null, 2)
+  return (
+    <Modal open onClose={onClose} size="lg" title={<span className="inline-flex items-center gap-2"><History className="size-4 text-brand-600" />Audit entry</span>} actions={<IconButton icon={Copy} tone="brand" label="Copy JSON" onClick={async () => { try { await navigator.clipboard.writeText(json); toast('JSON copied') } catch { toast('Could not copy', 'error') } }} />}>
+      <div className="space-y-4 text-sm">
+        <dl className="grid grid-cols-[110px_1fr] gap-x-3 gap-y-1.5">
+          <dt className="text-ink-500">When</dt><dd>{formatDateTime(entry.at)}</dd>
+          <dt className="text-ink-500">Actor</dt><dd>{entry.actorEmail ?? 'system'}</dd>
+          <dt className="text-ink-500">Action</dt><dd><Badge>{entry.action}</Badge></dd>
+          <dt className="text-ink-500">Record</dt><dd>{entry.entityType}{entry.entityId && <span className="ml-1 font-mono text-xs text-ink-500">{entry.entityId}</span>}</dd>
+          {entry.ip && <><dt className="text-ink-500">IP address</dt><dd className="font-mono text-xs">{entry.ip}</dd></>}
+          {entry.summary && <><dt className="text-ink-500">Summary</dt><dd>{entry.summary}</dd></>}
+        </dl>
+        <div>
+          <p className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-ink-500">JSON</p>
+          <JsonView value={entry} />
+        </div>
+      </div>
+    </Modal>
+  )
+}
+
+/** Syntax-highlighted, read-only JSON. */
+function JsonView({ value }: { value: unknown }) {
+  const json = JSON.stringify(value, null, 2) ?? ''
+  const parts = json.split(/("(?:\\.|[^"\\])*"(?:\s*:)?|\b(?:true|false|null)\b|-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)/g)
+  return (
+    <pre className="max-h-[60vh] overflow-auto rounded-lg border border-ink-900/10 bg-ink-900/[0.03] p-3 font-mono text-xs leading-relaxed text-ink-700">
+      {parts.map((p, i) => {
+        if (i % 2 === 0) return p
+        const cls = p.endsWith(':') ? 'text-brand-700' : p.startsWith('"') ? 'text-amber-700' : /true|false|null/.test(p) ? 'text-violet-600' : 'text-sky-700'
+        return <span key={i} className={cls}>{p}</span>
+      })}
+    </pre>
   )
 }
 

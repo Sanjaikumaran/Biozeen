@@ -7,7 +7,7 @@ import { PERMISSIONS } from "../lib/permissions.js";
 import { requirePermission } from "../middleware/auth.js";
 import { CONTACT_STATUSES, CONTACT_TYPES, ContactRequest } from "../models/admin.js";
 import { notify, notifyPermission } from "../lib/notify.js";
-import { requireFeature } from "../lib/features.js";
+import { featureOff, isFeatureOn, requireFeature } from "../lib/features.js";
 
 export const contactRouter = Router();
 export const adminContactsRouter = Router();
@@ -93,7 +93,7 @@ adminContactsRouter.get("/", async (req, res) => {
   res.json({ ...paged(items, total, page, limit), statusCounts: Object.fromEntries(counts.map((c) => [c._id, c.n])) });
 });
 
-adminContactsRouter.get("/export.csv", async (req, res) => {
+adminContactsRouter.get("/export.csv", requireFeature("admin.exports"), async (req, res) => {
   const items = await ContactRequest.find(filter(req.query)).sort({ createdAt: -1 }).limit(10000).lean();
   await audit(req, "export", "ContactRequest", null, `Exported ${items.length} contact requests`);
   res
@@ -122,6 +122,8 @@ adminContactsRouter.patch("/:id", async (req, res) => {
     }),
     req.body,
   );
+  if (data.assignedTo !== undefined && !(await isFeatureOn("admin.requests.notes", req.user))) throw featureOff();
+  if (data.response !== undefined && !(await isFeatureOn("admin.requests.reply", req.user))) throw featureOff();
   const item = await ContactRequest.findById(oid(String(req.params.id)));
   if (!item) throw notFound("Request");
   const before = item.status;
@@ -148,7 +150,7 @@ adminContactsRouter.patch("/:id", async (req, res) => {
   res.json(item);
 });
 
-adminContactsRouter.post("/:id/notes", async (req, res) => {
+adminContactsRouter.post("/:id/notes", requireFeature("admin.requests.notes"), async (req, res) => {
   const { text } = parse(z.object({ text: z.string().trim().min(1, "Note cannot be empty").max(3000) }), req.body);
   const item = await ContactRequest.findByIdAndUpdate(
     oid(String(req.params.id)),

@@ -1,4 +1,4 @@
-import { AlertTriangle, CheckCircle2, ChevronLeft, ChevronRight, Info, Loader2, Lock, PowerOff, Search, X } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, ChevronLeft, ChevronRight, Eye, Info, Loader2, Lock, Pencil, PowerOff, Search, Trash2, X, type LucideIcon } from 'lucide-react'
 import {
   createContext,
   useCallback,
@@ -67,6 +67,68 @@ export function LinkButton({ to, variant = 'primary', size = 'md', className, ch
   )
 }
 
+// ---------------------------------------------------------------- row actions
+
+/** Action colours, the same everywhere: view blue, edit amber, delete red, analytics violet. */
+type IconTone = 'default' | 'view' | 'edit' | 'danger' | 'brand' | 'violet'
+const ICON_TONES: Record<IconTone, string> = {
+  default: 'text-ink-500 hover:bg-ink-900/5 hover:text-ink-900',
+  view: 'text-sky-700 hover:bg-sky-50',
+  edit: 'text-amber-800 hover:bg-amber-50',
+  danger: 'text-red-700 hover:bg-red-50',
+  brand: 'text-brand-600 hover:bg-brand-50',
+  violet: 'text-violet-700 hover:bg-violet-50',
+}
+
+/**
+ * Square icon button for actions on a row or card. The label is the tooltip and the accessible
+ * name; `to` renders a router link and `href` a plain link (files, new tabs).
+ */
+export function IconButton({ icon: Icon, label: text, onClick, to, href, newTab, tone = 'default', disabled, unavailable, className }: { icon: LucideIcon; label: string; onClick?: () => void; to?: string; href?: string; newTab?: boolean; tone?: IconTone; disabled?: boolean; unavailable?: string; className?: string }) {
+  // An unavailable action stays in place (so columns line up) and its tooltip says why.
+  if (unavailable) return <span className={cx('inline-flex size-8 shrink-0 cursor-not-allowed items-center justify-center rounded-lg text-ink-300', className)} title={unavailable} aria-label={`${text}: ${unavailable}`} role="img"><Icon className="size-4" aria-hidden /></span>
+  const cls = cx(
+    'inline-flex size-8 shrink-0 items-center justify-center rounded-lg transition-colors disabled:cursor-not-allowed disabled:opacity-40',
+    ICON_TONES[tone],
+    className,
+  )
+  const tab = newTab ? { target: '_blank', rel: 'noopener noreferrer' } : {}
+  const icon = <Icon className="size-4" aria-hidden />
+  if (to) return <Link to={to} className={cls} title={text} aria-label={text} {...tab}>{icon}</Link>
+  if (href) return <a href={href} className={cls} title={text} aria-label={text} {...tab}>{icon}</a>
+  return <button type="button" className={cls} title={text} aria-label={text} onClick={(e) => { e.stopPropagation(); onClick?.() }} disabled={disabled}>{icon}</button>
+}
+
+/**
+ * The usual View / Edit / Delete trio. Pass a handler or link for each action the row supports,
+ * or a `…Unavailable` reason to keep the icon in place, greyed out, with the reason as tooltip.
+ */
+export function RowActions({ view, viewTo, viewHref, viewUnavailable, edit, editTo, editUnavailable, remove, removeUnavailable, children, label: name }: {
+  view?: () => void; viewTo?: string; viewHref?: string; viewUnavailable?: string
+  edit?: () => void; editTo?: string; editUnavailable?: string
+  remove?: () => void; removeUnavailable?: string
+  children?: ReactNode; label?: string
+}) {
+  const of = name ? ` ${name}` : ''
+  return (
+    <div className="flex items-center justify-end gap-0.5">
+      {(view || viewTo || viewHref || viewUnavailable) && <IconButton icon={Eye} tone="view" label={`View${of}`} onClick={view} to={viewTo} href={viewHref} newTab={!!viewHref} unavailable={view || viewTo || viewHref ? undefined : viewUnavailable} />}
+      {(edit || editTo || editUnavailable) && <IconButton icon={Pencil} tone="edit" label={`Edit${of}`} onClick={edit} to={editTo} unavailable={edit || editTo ? undefined : editUnavailable} />}
+      {children}
+      {(remove || removeUnavailable) && <IconButton icon={Trash2} label={`Delete${of}`} onClick={remove} tone="danger" unavailable={remove ? undefined : removeUnavailable} />}
+    </div>
+  )
+}
+
+/** Read-only label/value list for View drawers. */
+export function DetailList({ rows }: { rows: [string, ReactNode][] }) {
+  return (
+    <dl className="grid grid-cols-[130px_1fr] gap-x-3 gap-y-2 text-sm">
+      {rows.filter(([, v]) => v !== undefined && v !== null && v !== '').map(([k, v]) => <div key={k} className="contents"><dt className="text-ink-500">{k}</dt><dd className="min-w-0 break-words text-ink-900">{v}</dd></div>)}
+    </dl>
+  )
+}
+
 // ---------------------------------------------------------------- form fields
 
 const inputBase =
@@ -125,7 +187,7 @@ export function Select({ label: l, error, hint, wrapClass, required, className, 
   return (
     <Field label={l} error={error} hint={hint} required={required} className={wrapClass}>
       {(id) => (
-        <select id={id} required={required} aria-invalid={!!error} className={cx(inputBase, 'pr-8', error && 'border-red-400', className)} {...rest}>
+        <select id={id} required={required} aria-invalid={!!error} className={cx(inputBase, 'pr-9', error && 'border-red-400', className)} {...rest}>
           {children}
         </select>
       )}

@@ -5,7 +5,7 @@ import { audit } from "../lib/audit.js";
 import { cleanBlocks, mediaIdsInBlocks, safeUrl } from "../lib/blocks.js";
 import { HttpError, isId, notFound, oid, paged, pagination, parse, searchRegex, slugify, str, type Filter } from "../lib/http.js";
 import { PERMISSIONS } from "../lib/permissions.js";
-import { accessInput, applyStatus, dateInput, mediaIdFromUrl, syncMediaLinks } from "../lib/publishing.js";
+import { accessInput, applyStatus, dateInput, dropDisabledFields, mediaIdFromUrl, syncMediaLinks } from "../lib/publishing.js";
 import { publicForm, resolveBlocks } from "../lib/resolve.js";
 import { requireAuth, requirePermission } from "../middleware/auth.js";
 import { PUBLICATION_STATUSES } from "../models/common.js";
@@ -150,7 +150,7 @@ adminEventsRouter.get("/:id", async (req, res) => {
   res.json(event);
 });
 
-adminEventsRouter.get("/:id/registrations", requirePermission(PERMISSIONS.membersManage), async (req, res) => {
+adminEventsRouter.get("/:id/registrations", requirePermission(PERMISSIONS.membersManage), requireFeature("admin.registrations"), async (req, res) => {
   const regs = await EventRegistration.find({ event: oid(String(req.params.id)) })
     .populate("user", "name email category")
     .sort({ createdAt: -1 })
@@ -188,10 +188,10 @@ async function afterEventSave(doc: InstanceType<typeof Event>) {
 }
 
 adminEventsRouter.post("/", async (req, res) => {
-  const data = parse(eventInput, req.body);
+  const data = await dropDisabledFields(parse(eventInput, req.body), req.user!);
   const doc = new Event({ author: req.user!._id, slug: await uniqueEventSlug(data.slug || data.title) });
   applyEvent(doc, data);
-  applyStatus(doc, data.status, req.user!);
+  await applyStatus(doc, data.status, req.user!);
   await doc.save();
   await afterEventSave(doc);
   await afterStatusChange(doc, "draft", req.user!._id, true);
@@ -202,11 +202,11 @@ adminEventsRouter.post("/", async (req, res) => {
 adminEventsRouter.put("/:id", async (req, res) => {
   const doc = await Event.findById(oid(String(req.params.id)));
   if (!doc) throw notFound("Event");
-  const data = parse(eventInput, req.body);
+  const data = await dropDisabledFields(parse(eventInput, req.body), req.user!);
   if (data.slug && data.slug !== doc.slug) doc.slug = await uniqueEventSlug(data.slug, doc._id);
   const fromStatus = doc.status;
   applyEvent(doc, data);
-  applyStatus(doc, data.status, req.user!);
+  await applyStatus(doc, data.status, req.user!);
   await doc.save();
   await afterEventSave(doc);
   await afterStatusChange(doc, fromStatus, req.user!._id, true);
