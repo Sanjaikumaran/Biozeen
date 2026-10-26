@@ -1,0 +1,309 @@
+/**
+ * End-to-end API tests covering authentication, role-based access, publishing,
+ * protected files and feedback privacy. Requires a running MongoDB; uses a
+ * throwaway database (MONGO_URI_TEST, default bian_test) that is dropped first.
+ *
+ *   npm test
+ */
+import assert from "node:assert/strict";
+import type { AddressInfo } from "node:net";
+import type { Server } from "node:http";
+import { after, before, describe, it } from "node:test";
+import mongoose from "mongoose";
+
+process.env.MONGO_URI = process.env.MONGO_URI_TEST ?? "mongodb://127.0.0.1:27017/bian_test";
+process.env.REQUIRE_APPROVAL = "true";
+process.env.REQUIRE_EMAIL_VERIFICATION = "true";
+process.env.UPLOAD_DIR = `${process.env.TMPDIR ?? "/tmp"}/bian-test-uploads`;
+
+const { app } = await import("../src/app.js");
+const { seed } = await import("../src/seed.js");
+const { User, Role } = await import("../src/models/identity.js");
+const { Content } = await import("../src/models/content.js");
+const { FeedbackSubmission } = await import("../src/models/feedback.js");
+
+let server: Server;
+let base = "";
+let creds: Awaited<ReturnType<typeof seed>>;
+
+/** Minimal cookie-keeping client. */
+class Client {
+  cookie = "";
+  async req(method: string, path: string, body?: unknown) {
+    const headers: Record<string, string> = {};
+    if (this.cookie) headers.cookie = this.cookie;
+    let payload: BodyInit | undefined;
+    if (body instanceof FormData) payload = body;
+    else if (body !== undefined) {
+      headers["content-type"] = "application/json";
+      payload = JSON.stringify(body);
+    }
+    const res = await fetch(base + path, { method, headers, body: payload });
+    const set = res.headers.get("set-cookie");
+    if (set) this.cookie = set.split(";")[0]!;
+    const text = await res.text();
+    let json: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+    try {
+      json = text ? JSON.parse(text) : null;
+    } catch {
+      json = text;
+    }
+    return { status: res.status, body: json, headers: res.headers };
+  }
+  get = (p: string) => this.req("GET", p);
+  post = (p: string, b?: unknown) => this.req("POST", p, b ?? {});
+  put = (p: string, b: unknown) => this.req("PUT", p, b);
+  patch = (p: string, b: unknown) => this.req("PATCH", p, b);
+  del = (p: string) => this.req("DELETE", p);
+  async login(email: string, password: string) {
+    const r = await this.post("/api/auth/login", { email, password });
+    assert.equal(r.status, 200, `login ${email}: ${JSON.stringify(r.body)}`);
+    return this;
+  }
+}
+
+const anon = new Client();
+const admin = new Client();
+const student = new Client();
+const industry = new Client();
+const editor = new Client();
+
+before(async () => {
+  await mongoose.connect(process.env.MONGO_URI!);
+  await mongoose.connection.dropDatabase();
+  creds = await seed();
+  server = app.listen(0);
+  base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+  await admin.login("admin@bian.local", creds.adminPassword);
+  await student.login(creds.studentEmail, creds.demoPassword);
+  await industry.login(creds.industryEmail, creds.demoPassword);
+  await editor.login("editor@demo.bian.local", creds.demoPassword);
+});
+
+after(async () => {
+  server?.close();
+  await mongoose.connection.dropDatabase();
+  await mongoose.disconnect();
+});
+
+describe("content access control", () => {
+  it("filters listings by audience", async () => {
+    const titles = async (c: Client) => (await c.get("/api/contents?type=opportunity&limit=50")).body.items.map((i: { title: string }) => i.title);
+    const a = await titles(anon);
+    const s = await titles(student);
+    const i = await titles(industry);
+    assert.ok(!a.includes("Internship – Fermentation"), "member-only hidden from visitors");
+    assert.ok(s.includes("Summer Research Fellowship for Students"), "student role sees student listing");
+    assert.ok(!i.includes("Summer Research Fellowship for Students"), "industry does not see student-only listing");
+    assert.ok(i.includes("Regulatory Consultant (SME)"), "industry role sees industry listing");
+    assert.ok(!s.includes("Regulatory Consultant (SME)"), "student does not see industry listing");
+  });
+
+  it("enforces access on direct URLs", async () => {
+    assert.equal((await anon.get("/api/contents/by-slug/opportunity/internship-fermentation")).status, 401);
+    assert.equal((await student.get("/api/contents/by-slug/opportunity/regulatory-consultant-sme")).status, 403);
+    assert.equal((await industry.get("/api/contents/by-slug/opportunity/regulatory-consultant-sme")).status, 200);
+    // Drafts are indistinguishable from missing pages for non-editors.
+    assert.equal((await anon.get("/api/contents/by-slug/portfolio/sample-project")).status, 404);
+    const preview = await admin.get("/api/contents/by-slug/portfolio/sample-project");
+    assert.equal(preview.status, 200);
+    assert.equal(preview.body.preview, true);
+  });
+
+  it("applies the same rules to search, courses and events", async () => {
+    const s = (await anon.get("/api/search?q=Regulatory")).body;
+    assert.ok(!s.contents.some((c: { title: string }) => c.title === "Regulatory Consultant (SME)"));
+    assert.equal((await anon.get("/api/courses/fundamentals-of-bioprocessing")).status, 401);
+    assert.equal((await student.get("/api/courses/fundamentals-of-bioprocessing")).status, 200);
+    assert.equal((await industry.get("/api/events/industry-visit-biologics-facility")).status, 403);
+  });
+
+  it("does not leak meeting links before registration", async () => {
+    const before = (await student.get("/api/events/webinar-advances-in-bioprocessing")).body;
+    assert.equal(before.location.meetingUrl, undefined);
+    assert.equal((await student.post(`/api/events/${before._id}/register`)).status, 201);
+    const afterReg = (await student.get("/api/events/webinar-advances-in-bioprocessing")).body;
+    assert.ok(afterReg.location.meetingUrl);
+  });
+
+  it("publishes scheduled content only once due", async () => {
+    const r = await admin.post("/api/admin/contents", { type: "announcement", title: "Scheduled notice", status: "scheduled", publishAt: new Date(Date.now() + 864e5).toISOString(), access: { visibility: "public", roles: [], organizations: [] } });
+    assert.equal(r.status, 201);
+    const visible = async () => (await anon.get("/api/contents?type=announcement")).body.items.some((i: { title: string }) => i.title === "Scheduled notice");
+    assert.equal(await visible(), false);
+    await Content.updateOne({ _id: r.body._id }, { publishAt: new Date(Date.now() - 1000) });
+    assert.equal(await visible(), true);
+  });
+});
+
+describe("authorization", () => {
+  it("blocks members from admin APIs", async () => {
+    assert.equal((await student.get("/api/admin/stats")).status, 403);
+    assert.equal((await anon.get("/api/admin/users")).status, 401);
+    assert.equal((await industry.post("/api/admin/contents", { type: "article", title: "x" })).status, 403);
+  });
+
+  it("lets editors draft but not publish or delete", async () => {
+    const draft = await editor.post("/api/admin/contents", { type: "article", title: "Editor draft", status: "draft" });
+    assert.equal(draft.status, 201);
+    assert.equal((await editor.post(`/api/admin/contents/${draft.body._id}/status`, { status: "published" })).status, 403);
+    assert.equal((await editor.post(`/api/admin/contents/${draft.body._id}/status`, { status: "pending_review" })).status, 200);
+    assert.equal((await editor.del(`/api/admin/contents/${draft.body._id}`)).status, 403);
+    assert.equal((await editor.get("/api/admin/users")).status, 403);
+  });
+
+  it("sanitises rich text and unsafe URLs", async () => {
+    const r = await admin.post("/api/admin/contents", {
+      type: "article",
+      title: "XSS attempt",
+      blocks: [
+        { type: "richText", data: { html: '<p onclick="x()">Hi<script>alert(1)</script><a href="javascript:alert(1)">l</a></p>' } },
+        { type: "cta", data: { title: "t", buttonUrl: "javascript:alert(1)" } },
+      ],
+    });
+    const html = r.body.blocks[0].data.html as string;
+    assert.ok(!/script|onclick|javascript:/i.test(html), html);
+    assert.equal(r.body.blocks[1].data.buttonUrl, "");
+  });
+
+  it("revokes sessions when an account is suspended", async () => {
+    const victim = await new Client().login("priya.sharma@demo.bian.local", creds.demoPassword);
+    assert.ok((await victim.get("/api/auth/me")).body.user);
+    const u = await User.findOne({ email: "priya.sharma@demo.bian.local" });
+    assert.equal((await admin.patch(`/api/admin/users/${u!._id}`, { status: "suspended" })).status, 200);
+    assert.equal((await victim.get("/api/auth/me")).body.user, null);
+    const relog = await new Client().post("/api/auth/login", { email: "priya.sharma@demo.bian.local", password: creds.demoPassword });
+    assert.equal(relog.status, 403);
+  });
+
+  it("keeps at least one super administrator", async () => {
+    const me = await User.findOne({ email: "admin@bian.local" });
+    assert.equal((await admin.patch(`/api/admin/users/${me!._id}`, { status: "suspended" })).status, 409);
+  });
+});
+
+describe("registration workflow", () => {
+  it("requires verification and approval before sign-in", async () => {
+    const c = new Client();
+    const reg = await c.post("/api/auth/register", { category: "startup", name: "New Founder", email: "founder@example.com", password: "Founder12345", organizationName: "Seedling Bio", acceptTerms: true });
+    assert.equal(reg.status, 201, JSON.stringify(reg.body));
+    assert.equal((await c.post("/api/auth/login", { email: "founder@example.com", password: "Founder12345" })).status, 403);
+    const url = new URL(reg.body.devVerificationUrl);
+    assert.equal((await c.post("/api/auth/verify-email", { token: url.searchParams.get("token"), email: url.searchParams.get("email") })).status, 200);
+    const pending = await c.post("/api/auth/login", { email: "founder@example.com", password: "Founder12345" });
+    assert.equal(pending.status, 403);
+    assert.match(pending.body.error, /awaiting approval/);
+    const u = await User.findOne({ email: "founder@example.com" });
+    assert.equal((await admin.post(`/api/admin/users/${u!._id}/approve`)).status, 200);
+    await c.login("founder@example.com", "Founder12345");
+    const me = (await c.get("/api/auth/me")).body.user;
+    assert.deepEqual(me.roles.sort(), ["member", "startup"]);
+  });
+
+  it("rejects weak passwords and duplicate emails", async () => {
+    const weak = await anon.post("/api/auth/register", { category: "student", name: "A B", email: "weak@example.com", password: "short", acceptTerms: true });
+    assert.equal(weak.status, 400);
+    assert.ok(weak.body.details.password);
+    const dup = await anon.post("/api/auth/register", { category: "student", name: "A B", email: "admin@bian.local", password: "Password12345", acceptTerms: true });
+    assert.equal(dup.status, 409);
+  });
+});
+
+describe("protected media", () => {
+  it("serves files only to viewers of the linked content", async () => {
+    const fd = new FormData();
+    fd.append("file", new Blob(["%PDF-1.4 test"], { type: "application/pdf" }), "sop.pdf");
+    const up = await admin.req("POST", "/api/admin/media", fd);
+    assert.equal(up.status, 201, JSON.stringify(up.body));
+    const industryRole = await Role.findOne({ name: "industry" });
+    const c = await admin.post("/api/admin/contents", {
+      type: "article",
+      title: "Industry SOP pack",
+      status: "published",
+      access: { visibility: "roles", roles: [String(industryRole!._id)], organizations: [] },
+      blocks: [{ type: "file", data: { mediaId: up.body._id, label: "SOP" } }],
+    });
+    assert.equal(c.status, 201);
+    const file = `/api/media/${up.body._id}/file`;
+    assert.equal((await anon.get(file)).status, 401);
+    assert.equal((await student.get(file)).status, 403);
+    const ok = await industry.get(file);
+    assert.equal(ok.status, 200);
+    assert.match(ok.headers.get("cache-control") ?? "", /private/);
+  });
+
+  it("rejects disallowed or spoofed uploads", async () => {
+    const svg = new FormData();
+    svg.append("file", new Blob(["<svg onload=alert(1)>"], { type: "image/svg+xml" }), "x.svg");
+    assert.equal((await admin.req("POST", "/api/admin/media", svg)).status, 400);
+    const fake = new FormData();
+    fake.append("file", new Blob(["not a png"], { type: "image/png" }), "x.png");
+    assert.equal((await admin.req("POST", "/api/admin/media", fake)).status, 400);
+  });
+});
+
+describe("feedback", () => {
+  it("records anonymous feedback without identity and enforces one response", async () => {
+    const ev = (await student.get("/api/events/webinar-advances-in-bioprocessing")).body;
+    const form = ev.feedbackForm;
+    assert.equal(form.anonymity, "anonymous");
+    const rating = form.questions.find((q: { type: string }) => q.type === "rating");
+    const submit = () => student.post("/api/feedback/submit", { formId: form._id, targetKind: "event", targetId: ev._id, answers: { [rating._id]: 4 } });
+    assert.equal((await submit()).status, 201);
+    assert.equal((await submit()).status, 409);
+    const stored = await FeedbackSubmission.findOne({ event: ev._id }).lean();
+    assert.equal(stored!.user, undefined);
+    assert.equal(stored!.anonymous, true);
+    assert.equal(stored!.respondentCategory, undefined);
+  });
+
+  it("validates answers and blocks feedback on restricted items", async () => {
+    const opp = (await industry.get("/api/contents/by-slug/opportunity/regulatory-consultant-sme")).body;
+    const form = opp.feedbackForm;
+    const rating = form.questions.find((q: { type: string }) => q.type === "rating");
+    assert.equal((await industry.post("/api/feedback/submit", { formId: form._id, targetKind: "content", targetId: opp._id, answers: {} })).status, 400);
+    assert.equal((await industry.post("/api/feedback/submit", { formId: form._id, targetKind: "content", targetId: opp._id, answers: { [rating._id]: 9 } })).status, 400);
+    assert.equal((await student.post("/api/feedback/submit", { formId: form._id, targetKind: "content", targetId: opp._id, answers: { [rating._id]: 5 } })).status, 404);
+    assert.equal((await industry.post("/api/feedback/submit", { formId: form._id, targetKind: "content", targetId: opp._id, answers: { [rating._id]: 5 } })).status, 201);
+  });
+
+  it("supports lesson-level feedback and analytics by lesson", async () => {
+    const course = (await student.get("/api/courses/fundamentals-of-bioprocessing")).body;
+    const lessonId = course.modules[0].lessons[0]._id;
+    const lesson = (await student.get(`/api/courses/fundamentals-of-bioprocessing/lessons/${lessonId}`)).body.lesson;
+    const [rating, pace] = lesson.feedbackForm.questions;
+    const r = await student.post("/api/feedback/submit", { formId: lesson.feedbackForm._id, targetKind: "lesson", targetId: course._id, lessonId, answers: { [rating._id]: 2, [pace._id]: pace.options[2]._id } });
+    assert.equal(r.status, 201, JSON.stringify(r.body));
+    const summary = (await admin.get(`/api/admin/feedback/analytics/summary?courseId=${course._id}`)).body;
+    const row = summary.byTarget.find((t: { lessonId?: string }) => t.lessonId === lessonId);
+    assert.equal(row.count, 1);
+    assert.equal(row.avg, 2);
+  });
+
+  it("hides identities from admins without the identified-feedback permission", async () => {
+    const asEditor = (await editor.get("/api/admin/feedback/analytics/responses")).body;
+    assert.ok(asEditor.items.length > 0);
+    assert.ok(asEditor.items.every((i: { user: unknown }) => i.user === null));
+    const studentId = (await User.findOne({ email: creds.studentEmail }))!._id;
+    assert.equal((await editor.get(`/api/admin/feedback/analytics/responses?userId=${studentId}`)).status, 403);
+    const asAdmin = (await admin.get(`/api/admin/feedback/analytics/responses?userId=${studentId}`)).body;
+    assert.ok(asAdmin.items.length > 0 && asAdmin.items.every((i: { user: { email: string } }) => i.user?.email === creds.studentEmail));
+  });
+});
+
+describe("contact centre", () => {
+  it("validates and stores requests, keeps notes internal", async () => {
+    const bad = await anon.post("/api/contact", { name: "A", email: "nope", category: "", type: "general", message: "hi" });
+    assert.equal(bad.status, 400);
+    const ok = await student.post("/api/contact", { name: "Ananya", email: "s@example.com", category: "student", type: "collaboration", message: "We would like to collaborate on a project.", startedAt: Date.now() - 10_000 });
+    assert.equal(ok.status, 201);
+    const list = (await admin.get("/api/admin/contacts?type=collaboration")).body;
+    const req = list.items[0];
+    await admin.post(`/api/admin/contacts/${req._id}/notes`, { text: "internal only" });
+    await admin.patch(`/api/admin/contacts/${req._id}`, { response: "Thanks, we will connect you." });
+    const mine = (await student.get("/api/me/requests")).body;
+    assert.equal(mine[0].response, "Thanks, we will connect you.");
+    assert.equal(mine[0].notes, undefined);
+    assert.equal(mine[0].status, "responded");
+  });
+});
