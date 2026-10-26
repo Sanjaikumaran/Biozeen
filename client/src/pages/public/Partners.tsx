@@ -4,6 +4,7 @@ import { Badge, Card, Empty, ErrorState, Loading, Pagination, SearchInput, Selec
 import { PageBanner } from '../../layouts/PublicLayout'
 import { api, type Paged } from '../../lib/api'
 import { label } from '../../lib/format'
+import { useAuth } from '../../lib/auth'
 import { useAsync, useDebounced, useDocumentTitle, useQueryState } from '../../lib/hooks'
 import type { Organization } from '../../lib/types'
 import { useFeature } from '../../lib/features'
@@ -19,9 +20,10 @@ export default function Partners() {
   useDocumentTitle('Partner Ecosystem')
   const [f, setF] = useQueryState({ tier: '', type: '', q: '', page: '1' })
   const q = useDebounced(f.q)
+  const { user } = useAuth()
   const { data, error, loading, reload } = useAsync(
     () => api.get<Paged<Organization> & { tiers: Record<string, number> }>('/partners', { tier: f.tier, type: f.type, q, page: f.page }),
-    [f.tier, f.type, q, f.page],
+    [f.tier, f.type, q, f.page, user?.id],
   )
 
   return (
@@ -104,7 +106,8 @@ export default function Partners() {
 export function PartnerDetail() {
   const enquireOn = useFeature('partners.enquire')
   const { slug = '' } = useParams()
-  const { data, error, loading, reload } = useAsync(() => api.get<Organization>(`/partners/${slug}`), [slug])
+  const { user } = useAuth()
+  const { data, error, loading, reload } = useAsync(() => api.get<Organization>(`/partners/${slug}`), [slug, user?.id])
   useDocumentTitle(data?.name)
   if (loading) return <Loading />
   if (error || !data) return <div className="mx-auto max-w-3xl px-4 py-16"><ErrorState error={error} onRetry={reload} /></div>

@@ -22,6 +22,15 @@ export async function runMigrations() {
     { $unset: "visibility" },
   ]);
   if (res.modifiedCount) console.log(`Migrated ${res.modifiedCount} expert profiles to audience settings.`);
+
+  // Requests handled before firstResponseAt existed take it from their first audit-log update.
+  const db = mongoose.connection.db!;
+  const pending = await db.collection("contactRequests").find({ status: { $ne: "new" }, firstResponseAt: { $exists: false } }).project({ _id: 1, updatedAt: 1 }).toArray();
+  for (const r of pending) {
+    const first = await db.collection("auditLogs").find({ entityType: "ContactRequest", entityId: r._id, action: "contact.update" }).sort({ at: 1 }).limit(1).next();
+    await db.collection("contactRequests").updateOne({ _id: r._id }, { $set: { firstResponseAt: first?.at ?? r.updatedAt } });
+  }
+  if (pending.length) console.log(`Recorded first-response times for ${pending.length} earlier requests.`);
 }
 
 /**

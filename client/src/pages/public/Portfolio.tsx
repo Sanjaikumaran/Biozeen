@@ -5,13 +5,15 @@ import { Card, Empty, ErrorState, LinkButton, Loading } from '../../components/u
 import { PageBanner } from '../../layouts/PublicLayout'
 import { api, type Paged } from '../../lib/api'
 import { contentHref, label } from '../../lib/format'
+import { useAuth } from '../../lib/auth'
 import { useAsync, useDocumentTitle } from '../../lib/hooks'
 import type { ContentCard, ContentDetail } from '../../lib/types'
 
 /** About BIAN — rendered from the CMS "about" portfolio page. */
 export function About() {
   useDocumentTitle('About BIAN')
-  const { data, error, loading, reload } = useAsync(() => api.get<ContentDetail>('/contents/by-slug/page/about'), [])
+  const { user } = useAuth()
+  const { data, error, loading, reload } = useAsync(() => api.get<ContentDetail>('/contents/by-slug/page/about'), [user?.id])
   return (
     <>
       <PageBanner title={data?.title ?? 'About BIAN'} subtitle={data?.summary} />
@@ -35,7 +37,8 @@ const GROUPS = [
 
 export function Portfolio() {
   useDocumentTitle('Company Portfolio')
-  const { data, error, loading, reload } = useAsync(() => api.get<Paged<ContentCard>>('/contents', { type: 'portfolio', limit: 100, sort: 'order' }), [])
+  const { user } = useAuth()
+  const { data, error, loading, reload } = useAsync(() => api.get<Paged<ContentCard>>('/contents', { type: 'portfolio', limit: 100, sort: 'order' }), [user?.id])
   const items = data?.items ?? []
   return (
     <>

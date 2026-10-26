@@ -106,7 +106,7 @@ Anonymous responses never show who submitted them, even to the super administrat
 **Admin → Site Settings** controls the hero text, keywords, the optional intro video ("Watch Video"), and the secretariat email, phone and address shown in the footer and on the Contact page.
 
 ### Read the overview and audit log
-**Admin → Overview** shows headline figures with trend lines, membership growth, members by category, opportunities per month (hover any chart for exact figures) and a **Waiting for you** panel. Choose the period at the top right. **Admin → Audit Log** records who changed what; open an entry to see its full record as JSON.
+**Admin → Overview** shows headline figures with trend lines, membership growth, members by category, opportunities per month, engagement by month, the request pipeline with time to first response (hover any chart for exact figures) and a **Waiting for you** panel. Choose the period at the top right. **Admin → Audit Log** records who changed what; open an entry to see its full record as JSON.
 
 ### Notifications
 The bell in the header opens a notifications panel on the right, with *All* and *Unread* tabs. People are notified about approvals, replies, items to review, publications for their audience and new requests, live without reloading.

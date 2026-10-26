@@ -6,6 +6,7 @@ import { Card, LinkButton, Modal, SkeletonGrid } from '../../components/ui'
 import { api } from '../../lib/api'
 import { embedUrl } from '../../lib/embed'
 import { contentHref, formatDate } from '../../lib/format'
+import { useAuth } from '../../lib/auth'
 import { useAsync, useDocumentTitle } from '../../lib/hooks'
 import type { ContentCard, EventItem, Organization, SiteSettings } from '../../lib/types'
 import { useFeatures } from '../../lib/features'
@@ -54,7 +55,9 @@ function SectionHead({ title, to, cta }: { title: string; to: string; cta: strin
 
 export default function Home() {
   useDocumentTitle('Home')
-  const { data, loading } = useAsync(() => api.get<HomeData>('/home'), [])
+  const { user } = useAuth()
+  // Reload on sign-in and sign-out: sections hold members-only items.
+  const { data, loading } = useAsync(() => api.get<HomeData>('/home'), [user?.id])
   const on = useFeatures()
   const [video, setVideo] = useState(false)
   const hero = data?.settings?.hero
@@ -86,7 +89,7 @@ export default function Home() {
             </h1>
             <p className="mt-5 max-w-xl text-lg text-brand-100">{hero?.subheading ?? 'Connecting Industry, Academia, Innovation and Expertise for a sustainable bioeconomy.'}</p>
             <div className="mt-8 flex flex-wrap gap-3">
-              {on('registration') && <LinkButton to="/register" variant="accent" size="lg">Join BIAN</LinkButton>}
+              {!user && on('registration') && <LinkButton to="/register" variant="accent" size="lg">Join BIAN</LinkButton>}
               {on('opportunities') && <LinkButton to="/opportunities" variant="outlineLight" size="lg">Explore Opportunities</LinkButton>}
               {hero?.videoUrl && (
                 <button onClick={() => setVideo(true)} className="inline-flex h-12 items-center gap-2 rounded-lg border border-white/40 px-6 font-semibold hover:bg-white/10">
@@ -218,7 +221,7 @@ export default function Home() {
           </div>
           <div className="flex flex-wrap gap-3">
             {on('contact') && <LinkButton to="/contact" variant="accent">Get in touch</LinkButton>}
-            {on('registration') && <LinkButton to="/register" variant="outlineLight">Become a member</LinkButton>}
+            {!user && on('registration') && <LinkButton to="/register" variant="outlineLight">Become a member</LinkButton>}
           </div>
         </section>
       </div>

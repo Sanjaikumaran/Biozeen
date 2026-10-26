@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { AccessEditor, AudienceSummary, useLookups } from '../../components/admin/Publishing'
 import { Alert, Badge, Button, Card, Checkbox, DetailList, Empty, ErrorState, Input, LinkButton, Loading, Modal, PageHeader, Pagination, RowActions, SearchInput, Select, StatusBadge, Tabs, TagInput, Textarea, useFeedback } from '../../components/ui'
 import { useFeature, useFeatures } from '../../lib/features'
+import { useRefreshAdminCounts } from '../../lib/adminCounts'
 import { ApiError, api, downloadUrl, type Paged } from '../../lib/api'
 import { useAuth } from '../../lib/auth'
 import { LABELS, contentHref, formatDate, formatDateTime, label, timeAgo } from '../../lib/format'
@@ -71,6 +72,7 @@ export function Approvals() {
   const pendingContent = useAsync(() => api.get<Paged<{ _id: string; title: string; type: string; slug: string; author?: { name: string }; createdAt: string }>>('/admin/contents', { status: 'pending_review', limit: 50 }).catch(() => null), [])
   const [approving, setApproving] = useState<Member | null>(null)
   const [viewing, setViewing] = useState<Member | null>(null)
+  const refreshCounts = useRefreshAdminCounts()
   const [selected, setSelected] = useState<string[]>([])
   const [busy, setBusy] = useState(false)
 
@@ -91,7 +93,7 @@ export function Approvals() {
                 <p className="text-xs text-ink-500">{label(m.category)}{m.organization && ` · ${m.organization.name}`} · registered {timeAgo(m.createdAt)} · {m.emailVerified ? 'email verified' : 'email not verified'}</p>
               </div>
               <RowActions label={m.name} view={() => setViewing(m)} />
-              <Button size="sm" variant="ghost" className="hover:text-red-600" onClick={async () => { if (await confirm({ title: 'Reject registration?', message: `${m.name} will not be able to sign in.`, danger: true, confirmLabel: 'Reject' })) { await api.post(`/admin/users/${m._id}/reject`); toast('Registration rejected'); reload() } }}><X className="size-4" />Reject</Button>
+              <Button size="sm" variant="ghost" className="hover:text-red-600" onClick={async () => { if (await confirm({ title: 'Reject registration?', message: `${m.name} will not be able to sign in.`, danger: true, confirmLabel: 'Reject' })) { await api.post(`/admin/users/${m._id}/reject`); toast('Registration rejected'); reload(); refreshCounts() } }}><X className="size-4" />Reject</Button>
               <Button size="sm" onClick={() => open(m)}><Check className="size-4" />Approve</Button>
             </div>
           ))}
@@ -117,7 +119,7 @@ export function Approvals() {
         open={!!approving}
         onClose={() => setApproving(null)}
         title={`Approve ${approving?.name}`}
-        footer={<><Button variant="ghost" onClick={() => setApproving(null)}>Cancel</Button><Button loading={busy} onClick={async () => { setBusy(true); try { await api.post(`/admin/users/${approving!._id}/approve`, { roles: selected }); toast('Member approved'); setApproving(null); reload() } catch (e) { toast((e as Error).message, 'error') } finally { setBusy(false) } }}>Approve member</Button></>}
+        footer={<><Button variant="ghost" onClick={() => setApproving(null)}>Cancel</Button><Button loading={busy} onClick={async () => { setBusy(true); try { await api.post(`/admin/users/${approving!._id}/approve`, { roles: selected }); toast('Member approved'); setApproving(null); reload(); refreshCounts() } catch (e) { toast((e as Error).message, 'error') } finally { setBusy(false) } }}>Approve member</Button></>}
       >
         <p className="mb-3 text-sm text-ink-500">Category: <span className="font-medium text-ink-900">{label(approving?.category)}</span>. Choose the roles this member receives:</p>
         <RolePicker value={selected} onChange={setSelected} />

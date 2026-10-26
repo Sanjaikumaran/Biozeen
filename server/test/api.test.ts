@@ -311,6 +311,15 @@ describe("contact centre", () => {
     assert.equal(mine[0].response, "Thanks, we will connect you.");
     assert.equal(mine[0].notes, undefined);
     assert.equal(mine[0].status, "responded");
+    assert.equal(mine[0].firstResponseAt, undefined);
+    // The overview reports the request in the pipeline and its time to first response.
+    const stats = (await admin.get("/api/admin/stats?days=30")).body;
+    const row = stats.requestPipeline.find((r: { type: string }) => r.type === "collaboration");
+    assert.ok(row.responded >= 1);
+    assert.ok(stats.firstResponse.count >= 1);
+    assert.equal(typeof stats.firstResponse.medianHours, "number");
+    assert.equal(stats.engagementTrend.length, 12);
+    assert.ok(stats.engagementTrend.at(-1).requests >= 1);
   });
 });
 
@@ -561,6 +570,7 @@ describe("developer console", () => {
     await developer.put("/api/developer/features/admin.analytics", { enabled: false, audience: [] });
     const stats = (await admin.get("/api/admin/stats")).body;
     assert.equal(stats.analytics, false);
+    assert.equal(stats.engagementTrend, undefined);
     assert.equal(stats.membershipGrowth, undefined);
     assert.equal(typeof stats.pendingApprovals, "number");
     await developer.post("/api/developer/features/reset");

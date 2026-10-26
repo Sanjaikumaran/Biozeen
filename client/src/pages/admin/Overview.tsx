@@ -5,7 +5,7 @@ import {
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { LookupsProvider } from '../../components/admin/Publishing'
-import { Donut, GrowthChart, MonthlyBars, Sparkline } from '../../components/charts/D3Charts'
+import { Donut, GrowthChart, MonthlyBars, Sparkline, StackedMonthly, StageBars } from '../../components/charts/D3Charts'
 import { Card, ErrorState, Loading, PageHeader, Select } from '../../components/ui'
 import { WorkspaceLayout, type NavItem } from '../../layouts/WorkspaceLayout'
 import { api } from '../../lib/api'
@@ -14,7 +14,10 @@ import { cx } from '../../lib/cx'
 import { useFeatures } from '../../lib/features'
 import { label } from '../../lib/format'
 import { useAsync, useDocumentTitle, useQueryState } from '../../lib/hooks'
-import { VIZ } from '../../lib/viz'
+import { AdminCountsContext } from '../../lib/adminCounts'
+import { useSocket } from '../../lib/socket'
+import { useEffect } from 'react'
+import { STAGES, VIZ } from '../../lib/viz'
 
 interface Metric { total: number; recent: number; change: number | null }
 interface Stats {
@@ -33,10 +36,29 @@ interface Stats {
   membershipGrowth: { month: string; total: number; joined: number }[]
   membersByCategory: { category: string; count: number }[]
   opportunityTrend: { month: string; count: number }[]
+  engagementTrend: { month: string; feedback: number; enrollments: number; registrations: number; requests: number }[]
+  requestPipeline: { type: string; new: number; in_progress: number; responded: number; closed: number }[]
+  firstResponse: { count: number; medianHours: number | null; averageHours: number | null }
 }
 
 export function AdminLayout() {
-  const { data } = useAsync(() => api.get<Stats>('/admin/stats').catch(() => null), [])
+  const { data, reload } = useAsync(() => api.get<Stats>('/admin/stats').catch(() => null), [])
+  const socket = useSocket()
+  // Badges follow approvals, reviews and requests as they happen, here or in another session.
+  useEffect(() => {
+    if (!socket) return
+    socket.on('counts:changed', reload)
+    socket.on('connect', reload)
+    return () => {
+      socket.off('counts:changed', reload)
+      socket.off('connect', reload)
+    }
+  }, [socket, reload])
+  useEffect(() => {
+    const onVisible = () => document.visibilityState === 'visible' && reload()
+    document.addEventListener('visibilitychange', onVisible)
+    return () => document.removeEventListener('visibilitychange', onVisible)
+  }, [reload])
   const items: NavItem[] = [
     { to: '/admin', label: 'Overview', icon: LayoutDashboard, end: true },
     { to: '/admin/approvals', label: 'Member Approvals', icon: UserCheck, permission: 'members.manage', badge: data?.pendingApprovals, feature: 'admin.approvals' },
@@ -60,9 +82,11 @@ export function AdminLayout() {
     { to: '/admin/account', label: 'My settings', icon: UserCog },
   ]
   return (
-    <LookupsProvider>
-      <WorkspaceLayout title="Biozeen Admin" items={items} requirePermission="admin.access" />
-    </LookupsProvider>
+    <AdminCountsContext.Provider value={reload}>
+      <LookupsProvider>
+        <WorkspaceLayout title="Biozeen Admin" items={items} requirePermission="admin.access" />
+      </LookupsProvider>
+    </AdminCountsContext.Provider>
   )
 }
 
@@ -135,6 +159,60 @@ function PendingWork({ data }: { data: Pick<Stats, 'pendingApprovals' | 'pending
   )
 }
 
+const ENGAGEMENT_SERIES = [
+  { key: 'feedback', label: 'Feedback', color: VIZ[0] },
+  { key: 'enrollments', label: 'Course enrolments', color: VIZ[1] },
+  { key: 'registrations', label: 'Event registrations', color: VIZ[2] },
+  { key: 'requests', label: 'Contact requests', color: VIZ[3] },
+]
+const REQUEST_STAGES = [
+  { key: 'new', label: 'New', color: STAGES[0] },
+  { key: 'in_progress', label: 'In progress', color: STAGES[1] },
+  { key: 'responded', label: 'Responded', color: STAGES[2] },
+  { key: 'closed', label: 'Closed', color: STAGES[3] },
+]
+
+/** Hours as a short duration: minutes under an hour, days past two days. */
+function duration(hours: number | null) {
+  if (hours === null) return '—'
+  if (hours < 1) return `${Math.max(1, Math.round(hours * 60))} min`
+  if (hours < 48) return `${hours < 10 ? hours.toFixed(1) : Math.round(hours)} h`
+  return `${(hours / 24).toFixed(1)} days`
+}
+
+function RequestsCard({ data, days }: { data: Stats; days: number }) {
+  const totals = REQUEST_STAGES.map((s) => ({ ...s, n: data.requestPipeline.reduce((a, r) => a + r[s.key as 'new'], 0) }))
+  const all = totals.reduce((a, t) => a + t.n, 0)
+  return (
+    <ChartCard title="Request pipeline" subtitle={`Requests received in the last ${days} days, by type and stage`} className="xl:col-span-3">
+      {!all ? <EmptyChart /> : (
+        <div className="grid gap-6 lg:grid-cols-[1fr_260px]">
+          <StageBars rows={data.requestPipeline.map((r) => ({ ...r, key: r.type }))} stages={REQUEST_STAGES} rowLabel={label} />
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-2">
+              {totals.map((t) => (
+                <Link key={t.key} to={`/admin/requests?status=${t.key}`} className="rounded-lg border border-ink-900/8 p-2.5 hover:border-ink-900/20">
+                  <p className="flex items-center gap-1.5 text-xs text-ink-500"><span className="size-2.5 rounded-sm" style={{ background: t.color }} aria-hidden />{t.label}</p>
+                  <p className="mt-0.5 text-xl font-bold tabular-nums text-ink-900">{t.n}</p>
+                </Link>
+              ))}
+            </div>
+            <div className="rounded-lg bg-ink-900/[0.03] p-3">
+              <p className="text-xs font-medium text-ink-500">Time to first response</p>
+              {data.firstResponse.count ? (
+                <>
+                  <p className="mt-0.5 text-xl font-bold tabular-nums text-ink-900">{duration(data.firstResponse.medianHours)} <span className="text-xs font-normal text-ink-500">median</span></p>
+                  <p className="text-xs text-ink-500">Average {duration(data.firstResponse.averageHours)} · {data.firstResponse.count} of {all} handled</p>
+                </>
+              ) : <p className="mt-0.5 text-sm text-ink-700">No requests handled yet</p>}
+            </div>
+          </div>
+        </div>
+      )}
+    </ChartCard>
+  )
+}
+
 function EmptyChart() {
   return <p className="grid h-56 place-items-center text-sm text-ink-500">No data yet</p>
 }
@@ -189,6 +267,10 @@ export function Overview() {
               {data.opportunityTrend.some((m) => m.count) ? <MonthlyBars data={data.opportunityTrend} unit="Opportunities" color={VIZ[2]} /> : <EmptyChart />}
             </ChartCard>
             <PendingWork data={data} />
+            <ChartCard title="Engagement by month" subtitle="Last 12 months · hover a month for the breakdown" className="xl:col-span-3">
+              {data.engagementTrend.some((m) => m.feedback + m.enrollments + m.registrations + m.requests) ? <StackedMonthly data={data.engagementTrend} series={ENGAGEMENT_SERIES} /> : <EmptyChart />}
+            </ChartCard>
+            <RequestsCard data={data} days={data.days} />
           </div>
         </>
       )}

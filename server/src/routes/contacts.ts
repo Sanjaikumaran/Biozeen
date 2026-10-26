@@ -8,6 +8,7 @@ import { requirePermission } from "../middleware/auth.js";
 import { CONTACT_STATUSES, CONTACT_TYPES, ContactRequest } from "../models/admin.js";
 import { notify, notifyPermission } from "../lib/notify.js";
 import { featureOff, isFeatureOn, requireFeature } from "../lib/features.js";
+import { signalCounts } from "../lib/realtime.js";
 
 export const contactRouter = Router();
 export const adminContactsRouter = Router();
@@ -32,7 +33,7 @@ const contactInput = z.object({
   startedAt: z.number().optional(),
 });
 
-contactRouter.post("/", contactLimiter, requireFeature("contact"), async (req, res) => {
+contactRouter.post("/", signalCounts, contactLimiter, requireFeature("contact"), async (req, res) => {
   const data = parse(contactInput, req.body);
   // Submissions completed implausibly fast are treated as automated, but acknowledged identically.
   const tooFast = data.startedAt && Date.now() - data.startedAt < 2500;
@@ -61,7 +62,7 @@ contactRouter.post("/", contactLimiter, requireFeature("contact"), async (req, r
 
 // ---------------------------------------------------------------- admin
 
-adminContactsRouter.use(requirePermission(PERMISSIONS.adminAccess, PERMISSIONS.contactsManage), requireFeature("admin.requests"));
+adminContactsRouter.use(requirePermission(PERMISSIONS.adminAccess, PERMISSIONS.contactsManage), requireFeature("admin.requests"), signalCounts);
 
 function filter(query: Record<string, unknown>) {
   const f: Filter = {};
@@ -134,6 +135,7 @@ adminContactsRouter.patch("/:id", async (req, res) => {
     item.response = data.response;
     if (data.response && item.status === "new") item.status = "responded";
   }
+  if (!item.firstResponseAt && item.status !== "new") item.firstResponseAt = new Date();
   await item.save();
   await audit(req, "contact.update", "ContactRequest", item._id, `Request from ${item.email}: ${before} → ${item.status}`);
   if (item.user) {

@@ -5,7 +5,7 @@ import { safeUrl } from "../lib/blocks.js";
 import { HttpError, isId, notFound, oid, paged, pagination, parse, searchRegex, slugify, str, toCsv, type Filter } from "../lib/http.js";
 import { ALL_PERMISSIONS, MEMBER_CATEGORIES, PERMISSIONS, PERMISSION_LABELS } from "../lib/permissions.js";
 import { can, requirePermission } from "../middleware/auth.js";
-import { AuditLog, ContactRequest, SiteSettings } from "../models/admin.js";
+import { AuditLog, CONTACT_STATUSES, ContactRequest, SiteSettings } from "../models/admin.js";
 import { CONTENT_TYPES, Category, Content, Tag } from "../models/content.js";
 import { FeedbackForm, FeedbackSubmission } from "../models/feedback.js";
 import { Organization, Role, USER_STATUSES, User } from "../models/identity.js";
@@ -15,7 +15,7 @@ import { CATEGORY_ROLE } from "./auth.js";
 /** Developer accounts are outside member management: never listed, counted or editable here. */
 const NOT_DEVELOPER: Filter = { isDeveloper: { $ne: true } };
 import { notify } from "../lib/notify.js";
-import { disconnectUser } from "../lib/realtime.js";
+import { disconnectUser, signalCounts } from "../lib/realtime.js";
 import { featureOff, isFeatureOn, requireFeature } from "../lib/features.js";
 
 export const adminRouter = Router();
@@ -104,9 +104,44 @@ adminRouter.get("/stats", async (req, res) => {
   const oppMap = new Map(oppTrend.map((g) => [g._id, g.n]));
   let running = before;
 
+  // Engagement by kind per month, and how requests received in the period are moving through the inbox.
+  const byMonth = (model: { aggregate: <T>(p: object[]) => Promise<T[]> }, field = "createdAt") =>
+    model.aggregate<{ _id: string; n: number }>([
+      { $match: { [field]: { $gte: monthsBack } } },
+      { $group: { _id: { $dateToString: { format: "%Y-%m", date: `$${field}` } }, n: { $sum: 1 } } },
+    ]);
+  const [fbMonths, enrolMonths, regMonths, reqMonths, pipeline, responseTimes] = await Promise.all([
+    byMonth(FeedbackSubmission as never, "submittedAt"),
+    byMonth(Enrollment as never),
+    byMonth(EventRegistration as never),
+    byMonth(ContactRequest as never),
+    ContactRequest.aggregate<{ _id: { type: string; status: string }; n: number }>([
+      { $match: { createdAt: { $gte: since } } },
+      { $group: { _id: { type: "$type", status: "$status" }, n: { $sum: 1 } } },
+    ]),
+    ContactRequest.aggregate<{ hours: number }>([
+      { $match: { createdAt: { $gte: since }, firstResponseAt: { $exists: true } } },
+      { $project: { hours: { $divide: [{ $subtract: ["$firstResponseAt", "$createdAt"] }, 36e5] } } },
+      { $sort: { hours: 1 } },
+    ]),
+  ]);
+  const monthMap = (rows: { _id: string; n: number }[]) => new Map(rows.map((r) => [r._id, r.n]));
+  const fbM = monthMap(fbMonths), enM = monthMap(enrolMonths), rgM = monthMap(regMonths), rqM = monthMap(reqMonths);
+  const types = [...new Set(pipeline.map((p) => p._id.type))];
+  const statusCounts = (type: string) => Object.fromEntries(CONTACT_STATUSES.map((s) => [s, pipeline.find((p) => p._id.type === type && p._id.status === s)?.n ?? 0])) as Record<(typeof CONTACT_STATUSES)[number], number>;
+  const total = (c: Record<(typeof CONTACT_STATUSES)[number], number>) => CONTACT_STATUSES.reduce((a, st) => a + c[st], 0);
+  const hours = responseTimes.map((r) => r.hours);
+
   res.json({
     days,
     analytics: true,
+    engagementTrend: months.map((m) => ({ month: m, feedback: fbM.get(m) ?? 0, enrollments: enM.get(m) ?? 0, registrations: rgM.get(m) ?? 0, requests: rqM.get(m) ?? 0 })),
+    requestPipeline: types.map((type) => ({ type, ...statusCounts(type) })).sort((a, b) => total(b) - total(a)),
+    firstResponse: {
+      count: hours.length,
+      medianHours: hours.length ? hours[Math.floor((hours.length - 1) / 2)] : null,
+      averageHours: hours.length ? hours.reduce((a, b) => a + b, 0) / hours.length : null,
+    },
     members,
     organizations,
     experts,
@@ -136,7 +171,7 @@ adminRouter.get("/lookups", async (_req, res) => {
 // ---------------------------------------------------------------- members
 
 const usersAdmin = Router();
-usersAdmin.use(requirePermission(PERMISSIONS.membersManage));
+usersAdmin.use(requirePermission(PERMISSIONS.membersManage), signalCounts);
 
 function userFilter(query: Record<string, unknown>) {
   const f: Filter = { ...NOT_DEVELOPER };

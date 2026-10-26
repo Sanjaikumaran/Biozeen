@@ -35,6 +35,8 @@ const contactRequestSchema = new Schema(
     ],
     /** Reply visible to the requesting member in their dashboard. */
     response: String,
+    /** When staff first acted on the request (it left "new"), for response-time reporting. */
+    firstResponseAt: Date,
     ip: { type: String, select: false },
   },
   { timestamps: true },

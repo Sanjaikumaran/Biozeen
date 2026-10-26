@@ -247,3 +247,122 @@ export function Sparkline({ values, color, width = 96, height = 32 }: { values: 
     </svg>
   )
 }
+
+// ---------------------------------------------------------------- stacked monthly bars
+
+export interface StackSeries { key: string; label: string; color: string }
+
+/** Several monthly counts stacked per month, with a hover breakdown and the month's total. */
+export function StackedMonthly({ data, series, height = 260 }: { data: ({ month: string } & Record<string, number | string>)[]; series: StackSeries[]; height?: number }) {
+  const [ref, width] = useWidth<HTMLDivElement>()
+  const [hover, setHover] = useState<number | null>(null)
+  const totals = useMemo(() => data.map((d) => series.reduce((a, s) => a + Number(d[s.key] ?? 0), 0)), [data, series])
+  const geo = useMemo(() => {
+    if (!width) return null
+    const x = scaleBand(data.map((d) => d.month), [M.left, width - M.right]).padding(0.3)
+    const y = scaleLinear([0, Math.max(1, max(totals) ?? 1)], [height - M.bottom, M.top + 10]).nice(4)
+    return { x, y, ticks: y.ticks(4) }
+  }, [data, totals, width, height])
+  const h = hover !== null ? data[hover] : null
+
+  return (
+    <div>
+      <Legend items={series.map((s) => ({ label: s.label, color: s.color }))} />
+      <div ref={ref} className="relative mt-3" style={{ height }} onMouseLeave={() => setHover(null)}>
+        {geo && (
+          <svg width={width} height={height} role="img" aria-label={`Monthly ${series.map((s) => s.label.toLowerCase()).join(', ')}`}>
+            <YGrid ticks={geo.ticks} y={geo.y} width={width} />
+            {data.map((d, i) => {
+              const x = geo.x(d.month) ?? 0
+              let acc = 0
+              const top = series.reduce((last, s, si) => (Number(d[s.key]) > 0 ? si : last), -1)
+              return (
+                <g key={d.month} opacity={hover === null || hover === i ? 1 : 0.4}>
+                  {series.map((s, si) => {
+                    const v = Number(d[s.key] ?? 0)
+                    if (!v) return null
+                    const y0 = geo.y(acc), y1 = geo.y(acc + v)
+                    acc += v
+                    // A 2px surface gap separates stacked segments; only the top segment is rounded.
+                    const hgt = Math.max(0, y0 - y1 - (si === top ? 0 : 2))
+                    return <path key={s.key} className="viz-grow" d={si === top ? barPath(x, y1, geo.x.bandwidth(), hgt) : `M${x},${y1 + 2}h${geo.x.bandwidth()}v${hgt}h${-geo.x.bandwidth()}Z`} fill={s.color} />
+                  })}
+                  <text x={x + geo.x.bandwidth() / 2} y={height - 8} textAnchor="middle" className={cx('text-[10px]', hover === i ? 'fill-ink-900 font-semibold' : 'fill-ink-500')}>{monthShort(d.month)}</text>
+                  <rect x={x - (geo.x.step() - geo.x.bandwidth()) / 2} y={M.top} width={geo.x.step()} height={height - M.top - M.bottom} fill="transparent" onMouseEnter={() => setHover(i)} />
+                </g>
+              )
+            })}
+            {hover === null && totals.some(Boolean) && (() => {
+              const i = totals.length - 1
+              const x = (geo.x(data[i].month) ?? 0) + geo.x.bandwidth() / 2
+              return totals[i] > 0 ? <text x={x} y={geo.y(totals[i]) - 6} textAnchor="middle" className="fill-ink-900 text-[11px] font-semibold tabular-nums">{totals[i]}</text> : null
+            })()}
+          </svg>
+        )}
+        {geo && h && hover !== null && (
+          <Tooltip x={(geo.x(h.month) ?? 0) + geo.x.bandwidth() / 2} y={geo.y(totals[hover])} width={width}>
+            <p className="mb-1 font-semibold text-ink-900">{monthLong(h.month)}</p>
+            {[...series].reverse().map((s) => <p key={s.key} className="flex items-center gap-2 text-ink-700"><Swatch color={s.color} />{s.label}<span className="ml-auto pl-3 font-semibold tabular-nums text-ink-900">{Number(h[s.key] ?? 0)}</span></p>)}
+            <p className="mt-1 flex border-t border-ink-900/10 pt-1 font-semibold text-ink-900">Total<span className="ml-auto pl-3 tabular-nums">{totals[hover]}</span></p>
+          </Tooltip>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------- horizontal stacked bars
+
+/** One horizontal bar per row, split into ordered stages; hover a segment for its count. */
+export function StageBars({ rows, stages, rowLabel }: { rows: ({ key: string } & Record<string, number | string>)[]; stages: StackSeries[]; rowLabel: (key: string) => string }) {
+  const [ref, width] = useWidth<HTMLDivElement>()
+  const [hover, setHover] = useState<{ row: string; stage: string; x: number; y: number } | null>(null)
+  const LABEL = 132, ROW = 30, BAR = 16
+  const totals = rows.map((r) => stages.reduce((a, s) => a + Number(r[s.key] ?? 0), 0))
+  const x = scaleLinear([0, Math.max(1, max(totals) ?? 1)], [LABEL, Math.max(LABEL + 10, width - 40)])
+  const height = rows.length * ROW + 4
+  const hs = hover && stages.find((s) => s.key === hover.stage)
+  const hr = hover && rows.find((r) => r.key === hover.row)
+
+  return (
+    <div>
+      <Legend items={stages.map((s) => ({ label: s.label, color: s.color }))} />
+      <div ref={ref} className="relative mt-3" onMouseLeave={() => setHover(null)}>
+        {width > 0 && (
+          <svg width={width} height={height} role="img" aria-label="Requests by type and stage">
+            {rows.map((r, ri) => {
+              let acc = 0
+              const y = ri * ROW + (ROW - BAR) / 2
+              return (
+                <g key={r.key}>
+                  <text x={0} y={y + BAR / 2} dy="0.32em" className="fill-ink-700 text-[11px]">{rowLabel(r.key)}</text>
+                  {stages.map((s) => {
+                    const v = Number(r[s.key] ?? 0)
+                    if (!v) return null
+                    const x0 = x(acc), x1 = x(acc + v)
+                    acc += v
+                    const w = Math.max(0, x1 - x0 - 2)
+                    const active = !hover || (hover.row === r.key && hover.stage === s.key)
+                    return (
+                      <g key={s.key} onMouseEnter={() => setHover({ row: r.key, stage: s.key, x: x0 + w / 2, y })}>
+                        <rect x={x0} y={y} width={w} height={BAR} rx={3} fill={s.color} opacity={active ? 1 : 0.45} />
+                        {w > 22 && <text x={x0 + w / 2} y={y + BAR / 2} dy="0.32em" textAnchor="middle" className="pointer-events-none fill-white text-[10px] font-semibold tabular-nums">{v}</text>}
+                      </g>
+                    )
+                  })}
+                  <text x={x(totals[ri]) + 6} y={y + BAR / 2} dy="0.32em" className="fill-ink-900 text-[11px] font-semibold tabular-nums">{totals[ri]}</text>
+                </g>
+              )
+            })}
+          </svg>
+        )}
+        {hover && hs && hr && (
+          <Tooltip x={hover.x} y={hover.y} width={width}>
+            <p className="mb-1 font-semibold text-ink-900">{rowLabel(hr.key)}</p>
+            <p className="flex items-center gap-2 text-ink-700"><Swatch color={hs.color} />{hs.label}<span className="ml-auto pl-3 font-semibold tabular-nums text-ink-900">{Number(hr[hs.key])}</span></p>
+          </Tooltip>
+        )}
+      </div>
+    </div>
+  )
+}

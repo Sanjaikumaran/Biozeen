@@ -14,6 +14,7 @@ import { FeedbackForm } from "../models/feedback.js";
 import { User } from "../models/identity.js";
 import { notifyPermission, afterStatusChange } from "../lib/notify.js";
 import { allowedContentTypes, contentFeature, featureOff, isFeatureOn, requireFeature } from "../lib/features.js";
+import { signalCounts } from "../lib/realtime.js";
 
 export const contentsRouter = Router();
 export const adminContentsRouter = Router();
@@ -136,7 +137,7 @@ const opportunityInput = z
   .partial();
 
 /** Members with `opportunities.post` can submit an opportunity; it goes to review. */
-contentsRouter.post("/submissions", requirePermission(PERMISSIONS.opportunitiesPost), requireFeature("opportunities.post"), async (req, res) => {
+contentsRouter.post("/submissions", signalCounts, requirePermission(PERMISSIONS.opportunitiesPost), requireFeature("opportunities.post"), async (req, res) => {
   const data = parse(
     z.object({
       title: z.string().trim().min(5, "Add a descriptive title").max(200),
@@ -191,7 +192,7 @@ const contentInput = z.object({
   portfolio: z.object({ section: z.string().max(60).optional(), client: z.string().max(160).optional(), year: z.number().int().optional() }).partial().optional(),
 });
 
-adminContentsRouter.use(requirePermission(PERMISSIONS.adminAccess, PERMISSIONS.contentManage));
+adminContentsRouter.use(requirePermission(PERMISSIONS.adminAccess, PERMISSIONS.contentManage), signalCounts);
 
 /** Each content editor (portfolio, opportunities, knowledge, announcements) is its own admin feature. */
 function adminContentFeature(type: string) {

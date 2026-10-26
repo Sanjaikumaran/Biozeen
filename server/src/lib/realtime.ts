@@ -1,4 +1,5 @@
 import type { Server as HttpServer } from "node:http";
+import type { NextFunction, Request, Response } from "express";
 import { Server } from "socket.io";
 import { config } from "../config.js";
 import { sessionUser } from "../middleware/auth.js";
@@ -43,4 +44,14 @@ export function disconnectUser(userId: string) {
 /** Tell every open session something global changed (for example feature switches). */
 export function broadcast(event: string, payload: unknown = {}) {
   io?.emit(event, payload);
+}
+
+/**
+ * Middleware for routes that change what the admin sidebar counts (pending members, content in
+ * review, new requests): after a successful write, open admin workspaces are told to refetch.
+ * The signal carries no data; the counts themselves stay behind the admin API.
+ */
+export function signalCounts(req: Request, res: Response, next: NextFunction) {
+  if (req.method !== "GET") res.on("finish", () => res.statusCode < 400 && broadcast("counts:changed"));
+  next();
 }

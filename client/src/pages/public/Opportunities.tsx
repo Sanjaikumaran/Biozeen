@@ -6,6 +6,7 @@ import { Button, Empty, ErrorState, Pagination, Select, SkeletonGrid } from '../
 import { cx } from '../../lib/cx'
 import { api, type Paged } from '../../lib/api'
 import { useAuth } from '../../lib/auth'
+import { useFeature } from '../../lib/features'
 import { label } from '../../lib/format'
 import { useAsync, useDocumentTitle, useQueryState } from '../../lib/hooks'
 import type { ContentCard, Ref } from '../../lib/types'
@@ -23,6 +24,7 @@ const TYPES = [
 export default function Opportunities() {
   useDocumentTitle('Opportunities Hub')
   const { user, can } = useAuth()
+  const postOn = useFeature('opportunities.post')
   const navigate = useNavigate()
   const [f, setF] = useQueryState({ q: '', type: '', category: '', location: '', sort: 'latest', page: '1' })
   const [draft, setDraft] = useState({ q: f.q, location: f.location })
@@ -41,9 +43,12 @@ export default function Opportunities() {
               <h1 className="text-3xl font-bold text-white sm:text-4xl">Opportunities Hub</h1>
               <p className="mt-1 text-brand-100">Discover. Collaborate. Create Impact.</p>
             </div>
-            <Button variant="accent" size="lg" onClick={() => navigate(user ? (can('opportunities.post') ? '/dashboard/post-opportunity' : '/contact?type=requirement') : '/login?next=/dashboard/post-opportunity')}>
-              Post a Requirement
-            </Button>
+            {/* Posting is a member action: hidden when signed out, without the permission, or switched off. */}
+            {user && can('opportunities.post') && postOn && (
+              <Button variant="accent" size="lg" onClick={() => navigate('/dashboard/post-opportunity')}>
+                Post a Requirement
+              </Button>
+            )}
           </div>
           <form
             className="mt-6 grid gap-2 rounded-xl bg-card p-2 sm:grid-cols-[1fr_200px_200px_auto]"
