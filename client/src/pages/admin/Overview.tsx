@@ -1,6 +1,6 @@
 import {
   Activity, BarChart3, BookOpen, Building2, CalendarDays, ClipboardCheck, Database, FileText, FolderTree, GraduationCap, Handshake,
-  History, Image, Inbox, Palette, LayoutDashboard, ListChecks, MessageSquareHeart, Settings, ShieldCheck, UserCheck, Users, UserSearch,
+  History, Image, Inbox, UserCog, LayoutDashboard, ListChecks, MessageSquareHeart, Settings, ShieldCheck, UserCheck, Users, UserSearch,
 } from 'lucide-react'
 import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { Link } from 'react-router-dom'
@@ -37,22 +37,22 @@ export function AdminLayout() {
     { to: '/admin/approvals', label: 'Member Approvals', icon: UserCheck, permission: 'members.manage', badge: data?.pendingApprovals },
     { to: '/admin/members', label: 'Members', icon: Users, permission: 'members.manage' },
     { to: '/admin/roles', label: 'Roles & Permissions', icon: ShieldCheck, permission: 'members.manage' },
-    { to: '/admin/directory', label: 'Master Database', icon: Database, permission: 'organizations.manage' },
-    { to: '/admin/experts', label: 'Experts', icon: UserSearch, permission: 'experts.manage' },
-    { to: '/admin/content?type=portfolio', label: 'Portfolio', icon: Building2, permission: 'content.manage' },
-    { to: '/admin/content?type=opportunity', label: 'Opportunities', icon: Handshake, permission: 'content.manage', badge: data?.pendingContent },
-    { to: '/admin/content?type=knowledge', label: 'Knowledge', icon: BookOpen, permission: 'content.manage' },
-    { to: '/admin/content?type=announcement', label: 'Announcements', icon: FileText, permission: 'content.manage' },
-    { to: '/admin/courses', label: 'Courses', icon: GraduationCap, permission: 'content.manage' },
-    { to: '/admin/events', label: 'Events', icon: CalendarDays, permission: 'content.manage' },
-    { to: '/admin/feedback/forms', label: 'Feedback Forms', icon: ListChecks, permission: 'feedback.manage' },
-    { to: '/admin/feedback', label: 'Feedback Analytics', icon: MessageSquareHeart, permission: 'feedback.view', end: true },
-    { to: '/admin/requests', label: 'Requests', icon: Inbox, permission: 'contacts.manage', badge: data?.newRequests },
-    { to: '/admin/taxonomy', label: 'Categories & Tags', icon: FolderTree, permission: 'content.manage' },
-    { to: '/admin/media', label: 'Media Library', icon: Image, permission: 'media.upload' },
-    { to: '/admin/audit', label: 'Audit Log', icon: History, permission: 'audit.view' },
+    { to: '/admin/directory', label: 'Master Database', icon: Database, permission: 'organizations.manage', feature: 'admin.directory' },
+    { to: '/admin/experts', label: 'Experts', icon: UserSearch, permission: 'experts.manage', feature: 'admin.experts' },
+    { to: '/admin/content?type=portfolio', label: 'Portfolio', icon: Building2, permission: 'content.manage', feature: 'admin.portfolio' },
+    { to: '/admin/content?type=opportunity', label: 'Opportunities', icon: Handshake, permission: 'content.manage', badge: data?.pendingContent, feature: 'admin.opportunities' },
+    { to: '/admin/content?type=knowledge', label: 'Knowledge', icon: BookOpen, permission: 'content.manage', feature: 'admin.knowledge' },
+    { to: '/admin/content?type=announcement', label: 'Announcements', icon: FileText, permission: 'content.manage', feature: 'admin.announcements' },
+    { to: '/admin/courses', label: 'Courses', icon: GraduationCap, permission: 'content.manage', feature: 'admin.courses' },
+    { to: '/admin/events', label: 'Events', icon: CalendarDays, permission: 'content.manage', feature: 'admin.events' },
+    { to: '/admin/feedback/forms', label: 'Feedback Forms', icon: ListChecks, permission: 'feedback.manage', feature: 'admin.feedback' },
+    { to: '/admin/feedback', label: 'Feedback Analytics', icon: MessageSquareHeart, permission: 'feedback.view', end: true, feature: 'admin.feedback' },
+    { to: '/admin/requests', label: 'Requests', icon: Inbox, permission: 'contacts.manage', badge: data?.newRequests, feature: 'admin.requests' },
+    { to: '/admin/taxonomy', label: 'Categories & Tags', icon: FolderTree, permission: 'content.manage', feature: 'admin.taxonomy' },
+    { to: '/admin/media', label: 'Media Library', icon: Image, permission: 'media.upload', feature: 'admin.media' },
+    { to: '/admin/audit', label: 'Audit Log', icon: History, permission: 'audit.view', feature: 'admin.audit' },
     { to: '/admin/settings', label: 'Site Settings', icon: Settings, permission: 'settings.manage' },
-    { to: '/admin/appearance', label: 'Appearance', icon: Palette },
+    { to: '/admin/account', label: 'My settings', icon: UserCog },
   ]
   return (
     <LookupsProvider>

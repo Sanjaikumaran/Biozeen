@@ -39,3 +39,8 @@ export function emitToUsers(userIds: string[], event: string, payload: unknown) 
 export function disconnectUser(userId: string) {
   io?.in(`user:${userId}`).disconnectSockets(true);
 }
+
+/** Tell every open session something global changed (for example feature switches). */
+export function broadcast(event: string, payload: unknown = {}) {
+  io?.emit(event, payload);
+}

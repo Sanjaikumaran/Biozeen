@@ -7,6 +7,7 @@ import { PERMISSIONS } from "../lib/permissions.js";
 import { requirePermission } from "../middleware/auth.js";
 import { CONTACT_STATUSES, CONTACT_TYPES, ContactRequest } from "../models/admin.js";
 import { notify, notifyPermission } from "../lib/notify.js";
+import { requireFeature } from "../lib/features.js";
 
 export const contactRouter = Router();
 export const adminContactsRouter = Router();
@@ -31,7 +32,7 @@ const contactInput = z.object({
   startedAt: z.number().optional(),
 });
 
-contactRouter.post("/", contactLimiter, async (req, res) => {
+contactRouter.post("/", contactLimiter, requireFeature("contact"), async (req, res) => {
   const data = parse(contactInput, req.body);
   // Submissions completed implausibly fast are treated as automated, but acknowledged identically.
   const tooFast = data.startedAt && Date.now() - data.startedAt < 2500;
@@ -60,7 +61,7 @@ contactRouter.post("/", contactLimiter, async (req, res) => {
 
 // ---------------------------------------------------------------- admin
 
-adminContactsRouter.use(requirePermission(PERMISSIONS.adminAccess, PERMISSIONS.contactsManage));
+adminContactsRouter.use(requirePermission(PERMISSIONS.adminAccess, PERMISSIONS.contactsManage), requireFeature("admin.requests"));
 
 function filter(query: Record<string, unknown>) {
   const f: Filter = {};

@@ -25,7 +25,7 @@ You are notified when someone registers, creates an expert profile, or sends a r
 Tabs for **Organisations**, **Experts** and **Alumni**, each with search, **Filter** and **Export**.
 
 - **Organisations:** name, type, partner tier (founding, knowledge, industry, innovation), description, logo, website, contact, collaboration areas and initiatives. An organisation appears in the public Partner Ecosystem only when its status is **Approved** and its visibility is **Public partner profile**. Contact details are never shown publicly. An organisation with linked members can't be deleted; mark it *Inactive* instead.
-- **Experts:** review new profiles and set the status to **Approved** to list them. The expert is notified. Visibility (public, members only, hidden) stays the expert's choice.
+- **Experts:** review new profiles and set the status to **Approved** to list them. The expert is notified. The audience (public, all members, selected roles or organisations, or BIAN team only) is the expert's choice; change it only with their agreement.
 - **Alumni:** members in the Alumni category, with institution and graduation year.
 
 ## Requests

@@ -13,6 +13,7 @@ import { accessInput } from "../lib/publishing.js";
 import { requirePermission } from "../middleware/auth.js";
 import { Content, MediaAsset } from "../models/content.js";
 import { Course, Event } from "../models/learning.js";
+import { requireFeature } from "../lib/features.js";
 
 export const mediaRouter = Router();
 export const adminMediaRouter = Router();
@@ -90,7 +91,7 @@ mediaRouter.get("/:id/file", async (req, res) => {
 
 // ---------------------------------------------------------------- admin
 
-adminMediaRouter.use(requirePermission(PERMISSIONS.adminAccess, PERMISSIONS.mediaUpload));
+adminMediaRouter.use(requirePermission(PERMISSIONS.adminAccess, PERMISSIONS.mediaUpload), requireFeature("admin.media"));
 
 adminMediaRouter.get("/", async (req, res) => {
   const { page, limit, skip } = pagination(req, 24);

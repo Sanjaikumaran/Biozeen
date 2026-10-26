@@ -8,6 +8,7 @@ import { useAuth } from '../../lib/auth'
 import { label } from '../../lib/format'
 import { useAsync, useDocumentTitle, useQueryState } from '../../lib/hooks'
 import type { Expert } from '../../lib/types'
+import { useFeature } from '../../lib/features'
 
 const TYPES = ['industry_expert', 'research_expert', 'trainer', 'consultant', 'mentor'] as const
 
@@ -79,6 +80,7 @@ export default function Experts() {
 export function ExpertDetail() {
   const { id = '' } = useParams()
   const { user, can } = useAuth()
+  const connectOn = useFeature('experts.connect')
   const { toast } = useFeedback()
   const { data, error, loading, reload } = useAsync(() => api.get<Expert>(`/experts/${id}`), [id, user?.id])
   const [open, setOpen] = useState(false)
@@ -138,7 +140,7 @@ export function ExpertDetail() {
           {data.location && <p className="flex items-center gap-2"><MapPin className="size-4 text-ink-500" />{data.location}</p>}
           {data.organization && <p className="flex items-center gap-2"><Building2 className="size-4 text-ink-500" />{data.organization.name}</p>}
           {data.email && <p className="flex items-center gap-2"><Mail className="size-4 text-ink-500" /><a href={`mailto:${data.email}`} className="text-brand-600 hover:underline">{data.email}</a></p>}
-          {user ? (
+          {!connectOn ? null : user ? (
             can('experts.contact') ? <Button className="w-full" onClick={() => setOpen(true)}>Request to connect</Button> : <p className="text-ink-500">Your membership does not include expert connect requests.</p>
           ) : (
             <Link to={`/login?next=/experts/${id}`} className="block rounded-lg bg-brand-600 py-2 text-center font-semibold text-white">Sign in to connect</Link>

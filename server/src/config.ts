@@ -41,6 +41,11 @@ export const config = {
   /** Ask for a one-time code sent by email after the password at sign-in. */
   loginOtp: process.env.LOGIN_OTP_ENABLED === "true",
   otpMinutes: Number(process.env.LOGIN_OTP_MINUTES) || 10,
+  /** Developer console account, created on start if missing (see maintenance.ts). */
+  developer: {
+    email: (process.env.DEVELOPER_EMAIL ?? "").trim().toLowerCase(),
+    password: process.env.DEVELOPER_PASSWORD ?? "",
+  },
   sessionDays: 1,
   rememberDays: 30,
   cookieName: "bian_session",

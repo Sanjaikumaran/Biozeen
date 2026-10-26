@@ -9,6 +9,7 @@ import { useAuth } from '../../lib/auth'
 import { label } from '../../lib/format'
 import { useAsync, useDocumentTitle, useQueryState } from '../../lib/hooks'
 import type { Access, ContentCard, Ref } from '../../lib/types'
+import { useFeature } from '../../lib/features'
 
 const SECTIONS = [
   { key: 'industry_insights', text: 'Reports, trends and market updates', icon: BarChart3 },
@@ -61,7 +62,11 @@ function Courses() {
 export default function Knowledge() {
   useDocumentTitle('Knowledge Hub')
   const { user } = useAuth()
-  const [f, setF] = useQueryState({ tab: 'resources', q: '', section: '', category: '', page: '1' })
+  const resourcesOn = useFeature('knowledge.resources')
+  const coursesOn = useFeature('knowledge.courses')
+  const [query, setF] = useQueryState({ tab: 'resources', q: '', section: '', category: '', page: '1' })
+  // Show whichever of resources and courses is switched on.
+  const f = { ...query, tab: !resourcesOn ? 'courses' : query.tab === 'courses' && !coursesOn ? 'resources' : query.tab }
   const [draft, setDraft] = useState(f.q)
   const { data: tax } = useAsync(() => api.get<{ categories: Ref[] }>('/contents/taxonomy'), [])
   const { data, error, loading, reload } = useAsync(
@@ -102,7 +107,7 @@ export default function Knowledge() {
           ))}
         </div>
 
-        <Tabs className="mt-8" value={f.tab} onChange={(tab) => setF({ tab })} tabs={[{ value: 'resources', label: 'Articles & resources' }, { value: 'courses', label: <span className="inline-flex items-center gap-1.5"><BookOpenCheck className="size-4" />Courses</span> }]} />
+        <Tabs className="mt-8" value={f.tab} onChange={(tab) => setF({ tab })} tabs={[...(resourcesOn ? [{ value: 'resources', label: 'Articles & resources' as React.ReactNode }] : []), ...(coursesOn ? [{ value: 'courses', label: <span className="inline-flex items-center gap-1.5"><BookOpenCheck className="size-4" />Courses</span> }] : [])]} />
 
         <div className="mt-6">
           {f.tab === 'courses' ? <Courses /> : (

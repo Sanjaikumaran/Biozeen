@@ -10,6 +10,7 @@ import { useAuth } from '../../lib/auth'
 import { label } from '../../lib/format'
 import { useAsync, useDocumentTitle } from '../../lib/hooks'
 import type { Block, CourseModule, Enrollment, PublicForm } from '../../lib/types'
+import { useFeature } from '../../lib/features'
 
 interface CourseDetail {
   _id: string
@@ -64,6 +65,7 @@ function Outline({ modules, slug, completed, current }: { modules: CourseModule[
 export function CoursePage() {
   const { slug = '' } = useParams()
   const { user } = useAuth()
+  const enrollOn = useFeature('knowledge.courses.enroll')
   const navigate = useNavigate()
   const { toast } = useFeedback()
   const { data, error, loading, reload } = useAsync(() => api.get<CourseDetail>(`/courses/${slug}`), [slug, user?.id])
@@ -102,7 +104,7 @@ export function CoursePage() {
             <p className="mt-3 text-lg text-brand-100">{data.summary}</p>
             <p className="mt-4 text-sm text-brand-100/80">{data.modules.length} modules · {data.lessonCount} lessons</p>
           </div>
-          <Card className="h-fit space-y-4 p-5 text-ink-700">
+          {enrollOn && <Card className="h-fit space-y-4 p-5 text-ink-700">
             {data.enrollment ? (
               <>
                 <p className="text-sm font-semibold text-ink-900">Your progress · {data.enrollment.progress}%</p>
@@ -115,7 +117,7 @@ export function CoursePage() {
                 <Button className="w-full" onClick={enroll} loading={busy}><GraduationCap className="size-4" />{user ? 'Enroll for free' : 'Sign in to enroll'}</Button>
               </>
             )}
-          </Card>
+          </Card>}
         </div>
       </section>
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-10 sm:px-6 md:grid-cols-[1fr_320px]">

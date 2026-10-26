@@ -16,18 +16,19 @@ This is the MongoDB schema that implements [schema.md](schema.md). The Mongoose 
 | `enrollments` | `learning.ts` | User × course progress and completed lessons |
 | `events` | `learning.ts` | Events with location, registration settings and blocks |
 | `eventRegistrations` | `learning.ts` | User × event registration tracking (optional per the requirements) |
-| `experts` | `learning.ts` | Expert profile with consent-based visibility, linked to a user |
+| `experts` | `learning.ts` | Expert profile linked to a user, with an `access` audience chosen by the expert |
 | `feedbackForms` | `feedback.ts` | Questions (embedded), version and question history, anonymity and submission rules |
 | `feedbackSubmissions` | `feedback.ts` | Answers with a snapshot of each question's text, form version, target references, respondent (identified only) |
 | `contactRequests` | `admin.ts` | Contact, partnership, collaboration and expert-connect requests; status, assignee, notes, reply |
 | `auditLogs` | `admin.ts` | Actor, action, entity, summary, scrubbed metadata |
 | `siteSettings` | `admin.ts` | Homepage hero and secretariat contact (single document) |
+| `featureSettings` | `admin.ts` | Developer feature switches: one document per feature key with `enabled` and `audience` (empty = everyone) |
 | `notifications` | `admin.ts` | Per-user in-app notifications (kind, title, body, link, read time); expire after 90 days |
 
 ## Shared embedded shapes
 
 ```js
-// access — on contents, courses, events, mediaAssets
+// access — on contents, courses, events, experts, mediaAssets
 { visibility: "public" | "authenticated" | "roles" | "organizations" | "private",
   roles: [ObjectId<Role>], organizations: [ObjectId<Organization>] }
 
@@ -68,10 +69,11 @@ An item is **live** when its status is `published` and `publishAt` is unset or p
 | enrollments | `{user, course}` unique · `course` |
 | events | `slug` unique · `startAt` · `{status, eventType, startAt}` |
 | eventRegistrations | `{event, user}` unique |
-| experts | `user` unique · `{expertType, status, visibility}` · `skills` · text `{headline, bio, skills, expertiseAreas}` |
+| experts | `user` unique · `{expertType, status, access.visibility}` · `skills` · text `{headline, bio, skills, expertiseAreas}` |
 | feedbackSubmissions | `{form, submittedAt}` · `{content, submittedAt}` · `{course, lessonId}` · `event` · `{user, submittedAt}` · `dedupeKey` (sparse) |
 | contactRequests | `{status, type, createdAt}` · `user` |
 | auditLogs | `at` · `{entityType, entityId}` · `{actor, at}` |
+| featureSettings | `key` unique |
 | notifications | `{user, createdAt}` · `{user, readAt}` · TTL on `createdAt` (90 days) |
 
 ## Privacy and retention

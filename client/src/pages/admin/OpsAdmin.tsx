@@ -1,8 +1,8 @@
-import { Download, History, Inbox, Pencil, Plus, Trash2, Upload } from 'lucide-react'
+import { Download, History, Inbox, Lock, Pencil, Plus, Trash2, Upload } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { MediaIcon } from '../../components/admin/MediaPicker'
 import { uploadMedia, type MediaAsset } from '../../lib/media'
-import { Alert, Badge, Button, Card, Checkbox, Empty, ErrorState, Input, Loading, Modal, PageHeader, Pagination, Select, StatusBadge, Tabs, TagInput, Textarea, useFeedback } from '../../components/ui'
+import { Alert, Badge, Button, Card, Checkbox, Empty, ErrorState, Input, Loading, Modal, PageHeader, Pagination, SearchInput, Select, StatusBadge, Tabs, TagInput, Textarea, useFeedback } from '../../components/ui'
 import { ApiError, api, downloadUrl, type Paged } from '../../lib/api'
 import { formatBytes, formatDateTime, label, timeAgo } from '../../lib/format'
 import { useAsync, useDebounced, useDocumentTitle, useQueryState } from '../../lib/hooks'
@@ -41,8 +41,8 @@ export function Requests() {
     <div>
       <PageHeader title="Contact & Collaboration Requests" actions={<Button variant="outline" onClick={() => downloadUrl('/admin/contacts/export.csv', { status: f.status, type: f.type, q })}><Download className="size-4" />Export CSV</Button>} />
       <Tabs value={f.status} onChange={(status) => setF({ status })} tabs={[{ value: '', label: 'All' }, ...['new', 'in_progress', 'responded', 'closed'].map((s) => ({ value: s, label: label(s), count: data?.statusCounts?.[s] ?? 0 }))]} />
-      <div className="my-4 flex flex-wrap gap-2">
-        <input aria-label="Search" value={f.q} onChange={(e) => setF({ q: e.target.value })} placeholder="Search name, email, message…" className="h-10 w-72 rounded-lg border border-ink-300/70 bg-card px-3 text-sm" />
+      <div className="my-4 flex flex-wrap items-center gap-3">
+        <SearchInput value={f.q} onChange={(q) => setF({ q })} placeholder="Search name, email, message…" />
         <Select aria-label="Type" value={f.type} onChange={(e) => setF({ type: e.target.value })} className="h-10 w-56"><option value="">All types</option>{['general', 'collaboration', 'partnership', 'expert_connect', 'requirement', 'training', 'support'].map((t) => <option key={t} value={t}>{label(t)}</option>)}</Select>
       </div>
       {loading ? <Loading /> : error ? <ErrorState error={error} onRetry={reload} /> : !data?.items.length ? <Empty icon={<Inbox className="size-8" />} title="No requests" /> : (
@@ -203,31 +203,34 @@ export function MediaLibrary() {
   return (
     <div>
       <PageHeader title="Media Library" subtitle="Files are served through access checks — never from an open public folder." />
-      <Card className="mb-4 flex flex-wrap items-end gap-3 p-4">
-        <Select label="Default access for new uploads" value={visibility} onChange={(e) => setVisibility(e.target.value)} className="w-56" hint="Used when a file is not linked to any content">
-          <option value="public">Public</option><option value="authenticated">Members only</option><option value="private">Admins only</option>
-        </Select>
-        <Button loading={uploading} onClick={() => input.current?.click()}><Upload className="size-4" />Upload</Button>
-        <input ref={input} type="file" className="hidden" onChange={async (e) => { const file = e.target.files?.[0]; if (!file) return; setUploading(true); try { await uploadMedia(file, visibility); toast('Uploaded'); reload() } catch (err) { toast((err as Error).message, 'error') } finally { setUploading(false); e.target.value = '' } }} />
+      <Card className="mb-4 flex flex-wrap items-center gap-3 p-3">
+        <SearchInput value={f.q} onChange={(q) => setF({ q })} placeholder="Search files…" />
+        <Select aria-label="File type" value={f.kind} onChange={(e) => setF({ kind: e.target.value })} className="h-10 w-40"><option value="">All files</option><option value="image">Images</option><option value="video">Videos</option><option value="document">Documents</option></Select>
         <span className="flex-1" />
-        <input aria-label="Search files" value={f.q} onChange={(e) => setF({ q: e.target.value })} placeholder="Search files…" className="h-10 w-56 rounded-lg border border-ink-300/70 px-3 text-sm" />
-        <Select aria-label="Kind" value={f.kind} onChange={(e) => setF({ kind: e.target.value })} className="h-10 w-36"><option value="">All</option><option value="image">Images</option><option value="video">Videos</option><option value="document">Documents</option></Select>
+        <label className="flex items-center gap-2 text-sm text-ink-700" title="Used when a file is not linked to any content">
+          New uploads are
+          <Select aria-label="Default access for new uploads" value={visibility} onChange={(e) => setVisibility(e.target.value)} className="h-10 w-40">
+            <option value="public">Public</option><option value="authenticated">Members only</option><option value="private">Admins only</option>
+          </Select>
+        </label>
+        <Button className="h-10" loading={uploading} onClick={() => input.current?.click()}><Upload className="size-4" />Upload</Button>
+        <input ref={input} type="file" className="hidden" onChange={async (e) => { const file = e.target.files?.[0]; if (!file) return; setUploading(true); try { await uploadMedia(file, visibility); toast('Uploaded'); reload() } catch (err) { toast((err as Error).message, 'error') } finally { setUploading(false); e.target.value = '' } }} />
       </Card>
       {loading ? <Loading /> : error ? <ErrorState error={error} onRetry={reload} /> : !data?.items.length ? <Empty title="No files" /> : (
         <>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5">
             {data.items.map((m) => (
-              <Card key={m._id} className="overflow-hidden">
-                <a href={m.url} target="_blank" rel="noopener noreferrer" className="grid aspect-[4/3] place-items-center bg-ink-900/5">
-                  {m.kind === 'image' ? <img src={m.url} alt="" className="size-full object-cover" /> : <MediaIcon kind={m.kind} className="size-8 text-ink-500" />}
+              <Card key={m._id} className="flex flex-col overflow-hidden">
+                <a href={m.url} target="_blank" rel="noopener noreferrer" className="relative block aspect-[4/3] overflow-hidden bg-ink-900/5" aria-label={`Open ${m.originalName}`}>
+                  {m.kind === 'image' ? <img src={m.url} alt="" loading="lazy" className="absolute inset-0 size-full object-cover" /> : <span className="absolute inset-0 grid place-items-center"><MediaIcon kind={m.kind} className="size-8 text-ink-500" /></span>}
                 </a>
-                <div className="space-y-1 p-2.5">
-                  <p className="truncate text-xs font-medium text-ink-900" title={m.originalName}>{m.originalName}</p>
-                  <p className="text-[11px] text-ink-500">{formatBytes(m.size)} · {m.linked.length ? `used by ${m.linked.length}` : 'unused'}</p>
-                  <p className="text-[11px] text-ink-500">{m.inheritAccess && m.linked.length ? 'Follows linked content' : label(m.access.visibility)}</p>
-                  <div className="flex gap-1">
-                    <Button size="sm" variant="ghost" onClick={() => setEditing(m)}>Access</Button>
-                    <Button size="sm" variant="ghost" aria-label="Delete" onClick={async () => { if (await confirm({ title: 'Delete file?', message: m.originalName, danger: true, confirmLabel: 'Delete' })) { try { await api.del(`/admin/media/${m._id}`); toast('Deleted'); reload() } catch (e) { toast((e as Error).message, 'error') } } }}><Trash2 className="size-4" /></Button>
+                <div className="flex flex-1 flex-col gap-0.5 p-3">
+                  <p className="truncate text-sm font-medium text-ink-900" title={m.originalName}>{m.originalName}</p>
+                  <p className="text-xs text-ink-500">{formatBytes(m.size)} · {m.linked.length ? `used by ${m.linked.length}` : 'unused'}</p>
+                  <p className="text-xs text-ink-500">{m.inheritAccess && m.linked.length ? 'Follows linked content' : label(m.access.visibility)}</p>
+                  <div className="mt-auto flex items-center justify-between gap-1 border-t border-ink-900/8 pt-2">
+                    <Button size="sm" variant="ghost" className="-ml-2" onClick={() => setEditing(m)}><Lock className="size-3.5" />Access</Button>
+                    <Button size="sm" variant="ghost" className="-mr-2 hover:text-red-600" aria-label="Delete" onClick={async () => { if (await confirm({ title: 'Delete file?', message: m.originalName, danger: true, confirmLabel: 'Delete' })) { try { await api.del(`/admin/media/${m._id}`); toast('Deleted'); reload() } catch (e) { toast((e as Error).message, 'error') } } }}><Trash2 className="size-4" /></Button>
                   </div>
                 </div>
               </Card>
@@ -258,8 +261,8 @@ export function AuditLog() {
   return (
     <div>
       <PageHeader title="Audit Log" subtitle="Administrative actions on sensitive records. Secrets are never recorded." />
-      <div className="mb-4 flex flex-wrap gap-2">
-        <input aria-label="Search" value={f.q} onChange={(e) => setF({ q: e.target.value })} placeholder="Search summary or actor…" className="h-10 w-72 rounded-lg border border-ink-300/70 bg-card px-3 text-sm" />
+      <div className="mb-4 flex flex-wrap items-center gap-3">
+        <SearchInput value={f.q} onChange={(q) => setF({ q })} placeholder="Search summary or actor…" />
         <Select aria-label="Entity" value={f.entityType} onChange={(e) => setF({ entityType: e.target.value })} className="h-10 w-48"><option value="">All records</option>{data?.entityTypes.map((t) => <option key={t}>{t}</option>)}</Select>
       </div>
       {loading ? <Loading /> : error ? <ErrorState error={error} onRetry={reload} /> : !data?.items.length ? <Empty icon={<History className="size-8" />} title="No entries" /> : (

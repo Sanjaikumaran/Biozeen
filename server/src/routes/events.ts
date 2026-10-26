@@ -12,13 +12,14 @@ import { PUBLICATION_STATUSES } from "../models/common.js";
 import { FeedbackForm } from "../models/feedback.js";
 import { EVENT_TYPES, Event, EventRegistration } from "../models/learning.js";
 import { afterStatusChange } from "../lib/notify.js";
+import { isFeatureOn, requireFeature } from "../lib/features.js";
 
 export const eventsRouter = Router();
 export const adminEventsRouter = Router();
 
 const LIST_FIELDS = "-blocks -location.meetingUrl";
 
-eventsRouter.get("/", async (req, res) => {
+eventsRouter.get("/", requireFeature("events.calendar"), async (req, res) => {
   const { page, limit, skip } = pagination(req, 10);
   const f: Filter = {};
   const type = str(req.query.type);
@@ -37,7 +38,7 @@ eventsRouter.get("/", async (req, res) => {
   res.json(paged(items, total, page, limit));
 });
 
-eventsRouter.get("/:slug", async (req, res) => {
+eventsRouter.get("/:slug", requireFeature("events.calendar"), async (req, res) => {
   const event = await Event.findOne({ slug: req.params.slug }).populate("categories", "name slug").lean();
   if (!event) throw notFound("Event");
   if (!canView(event, req.user)) {
@@ -48,7 +49,7 @@ eventsRouter.get("/:slug", async (req, res) => {
   const [registration, registeredCount, form] = await Promise.all([
     req.user ? EventRegistration.findOne({ event: event._id, user: req.user._id, status: "registered" }).lean() : null,
     EventRegistration.countDocuments({ event: event._id, status: "registered" }),
-    event.feedbackForm ? FeedbackForm.findOne({ _id: event.feedbackForm, status: "active" }).lean() : null,
+    event.feedbackForm && (await isFeatureOn("feedback", req.user)) ? FeedbackForm.findOne({ _id: event.feedbackForm, status: "active" }).lean() : null,
   ]);
   // The meeting link is shared with registered attendees (or everyone if registration is off).
   const showMeeting = isContentManager(req.user) || !!registration || (!event.registration?.enabled && !!req.user);
@@ -63,7 +64,7 @@ eventsRouter.get("/:slug", async (req, res) => {
   });
 });
 
-eventsRouter.post("/:id/register", requireAuth, async (req, res) => {
+eventsRouter.post("/:id/register", requireAuth, requireFeature("events.registration"), async (req, res) => {
   const event = await Event.findById(oid(String(req.params.id))).lean();
   if (!event || !canView(event, req.user)) throw notFound("Event");
   if (!event.registration?.enabled) throw new HttpError(400, "Registration is not open for this event");
@@ -122,7 +123,7 @@ const eventInput = z.object({
   feedbackForm: z.string().refine(isId).nullable().optional(),
 });
 
-adminEventsRouter.use(requirePermission(PERMISSIONS.adminAccess, PERMISSIONS.contentManage));
+adminEventsRouter.use(requirePermission(PERMISSIONS.adminAccess, PERMISSIONS.contentManage), requireFeature("admin.events"));
 
 adminEventsRouter.get("/", async (req, res) => {
   const { page, limit, skip } = pagination(req, 20);

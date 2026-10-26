@@ -111,3 +111,16 @@ notificationSchema.index({ user: 1, createdAt: -1 });
 notificationSchema.index({ user: 1, readAt: 1 });
 notificationSchema.index({ createdAt: 1 }, { expireAfterSeconds: 90 * 24 * 60 * 60 });
 export const Notification = model("Notification", notificationSchema, "notifications");
+
+/** Developer feature switches; one document per feature key (see lib/features.ts). Missing = on for everyone. */
+const featureSettingSchema = new Schema(
+  {
+    key: { type: String, required: true, unique: true },
+    enabled: { type: Boolean, default: true },
+    /** Visitor and member-category keys allowed to use it; empty = everyone in scope. */
+    audience: { type: [String], default: [] },
+    updatedBy: { type: Schema.Types.ObjectId, ref: "User" },
+  },
+  { timestamps: true },
+);
+export const FeatureSetting = model("FeatureSetting", featureSettingSchema, "featureSettings");

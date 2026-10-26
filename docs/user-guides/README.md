@@ -11,6 +11,7 @@ Step-by-step guides for each kind of BIAN user. A slide overview of the platform
 | Running the platform for Biozeen | Biozeen Administrator | [Administrators](05-administrators.md) | [PDF](pdf/BIAN-User-Guide-05-Administrators.pdf) |
 | Writing or publishing content | Content Editor · Content Publisher | [Content team](06-content-team.md) | [PDF](pdf/BIAN-User-Guide-06-Content-team.pdf) |
 | Approving members and keeping directories | Membership Manager | [Membership managers](07-membership-managers.md) | [PDF](pdf/BIAN-User-Guide-07-Membership-managers.pdf) |
+| Configuring which screens and features each category can use | Developer account (not a role) | [Developers](08-developers.md) | [PDF](pdf/BIAN-User-Guide-08-Developers.pdf) |
 
 > **Category or role?** Your *category* is what you chose when you registered (for example Student). Your *roles* decide what you can see and do. When you are approved you get the **Member** role plus the role for your category. An administrator can add or change roles later.
 
@@ -28,13 +29,13 @@ Step-by-step guides for each kind of BIAN user. A slide overview of the platform
 
 ### Notifications
 
-![Notifications page with the bell menu open](../presentation/screens/notifications.png)
+![The notifications panel open on the right](../presentation/screens/notifications.png)
 
 The **bell** in the header shows how many unread notifications you have. They arrive live, without reloading the page, and also pop up briefly at the bottom of the screen.
 
-- Click the bell to see the latest notifications. Click one to open the page it refers to; it is then marked as read.
-- **Mark all read** clears the badge.
-- **View all notifications** (or **Dashboard → Notifications**) shows the full list with an *Unread* filter. Notifications are kept for 90 days.
+- Click the bell to open the **notifications panel** on the right. Switch between **All** and **Unread**.
+- Click a notification to open the page it refers to; it is then marked as read.
+- **Mark all read** clears the badge. Notifications are kept for 90 days.
 
 | You are told when… | Who receives it |
 |---|---|
@@ -48,19 +49,19 @@ The **bell** in the header shows how many unread notifications you have. They ar
 | A member submits an opportunity for review | Staff who can publish |
 | A member creates an expert profile | Staff who manage experts |
 
-### Appearance: theme colour and light/dark mode
+### Settings: appearance, password and devices
 
-![Appearance settings in dark mode](../presentation/screens/appearance-dark.png)
+![The Settings page with appearance options](../presentation/screens/appearance-dark.png)
 
-Open **Dashboard → Appearance**, or **Appearance** in your account menu.
+Open **Settings** from your account menu (top right), or from the sidebar of your workspace.
+
+**Appearance**
 
 1. Choose a **mode**: *Light*, *Dark*, or *System* (follows your computer or phone).
 2. Choose a **theme colour**: Forest (the BIAN default), Ocean, Teal, Indigo, Plum or Terracotta.
 3. The **Preview** shows the header, banner, sidebar, cards, buttons and badges in your choice before you apply it.
 4. Click **Apply theme**. Your choice is saved to your account and follows you to any device you sign in on. **Reset to default** returns to Forest with System mode.
 
-The **moon/sun** button in the header switches between light and dark mode in one click. It works for visitors too and is remembered on that device.
+Buttons, links, banners, the sidebar and highlights such as the selected menu item all follow the theme colour you choose.
 
-### Account settings
-
-**Dashboard → Settings** lets you change your password (other devices are signed out) or **sign out of all devices**.
+**Security**: change your password (other devices are signed out), or **sign out of all devices**.

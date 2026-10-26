@@ -11,6 +11,7 @@ import { requireAuth, requirePermission } from "../middleware/auth.js";
 import { PUBLICATION_STATUSES } from "../models/common.js";
 import { FeedbackForm } from "../models/feedback.js";
 import { Course, Enrollment } from "../models/learning.js";
+import { isFeatureOn, requireFeature } from "../lib/features.js";
 
 export const coursesRouter = Router();
 export const adminCoursesRouter = Router();
@@ -36,7 +37,7 @@ function outline(course: CourseLean) {
 
 const lessonCount = (course: { modules: { lessons: unknown[] }[] }) => course.modules.reduce((n, m) => n + m.lessons.length, 0);
 
-coursesRouter.get("/", async (req, res) => {
+coursesRouter.get("/", requireFeature("knowledge.courses"), async (req, res) => {
   const { page, limit, skip } = pagination(req);
   const f: Filter = {};
   const q = str(req.query.q);
@@ -65,11 +66,11 @@ function assertViewable(course: CourseLean | null, user: Express.Request["user"]
   }
 }
 
-coursesRouter.get("/:slug", async (req, res) => {
+coursesRouter.get("/:slug", requireFeature("knowledge.courses"), async (req, res) => {
   const course = await loadCourse(String(req.params.slug));
   assertViewable(course, req.user);
   const enrollment = req.user ? await Enrollment.findOne({ user: req.user._id, course: course._id }).lean() : null;
-  const form = course.feedbackForm && (await FeedbackForm.findOne({ _id: course.feedbackForm, status: "active" }).lean());
+  const form = course.feedbackForm && (await isFeatureOn("feedback", req.user)) && (await FeedbackForm.findOne({ _id: course.feedbackForm, status: "active" }).lean());
   const { modules: _modules, ...rest } = course;
   res.json({
     ...rest,
@@ -81,7 +82,7 @@ coursesRouter.get("/:slug", async (req, res) => {
   });
 });
 
-coursesRouter.get("/:slug/lessons/:lessonId", async (req, res) => {
+coursesRouter.get("/:slug/lessons/:lessonId", requireFeature("knowledge.courses"), async (req, res) => {
   const course = await loadCourse(String(req.params.slug));
   assertViewable(course, req.user);
   const flat = course.modules.flatMap((m) => m.lessons.map((l) => ({ module: m, lesson: l })));
@@ -89,7 +90,7 @@ coursesRouter.get("/:slug/lessons/:lessonId", async (req, res) => {
   const entry = flat[index];
   if (!entry) throw notFound("Lesson");
   const enrollment = req.user ? await Enrollment.findOne({ user: req.user._id, course: course._id }).lean() : null;
-  const form = entry.lesson.feedbackForm && (await FeedbackForm.findOne({ _id: entry.lesson.feedbackForm, status: "active" }).lean());
+  const form = entry.lesson.feedbackForm && (await isFeatureOn("feedback", req.user)) && (await FeedbackForm.findOne({ _id: entry.lesson.feedbackForm, status: "active" }).lean());
   const prev = flat[index - 1];
   const next = flat[index + 1];
   res.json({
@@ -102,7 +103,7 @@ coursesRouter.get("/:slug/lessons/:lessonId", async (req, res) => {
   });
 });
 
-coursesRouter.post("/:id/enroll", requireAuth, async (req, res) => {
+coursesRouter.post("/:id/enroll", requireAuth, requireFeature("knowledge.courses.enroll"), async (req, res) => {
   const course = await loadCourse(String(req.params.id));
   assertViewable(course, req.user);
   const enrollment = await Enrollment.findOneAndUpdate(
@@ -113,7 +114,7 @@ coursesRouter.post("/:id/enroll", requireAuth, async (req, res) => {
   res.status(201).json(enrollment);
 });
 
-coursesRouter.post("/:id/lessons/:lessonId/complete", requireAuth, async (req, res) => {
+coursesRouter.post("/:id/lessons/:lessonId/complete", requireAuth, requireFeature("knowledge.courses.enroll"), async (req, res) => {
   const course = await loadCourse(String(req.params.id));
   assertViewable(course, req.user);
   const lessonIds = course.modules.flatMap((m) => m.lessons.map((l) => String(l._id)));
@@ -178,7 +179,7 @@ const courseInput = z.object({
   trackCompletion: z.boolean().optional(),
 });
 
-adminCoursesRouter.use(requirePermission(PERMISSIONS.adminAccess, PERMISSIONS.contentManage));
+adminCoursesRouter.use(requirePermission(PERMISSIONS.adminAccess, PERMISSIONS.contentManage), requireFeature("admin.courses"));
 
 adminCoursesRouter.get("/", async (req, res) => {
   const { page, limit, skip } = pagination(req, 20);

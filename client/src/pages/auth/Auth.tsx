@@ -55,7 +55,7 @@ export function Login() {
 
   const enter = (user: SessionUser | null) => {
     const next = safeNext(params.get('next'))
-    navigate(next ?? (user?.permissions.includes('admin.access') ? '/admin' : '/dashboard'), { replace: true })
+    navigate(next ?? (user?.isDeveloper ? '/developer' : user?.permissions.includes('admin.access') ? '/admin' : '/dashboard'), { replace: true })
   }
 
   async function submit(e: React.FormEvent) {

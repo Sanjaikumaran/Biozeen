@@ -13,6 +13,7 @@ import fs from "node:fs";
 import path from "node:path";
 import mongoose from "mongoose";
 import { config } from "./config.js";
+import { runMigrations } from "./maintenance.js";
 
 const { EJSON } = mongoose.mongo.BSON;
 
@@ -81,6 +82,7 @@ export async function importData(dir = config.dataDir, { replace = false } = {})
     if (docs.length) await db().collection(name).insertMany(docs);
   }
   copyDir(path.join(dir, "uploads"), config.uploadDir);
+  await runMigrations();
   await mongoose.syncIndexes();
   return manifest;
 }

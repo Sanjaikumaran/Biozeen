@@ -1,1 +1,114 @@
-[]
+[
+  {
+    "_id": {
+      "$oid": "6adf44ec969f42155211b560"
+    },
+    "originalName": "download.jpeg",
+    "storageKey": "2026-10/9ff5bcef26b5f5e45d04015d8babcea7.jpg",
+    "mimeType": "image/jpeg",
+    "size": {
+      "$numberInt": "3187"
+    },
+    "kind": "image",
+    "uploadedBy": {
+      "$oid": "6adf0bca3bcd5c045c6e4cad"
+    },
+    "inheritAccess": true,
+    "access": {
+      "visibility": "public",
+      "roles": [],
+      "organizations": []
+    },
+    "linked": [
+      {
+        "kind": "content",
+        "id": {
+          "$oid": "6adf0bca3bcd5c045c6e4ce3"
+        }
+      }
+    ],
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793017068798"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793017074433"
+      }
+    },
+    "__v": {
+      "$numberInt": "0"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf451c969f42155211b563"
+    },
+    "originalName": "download (2).jpeg",
+    "storageKey": "2026-10/4b93bad7633f822b88afbd0f96da0b9c.jpg",
+    "mimeType": "image/jpeg",
+    "size": {
+      "$numberInt": "6504"
+    },
+    "kind": "image",
+    "uploadedBy": {
+      "$oid": "6adf0bca3bcd5c045c6e4cad"
+    },
+    "inheritAccess": true,
+    "access": {
+      "visibility": "public",
+      "roles": [],
+      "organizations": []
+    },
+    "linked": [],
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793017116553"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793017116553"
+      }
+    },
+    "__v": {
+      "$numberInt": "0"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf451f969f42155211b565"
+    },
+    "originalName": "download (1).jpeg",
+    "storageKey": "2026-10/e701cdf319e7169e3a414240a9b27068.jpg",
+    "mimeType": "image/jpeg",
+    "size": {
+      "$numberInt": "8995"
+    },
+    "kind": "image",
+    "uploadedBy": {
+      "$oid": "6adf0bca3bcd5c045c6e4cad"
+    },
+    "inheritAccess": true,
+    "access": {
+      "visibility": "public",
+      "roles": [],
+      "organizations": []
+    },
+    "linked": [],
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793017119213"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793017119213"
+      }
+    },
+    "__v": {
+      "$numberInt": "0"
+    }
+  }
+]

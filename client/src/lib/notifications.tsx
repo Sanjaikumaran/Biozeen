@@ -1,8 +1,9 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
-import { io } from 'socket.io-client'
+import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useState, type ReactNode } from 'react'
 import { useFeedback } from '../components/ui'
 import { api } from './api'
 import { useAuth } from './auth'
+import { useFeature } from './features'
+import { useSocket } from './socket'
 
 export interface AppNotification {
   _id: string
@@ -28,9 +29,13 @@ const NotificationsContext = createContext<NotificationsState | null>(null)
 export function NotificationsProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth()
   const { toast } = useFeedback()
+  const socket = useSocket()
+  const enabled = useFeature('notifications')
   const [items, setItems] = useState<AppNotification[]>([])
   const [unread, setUnread] = useState(0)
-  const [live, setLive] = useState(false)
+  // Re-render when the connection changes; whether it is up is read from the socket itself.
+  const [, connectionChanged] = useReducer((n: number) => n + 1, 0)
+  const live = !!socket?.connected
   const userId = user?.id
 
   // Clear the previous account's list as soon as the user changes.
@@ -39,11 +44,10 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     setListFor(userId)
     setItems([])
     setUnread(0)
-    setLive(false)
   }
 
   useEffect(() => {
-    if (!userId) return
+    if (!userId || !enabled) return
     let cancelled = false
     api
       .get<{ items: AppNotification[]; unread: number }>('/notifications', { limit: 30 })
@@ -53,19 +57,29 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
         setUnread(r.unread)
       })
       .catch(() => undefined)
-    const socket = io({ path: '/api/socket', withCredentials: true, transports: ['websocket', 'polling'] })
-    socket.on('connect', () => setLive(true))
-    socket.on('disconnect', () => setLive(false))
-    socket.on('notification', (n: AppNotification) => {
+    return () => {
+      cancelled = true
+    }
+  }, [userId, enabled])
+
+  useEffect(() => {
+    if (!socket || !enabled) return
+    const onConnect = () => connectionChanged()
+    const onDisconnect = () => connectionChanged()
+    const onNotification = (n: AppNotification) => {
       setItems((list) => [n, ...list.filter((x) => x._id !== n._id)].slice(0, 50))
       setUnread((u) => u + 1)
       toast(n.title, 'info')
-    })
-    return () => {
-      cancelled = true
-      socket.close()
     }
-  }, [userId, toast])
+    socket.on('connect', onConnect)
+    socket.on('disconnect', onDisconnect)
+    socket.on('notification', onNotification)
+    return () => {
+      socket.off('connect', onConnect)
+      socket.off('disconnect', onDisconnect)
+      socket.off('notification', onNotification)
+    }
+  }, [socket, enabled, toast])
 
   const markRead = useCallback(async (id: string) => {
     const target = items.find((n) => n._id === id)

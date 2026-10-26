@@ -4,6 +4,8 @@ import { Content, MediaAsset } from "../models/content.js";
 import { FeedbackForm } from "../models/feedback.js";
 import { visibleFilter } from "./access.js";
 import { isId } from "./http.js";
+import { allowedContentTypes, isFeatureOn } from "./features.js";
+import type { Filter } from "./http.js";
 
 export const CARD_FIELDS =
   "type title slug summary featuredImage categories tags status publishAt publishedAt expireAt featured access.visibility opportunity.opportunityType opportunity.organizationName opportunity.location opportunity.workMode opportunity.deadline opportunity.employmentType knowledge portfolio author createdAt updatedAt";
@@ -38,12 +40,13 @@ export async function resolveBlocks(blocks: Block[], user?: AuthUser) {
   const mediaIds = blocks.flatMap((b) => (b.type === "file" && isId(b.data.mediaId) ? [b.data.mediaId as string] : []));
   const formIds = blocks.flatMap((b) => (b.type === "feedback" && isId(b.data.formId) ? [b.data.formId as string] : []));
 
+  const feedbackOn = formIds.length ? await isFeatureOn("feedback", user) : false;
   const [related, media, forms] = await Promise.all([
     relatedIds.length
-      ? Content.find({ _id: { $in: relatedIds }, ...visibleFilter(user) }).select(CARD_FIELDS).lean()
+      ? Content.find(<Filter>{ _id: { $in: relatedIds }, type: { $in: await allowedContentTypes(user) }, ...visibleFilter(user) }).select(CARD_FIELDS).lean()
       : [],
     mediaIds.length ? MediaAsset.find({ _id: { $in: mediaIds } }).select("originalName size mimeType kind").lean() : [],
-    formIds.length ? FeedbackForm.find({ _id: { $in: formIds }, status: "active" }).lean() : [],
+    feedbackOn ? FeedbackForm.find({ _id: { $in: formIds }, status: "active" }).lean() : [],
   ]);
   const relatedMap = new Map(related.map((r) => [String(r._id), r]));
   const mediaMap = new Map(media.map((m) => [String(m._id), m]));

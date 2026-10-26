@@ -1119,9 +1119,12 @@
     },
     "updatedAt": {
       "$date": {
-        "$numberLong": "1793002442051"
+        "$numberLong": "1793017074429"
       }
-    }
+    },
+    "expireAt": null,
+    "featuredImage": "/api/media/6adf44ec969f42155211b560/file",
+    "publishAt": null
   },
   {
     "_id": {

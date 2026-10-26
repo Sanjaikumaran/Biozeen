@@ -21,6 +21,12 @@ export function LookupsProvider({ children }: { children: React.ReactNode }) {
   return <LookupsContext.Provider value={data ?? { roles: [], organizations: [], forms: [] }}>{children}</LookupsContext.Provider>
 }
 
+/** Audience choices for members limiting their own expert profile (no admin lookups needed). */
+export function MemberAudienceProvider({ children }: { children: React.ReactNode }) {
+  const { data } = useAsync(() => api.get<Lookups>('/experts/audience-options'), [])
+  return <LookupsContext.Provider value={data ?? { roles: [], organizations: [], forms: [] }}>{children}</LookupsContext.Provider>
+}
+
 // eslint-disable-next-line react-refresh/only-export-components
 export const useLookups = () => useContext(LookupsContext)
 
@@ -32,8 +38,9 @@ const AUDIENCES = [
   { value: 'private', label: 'Administrators only', text: 'Content managers only', icon: Lock },
 ] as const
 
-export function AccessEditor({ value, onChange, errors }: { value: Access; onChange: (a: Access) => void; errors?: Record<string, string> }) {
+export function AccessEditor({ value, onChange, errors, privateOption }: { value: Access; onChange: (a: Access) => void; errors?: Record<string, string>; privateOption?: { label: string; text: string } }) {
   const { roles, organizations } = useLookups()
+  const audiences = AUDIENCES.map((a) => (a.value === 'private' && privateOption ? { ...a, ...privateOption } : a))
   const toggle = (key: 'roles' | 'organizations', id: string) => {
     const list = value[key] ?? []
     onChange({ ...value, [key]: list.includes(id) ? list.filter((x) => x !== id) : [...list, id] })
@@ -41,7 +48,7 @@ export function AccessEditor({ value, onChange, errors }: { value: Access; onCha
   return (
     <div className="space-y-3">
       <div className="grid gap-2" role="radiogroup" aria-label="Audience">
-        {AUDIENCES.map((a) => (
+        {audiences.map((a) => (
           <label key={a.value} className={cx('flex cursor-pointer items-start gap-3 rounded-lg border p-2.5 text-sm', value.visibility === a.value ? 'border-brand-500 bg-brand-50' : 'border-ink-900/10 hover:border-brand-200')}>
             <input type="radio" name="visibility" className="mt-0.5 accent-brand-600" checked={value.visibility === a.value} onChange={() => onChange({ ...value, visibility: a.value })} />
             <a.icon className="mt-0.5 size-4 text-brand-600" />

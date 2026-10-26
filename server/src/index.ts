@@ -7,6 +7,7 @@ import { hasExport, importData } from "./db-transfer.js";
 import { mailStatus } from "./lib/mailer.js";
 import { attachRealtime } from "./lib/realtime.js";
 import { User } from "./models/identity.js";
+import { ensureDeveloper, runMigrations } from "./maintenance.js";
 import { seed } from "./seed.js";
 
 /** A new machine starts with an empty database: load the shared export, or the sample data. */
@@ -27,6 +28,8 @@ async function startServer(): Promise<void> {
   console.log("MongoDB connected");
   fs.mkdirSync(config.uploadDir, { recursive: true });
   await initEmptyDatabase();
+  await runMigrations();
+  await ensureDeveloper();
   const server = createServer(app);
   attachRealtime(server);
   server.listen(config.port, () => {

@@ -70,5 +70,111 @@
     "__v": {
       "$numberInt": "0"
     }
+  },
+  {
+    "_id": {
+      "$oid": "6adf44ec969f42155211b561"
+    },
+    "actor": {
+      "$oid": "6adf0bca3bcd5c045c6e4cad"
+    },
+    "actorEmail": "admin@bian.local",
+    "action": "media.upload",
+    "entityType": "MediaAsset",
+    "entityId": {
+      "$oid": "6adf44ec969f42155211b560"
+    },
+    "summary": "Uploaded download.jpeg",
+    "ip": "::1",
+    "at": {
+      "$date": {
+        "$numberLong": "1793017068802"
+      }
+    },
+    "__v": {
+      "$numberInt": "0"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf44f2969f42155211b562"
+    },
+    "actor": {
+      "$oid": "6adf0bca3bcd5c045c6e4cad"
+    },
+    "actorEmail": "admin@bian.local",
+    "action": "content.update",
+    "entityType": "Content",
+    "entityId": {
+      "$oid": "6adf0bca3bcd5c045c6e4ce3"
+    },
+    "summary": "Updated article \"Biomanufacturing Outlook\"",
+    "meta": {
+      "before": {
+        "status": "published",
+        "visibility": "public"
+      },
+      "after": {
+        "status": "published",
+        "visibility": "public"
+      }
+    },
+    "ip": "::1",
+    "at": {
+      "$date": {
+        "$numberLong": "1793017074434"
+      }
+    },
+    "__v": {
+      "$numberInt": "0"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf451c969f42155211b564"
+    },
+    "actor": {
+      "$oid": "6adf0bca3bcd5c045c6e4cad"
+    },
+    "actorEmail": "admin@bian.local",
+    "action": "media.upload",
+    "entityType": "MediaAsset",
+    "entityId": {
+      "$oid": "6adf451c969f42155211b563"
+    },
+    "summary": "Uploaded download (2).jpeg",
+    "ip": "::1",
+    "at": {
+      "$date": {
+        "$numberLong": "1793017116554"
+      }
+    },
+    "__v": {
+      "$numberInt": "0"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf451f969f42155211b566"
+    },
+    "actor": {
+      "$oid": "6adf0bca3bcd5c045c6e4cad"
+    },
+    "actorEmail": "admin@bian.local",
+    "action": "media.upload",
+    "entityType": "MediaAsset",
+    "entityId": {
+      "$oid": "6adf451f969f42155211b565"
+    },
+    "summary": "Uploaded download (1).jpeg",
+    "ip": "::1",
+    "at": {
+      "$date": {
+        "$numberLong": "1793017119214"
+      }
+    },
+    "__v": {
+      "$numberInt": "0"
+    }
   }
 ]

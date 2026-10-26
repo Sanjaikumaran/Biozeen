@@ -8,6 +8,8 @@ import { embedUrl } from '../../lib/embed'
 import { contentHref, formatDate } from '../../lib/format'
 import { useAsync, useDocumentTitle } from '../../lib/hooks'
 import type { ContentCard, EventItem, Organization, SiteSettings } from '../../lib/types'
+import { useFeatures } from '../../lib/features'
+import { cx } from '../../lib/cx'
 
 interface HomeData {
   stats: { partners: number; experts: number; institutions: number; opportunities: number; members: number }
@@ -22,12 +24,12 @@ interface HomeData {
 }
 
 const QUICK = [
-  { to: '/opportunities?type=hiring', label: 'Hire Talent', icon: Users },
-  { to: '/experts', label: 'Find Experts', icon: UserSearch },
-  { to: '/contact?type=collaboration', label: 'Collaborate', icon: Share2 },
-  { to: '/knowledge?section=funding_opportunities', label: 'Access Funding', icon: Lightbulb },
-  { to: '/knowledge', label: 'Learn & Grow', icon: GraduationCap },
-  { to: '/knowledge?section=templates_downloads', label: 'Share Resources', icon: BookOpen },
+  { to: '/opportunities?type=hiring', label: 'Hire Talent', icon: Users, feature: 'opportunities' },
+  { to: '/experts', label: 'Find Experts', icon: UserSearch, feature: 'experts' },
+  { to: '/contact?type=collaboration', label: 'Collaborate', icon: Share2, feature: 'contact' },
+  { to: '/knowledge?section=funding_opportunities', label: 'Access Funding', icon: Lightbulb, feature: 'knowledge.resources' },
+  { to: '/knowledge', label: 'Learn & Grow', icon: GraduationCap, feature: 'knowledge' },
+  { to: '/knowledge?section=templates_downloads', label: 'Share Resources', icon: BookOpen, feature: 'knowledge.resources' },
 ]
 
 const PILLARS = [
@@ -53,6 +55,7 @@ function SectionHead({ title, to, cta }: { title: string; to: string; cta: strin
 export default function Home() {
   useDocumentTitle('Home')
   const { data, loading } = useAsync(() => api.get<HomeData>('/home'), [])
+  const on = useFeatures()
   const [video, setVideo] = useState(false)
   const hero = data?.settings?.hero
   const headline = hero?.headline?.length ? hero.headline : ['One Network.', 'Multiple Opportunities.']
@@ -69,7 +72,7 @@ export default function Home() {
             return (
               <g key={i}>
                 <line x1={x1} y1={y} x2={x2} y2={y} className="stroke-[var(--brand-l-200)]" strokeWidth="1.2" />
-                <circle cx={x1} cy={y} r="4" fill="#8bd346" />
+                <circle cx={x1} cy={y} r="4" className="fill-lime-500" />
                 <circle cx={x2} cy={y} r="4" className="fill-[var(--brand-l-300)]" />
               </g>
             )
@@ -83,8 +86,8 @@ export default function Home() {
             </h1>
             <p className="mt-5 max-w-xl text-lg text-brand-100">{hero?.subheading ?? 'Connecting Industry, Academia, Innovation and Expertise for a sustainable bioeconomy.'}</p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <LinkButton to="/register" variant="accent" size="lg">Join BIAN</LinkButton>
-              <LinkButton to="/opportunities" variant="outlineLight" size="lg">Explore Opportunities</LinkButton>
+              {on('registration') && <LinkButton to="/register" variant="accent" size="lg">Join BIAN</LinkButton>}
+              {on('opportunities') && <LinkButton to="/opportunities" variant="outlineLight" size="lg">Explore Opportunities</LinkButton>}
               {hero?.videoUrl && (
                 <button onClick={() => setVideo(true)} className="inline-flex h-12 items-center gap-2 rounded-lg border border-white/40 px-6 font-semibold hover:bg-white/10">
                   <Play className="size-4 fill-current" /> Watch Video
@@ -99,7 +102,7 @@ export default function Home() {
       </section>
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <Card className="relative -mt-10 grid grid-cols-2 divide-ink-900/8 sm:grid-cols-5 sm:divide-x">
+        {on('home.stats') && <Card className="relative -mt-10 grid grid-cols-2 divide-ink-900/8 sm:grid-cols-5 sm:divide-x">
           {[
             [stats?.partners, 'Partner Organizations'],
             [stats?.experts, 'Experts'],
@@ -112,10 +115,10 @@ export default function Home() {
               <p className="text-xs text-ink-500">{l}</p>
             </div>
           ))}
-        </Card>
+        </Card>}
 
         <nav className="mt-6 grid grid-cols-3 gap-3 md:grid-cols-6" aria-label="Quick actions">
-          {QUICK.map(({ to, label, icon: Icon }) => (
+          {QUICK.filter((q) => on(q.feature)).map(({ to, label, icon: Icon }) => (
             <Link key={label} to={to} className="flex flex-col items-center gap-2 rounded-xl border border-ink-900/8 bg-card px-2 py-5 text-center text-sm font-medium text-ink-900 transition hover:border-brand-200 hover:shadow-sm">
               <Icon className="size-7 text-brand-600" />
               {label}
@@ -128,10 +131,12 @@ export default function Home() {
             <p className="text-sm font-semibold uppercase tracking-widest text-brand-600">About BIAN</p>
             <h2 className="mt-2 text-3xl font-bold">Bridging Industry, Academia and Innovation for a Healthier, More Sustainable Tomorrow.</h2>
             <p className="mt-4 text-ink-700">{data?.about?.summary}</p>
-            <div className="mt-6 flex gap-3">
-              <LinkButton to="/about" variant="primary">About BIAN</LinkButton>
-              <LinkButton to="/portfolio" variant="outline">Company portfolio</LinkButton>
-            </div>
+            {on('portfolio') && (
+              <div className="mt-6 flex gap-3">
+                <LinkButton to="/about" variant="primary">About BIAN</LinkButton>
+                <LinkButton to="/portfolio" variant="outline">Company portfolio</LinkButton>
+              </div>
+            )}
           </div>
           <div className="grid grid-cols-3 gap-3">
             {PILLARS.map(({ icon: Icon, label }) => (
@@ -157,14 +162,14 @@ export default function Home() {
           </section>
         )}
 
-        <section className="mt-16">
+        {on('opportunities') && <section className="mt-16">
           <SectionHead title="Latest opportunities" to="/opportunities" cta="View all opportunities" />
           {loading ? <SkeletonGrid count={3} /> : data?.opportunities.length ? (
             <div className="grid gap-4 md:grid-cols-3">{data.opportunities.map((o) => <OpportunityCard key={o._id} item={o} />)}</div>
           ) : <p className="text-sm text-ink-500">New opportunities will appear here once published.</p>}
-        </section>
+        </section>}
 
-        <section className="mt-16">
+        {on('partners') && <section className="mt-16">
           <div className="mb-5 flex items-end justify-between gap-4">
             <h2 className="text-2xl font-bold">Our partner ecosystem</h2>
             <Link to="/partners" className="inline-flex items-center gap-1 text-sm font-semibold text-brand-600">View all partners <ArrowRight className="size-4" /></Link>
@@ -176,16 +181,16 @@ export default function Home() {
               </Link>
             ))}
           </div>
-        </section>
+        </section>}
 
-        <section className="mt-16 grid gap-10 lg:grid-cols-2">
-          <div>
+        {(on('events.calendar') || on('events.announcements')) && <section className={cx('mt-16 grid gap-10', on('events.calendar') && on('events.announcements') && 'lg:grid-cols-2')}>
+          {on('events.calendar') && <div>
             <SectionHead title="Upcoming events" to="/events" cta="All events" />
             <div className="space-y-3">
               {data?.events.length ? data.events.map((e) => <EventRow key={e._id} event={e} compact />) : <p className="text-sm text-ink-500">No upcoming events right now.</p>}
             </div>
-          </div>
-          <div>
+          </div>}
+          {on('events.announcements') && <div>
             <SectionHead title="Announcements" to="/events?tab=announcements" cta="All announcements" />
             <Card className="divide-y divide-ink-900/8">
               {data?.announcements.length ? data.announcements.map((a) => (
@@ -196,8 +201,8 @@ export default function Home() {
                 </Link>
               )) : <p className="p-4 text-sm text-ink-500">No announcements yet.</p>}
             </Card>
-          </div>
-        </section>
+          </div>}
+        </section>}
 
         {!!data?.knowledge.length && (
           <section className="mt-16">
@@ -212,8 +217,8 @@ export default function Home() {
             <p className="mt-1 text-brand-100">The BIAN secretariat connects you with the right partners, experts and institutions.</p>
           </div>
           <div className="flex flex-wrap gap-3">
-            <LinkButton to="/contact" variant="accent">Get in touch</LinkButton>
-            <LinkButton to="/register" variant="outlineLight">Become a member</LinkButton>
+            {on('contact') && <LinkButton to="/contact" variant="accent">Get in touch</LinkButton>}
+            {on('registration') && <LinkButton to="/register" variant="outlineLight">Become a member</LinkButton>}
           </div>
         </section>
       </div>

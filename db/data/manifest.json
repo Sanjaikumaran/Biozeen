@@ -1,23 +1,24 @@
 {
-  "exportedAt": "2026-10-26T09:05:51.485Z",
+  "exportedAt": "2026-10-26T12:35:56.928Z",
   "collections": {
-    "auditLogs": 3,
+    "auditLogs": 7,
     "categories": 6,
-    "contactRequests": 0,
+    "contactRequests": 1,
     "contents": 25,
     "courses": 1,
     "enrollments": 0,
     "eventRegistrations": 1,
     "events": 4,
     "experts": 5,
+    "featureSettings": 0,
     "feedbackForms": 4,
     "feedbackSubmissions": 1,
-    "mediaAssets": 0,
+    "mediaAssets": 3,
     "organizations": 12,
     "roles": 12,
     "siteSettings": 1,
     "tags": 8,
-    "users": 11
+    "users": 12
   },
-  "files": 0
+  "files": 3
 }

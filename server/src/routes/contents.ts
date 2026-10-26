@@ -13,6 +13,7 @@ import { CONTENT_TYPES, Category, Content, KNOWLEDGE_SECTIONS, OPPORTUNITY_TYPES
 import { FeedbackForm } from "../models/feedback.js";
 import { User } from "../models/identity.js";
 import { notifyPermission, afterStatusChange } from "../lib/notify.js";
+import { allowedContentTypes, contentFeature, featureOff, isFeatureOn, requireFeature } from "../lib/features.js";
 
 export const contentsRouter = Router();
 export const adminContentsRouter = Router();
@@ -55,7 +56,7 @@ const SORTS: Record<string, Record<string, 1 | -1>> = {
 /** Public listing — every result is filtered by publication state and audience. */
 contentsRouter.get("/", async (req, res) => {
   const { page, limit, skip } = pagination(req);
-  const filter = { $and: [listFilter(req.query), visibleFilter(req.user)] };
+  const filter = { $and: [listFilter(req.query), visibleFilter(req.user), { type: { $in: await allowedContentTypes(req.user) } }] };
   const sort = SORTS[String(req.query.sort)] ?? SORTS.latest!;
   const [items, total] = await Promise.all([
     Content.find(filter)
@@ -90,6 +91,7 @@ contentsRouter.get("/by-slug/:type/:slug", async (req, res) => {
     .populate("opportunity.organization", "name slug logoUrl website")
     .lean();
   if (!item) throw notFound("Page");
+  if (!(await isFeatureOn(contentFeature(item.type), req.user))) throw featureOff();
   if (!canView(item, req.user)) {
     // Unpublished items are indistinguishable from missing ones.
     if (!isLive(item)) throw notFound("Page");
@@ -98,7 +100,7 @@ contentsRouter.get("/by-slug/:type/:slug", async (req, res) => {
   }
   const blocks = await resolveBlocks(item.blocks, req.user);
   const form =
-    item.feedbackForm && (await FeedbackForm.findOne({ _id: item.feedbackForm, status: "active" }).lean());
+    item.feedbackForm && (await isFeatureOn("feedback", req.user)) && (await FeedbackForm.findOne({ _id: item.feedbackForm, status: "active" }).lean());
   let saved = false;
   if (req.user) saved = !!(await User.exists({ _id: req.user._id, savedContents: item._id }));
   res.json({
@@ -110,7 +112,7 @@ contentsRouter.get("/by-slug/:type/:slug", async (req, res) => {
   });
 });
 
-contentsRouter.post("/:id/save", requireAuth, async (req, res) => {
+contentsRouter.post("/:id/save", requireAuth, requireFeature("saved"), async (req, res) => {
   const item = await Content.findById(oid(String(req.params.id))).lean();
   if (!item || !canView(item, req.user)) throw notFound("Content");
   const exists = await User.exists({ _id: req.user!._id, savedContents: item._id });
@@ -134,7 +136,7 @@ const opportunityInput = z
   .partial();
 
 /** Members with `opportunities.post` can submit an opportunity; it goes to review. */
-contentsRouter.post("/submissions", requirePermission(PERMISSIONS.opportunitiesPost), async (req, res) => {
+contentsRouter.post("/submissions", requirePermission(PERMISSIONS.opportunitiesPost), requireFeature("opportunities.post"), async (req, res) => {
   const data = parse(
     z.object({
       title: z.string().trim().min(5, "Add a descriptive title").max(200),
@@ -191,11 +193,22 @@ const contentInput = z.object({
 
 adminContentsRouter.use(requirePermission(PERMISSIONS.adminAccess, PERMISSIONS.contentManage));
 
+/** Each content editor (portfolio, opportunities, knowledge, announcements) is its own admin feature. */
+function adminContentFeature(type: string) {
+  return { portfolio: "admin.portfolio", opportunities: "admin.opportunities", "knowledge.resources": "admin.knowledge", "events.announcements": "admin.announcements" }[contentFeature(type)]!;
+}
+async function assertEditable(type: string, user: Express.Request["user"]) {
+  if (!(await isFeatureOn(adminContentFeature(type), user))) throw featureOff();
+}
+
 adminContentsRouter.get("/", async (req, res) => {
   const { page, limit, skip } = pagination(req, 20);
   const filter = listFilter(req.query);
   const status = str(req.query.status);
   if (status) filter.status = status;
+  const editable: string[] = [];
+  for (const t of CONTENT_TYPES) if (await isFeatureOn(adminContentFeature(t), req.user)) editable.push(t);
+  filter.$and = [{ type: { $in: editable } }];
   const [items, total] = await Promise.all([
     Content.find(filter).select(`${CARD_FIELDS} order`).populate("author", "name").sort({ updatedAt: -1 }).skip(skip).limit(limit).lean(),
     Content.countDocuments(filter),
@@ -206,6 +219,7 @@ adminContentsRouter.get("/", async (req, res) => {
 adminContentsRouter.get("/:id", async (req, res) => {
   const item = await Content.findById(oid(String(req.params.id))).populate("author", "name").lean();
   if (!item) throw notFound("Content");
+  await assertEditable(item.type, req.user);
   res.json(item);
 });
 
@@ -244,6 +258,7 @@ async function afterSave(doc: InstanceType<typeof Content>) {
 
 adminContentsRouter.post("/", async (req, res) => {
   const data = parse(contentInput, req.body);
+  await assertEditable(data.type, req.user);
   const doc = new Content({ type: data.type, author: req.user!._id, status: "draft" });
   doc.slug = await uniqueSlug(data.type, data.slug || data.title);
   applyInput(doc, data);
@@ -258,6 +273,7 @@ adminContentsRouter.post("/", async (req, res) => {
 adminContentsRouter.put("/:id", async (req, res) => {
   const doc = await Content.findById(oid(String(req.params.id)));
   if (!doc) throw notFound("Content");
+  await assertEditable(doc.type, req.user);
   const data = parse(contentInput, req.body);
   const before = { status: doc.status, visibility: doc.access?.visibility };
   if (data.slug && data.slug !== doc.slug) doc.slug = await uniqueSlug(doc.type, data.slug, doc._id);
@@ -277,6 +293,7 @@ adminContentsRouter.post("/:id/status", async (req, res) => {
   const { status } = parse(z.object({ status: z.enum(PUBLICATION_STATUSES) }), req.body);
   const doc = await Content.findById(oid(String(req.params.id)));
   if (!doc) throw notFound("Content");
+  await assertEditable(doc.type, req.user);
   const from = doc.status;
   applyStatus(doc, status, req.user!);
   await doc.save();
@@ -286,7 +303,10 @@ adminContentsRouter.post("/:id/status", async (req, res) => {
 });
 
 adminContentsRouter.delete("/:id", requirePermission(PERMISSIONS.contentPublish), async (req, res) => {
-  const doc = await Content.findByIdAndDelete(oid(String(req.params.id)));
+  const existing = await Content.findById(oid(String(req.params.id))).select("type").lean();
+  if (!existing) throw notFound("Content");
+  await assertEditable(existing.type, req.user);
+  const doc = await Content.findByIdAndDelete(existing._id);
   if (!doc) throw notFound("Content");
   await syncMediaLinks("content", doc._id, []);
   await audit(req, "content.delete", "Content", doc._id, `Deleted ${doc.type} "${doc.title}"`);

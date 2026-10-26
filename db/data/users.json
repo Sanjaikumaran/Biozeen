@@ -35,7 +35,7 @@
     },
     "updatedAt": {
       "$date": {
-        "$numberLong": "1793005464119"
+        "$numberLong": "1793017850033"
       }
     },
     "__v": {
@@ -43,9 +43,14 @@
     },
     "lastLoginAt": {
       "$date": {
-        "$numberLong": "1793005464119"
+        "$numberLong": "1793017850033"
       }
-    }
+    },
+    "preferences": {
+      "themeMode": "system",
+      "accent": "ocean"
+    },
+    "isDeveloper": false
   },
   {
     "_id": {
@@ -87,14 +92,15 @@
     },
     "updatedAt": {
       "$date": {
-        "$numberLong": "1793004432674"
+        "$numberLong": "1793018116631"
       }
     },
     "lastLoginAt": {
       "$date": {
-        "$numberLong": "1793004432674"
+        "$numberLong": "1793018116630"
       }
-    }
+    },
+    "isDeveloper": false
   },
   {
     "_id": {
@@ -135,14 +141,15 @@
     },
     "updatedAt": {
       "$date": {
-        "$numberLong": "1793005465511"
+        "$numberLong": "1793018113105"
       }
     },
     "lastLoginAt": {
       "$date": {
-        "$numberLong": "1793005465511"
+        "$numberLong": "1793018113105"
       }
-    }
+    },
+    "isDeveloper": false
   },
   {
     "_id": {
@@ -177,11 +184,16 @@
     },
     "updatedAt": {
       "$date": {
-        "$numberLong": "1793002442033"
+        "$numberLong": "1793005878122"
       }
     },
     "__v": {
       "$numberInt": "0"
+    },
+    "lastLoginAt": {
+      "$date": {
+        "$numberLong": "1793005878122"
+      }
     }
   },
   {
@@ -253,12 +265,18 @@
     },
     "updatedAt": {
       "$date": {
-        "$numberLong": "1793002442034"
+        "$numberLong": "1793018124347"
       }
     },
     "__v": {
       "$numberInt": "0"
-    }
+    },
+    "lastLoginAt": {
+      "$date": {
+        "$numberLong": "1793018124346"
+      }
+    },
+    "isDeveloper": false
   },
   {
     "_id": {
@@ -471,6 +489,45 @@
     "lastLoginAt": {
       "$date": {
         "$numberLong": "1793002559290"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adf4348662cdd5ce460f9f3"
+    },
+    "email": "developer@bian.local",
+    "passwordHash": "$2b$12$IdRPZ7egrVMGnMNFUhi/3./CvD.zn3DBpLLH.GaaYdnhAqwM3iipy",
+    "name": "Platform Developer",
+    "accountType": "individual",
+    "category": "other",
+    "profile": {
+      "interests": []
+    },
+    "roles": [],
+    "status": "active",
+    "emailVerified": true,
+    "tokenVersion": {
+      "$numberInt": "0"
+    },
+    "savedContents": [],
+    "isDeveloper": true,
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793016648697"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793018119406"
+      }
+    },
+    "__v": {
+      "$numberInt": "0"
+    },
+    "lastLoginAt": {
+      "$date": {
+        "$numberLong": "1793018119406"
       }
     }
   }

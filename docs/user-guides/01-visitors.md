@@ -35,6 +35,6 @@ You can explore most of BIAN without an account. Items marked **Members** or **R
 
 > Signing in before approval shows "Your registration is awaiting approval".
 
-## Switch to dark mode
+## Some sections are missing?
 
-Use the **moon** button in the header. Your choice is remembered on this device.
+The BIAN team can switch screens on or off for visitors and for each member category. If a section you expect isn't in the menu, it isn't available for visitors at the moment. Members may see more after signing in.

@@ -54,6 +54,11 @@ const userSchema = new Schema(
     /** Incremented to revoke all existing sessions (logout everywhere, password change). */
     tokenVersion: { type: Number, default: 0 },
     savedContents: [{ type: Schema.Types.ObjectId, ref: "Content" }],
+    /**
+     * Developer accounts sit outside role management: they hold every permission, can use the
+     * developer console, and are hidden from member lists. Set only by seeding or DEVELOPER_* env.
+     */
+    isDeveloper: { type: Boolean, default: false },
     /** Per-user appearance; unset fields fall back to the device's saved choice. */
     preferences: {
       themeMode: { type: String, enum: THEME_MODES },

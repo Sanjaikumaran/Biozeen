@@ -22,7 +22,6 @@
       "$numberInt": "15"
     },
     "location": "Bangalore, India",
-    "visibility": "public",
     "shareEmail": false,
     "mentoringAvailable": true,
     "status": "approved",
@@ -38,6 +37,11 @@
     },
     "__v": {
       "$numberInt": "0"
+    },
+    "access": {
+      "visibility": "public",
+      "roles": [],
+      "organizations": []
     }
   },
   {
@@ -62,7 +66,6 @@
       "$numberInt": "12"
     },
     "location": "Hyderabad, India",
-    "visibility": "public",
     "shareEmail": false,
     "mentoringAvailable": false,
     "status": "approved",
@@ -78,6 +81,11 @@
     },
     "__v": {
       "$numberInt": "0"
+    },
+    "access": {
+      "visibility": "public",
+      "roles": [],
+      "organizations": []
     }
   },
   {
@@ -102,7 +110,6 @@
       "$numberInt": "10"
     },
     "location": "Mumbai, India",
-    "visibility": "public",
     "shareEmail": false,
     "mentoringAvailable": false,
     "status": "approved",
@@ -118,6 +125,11 @@
     },
     "__v": {
       "$numberInt": "0"
+    },
+    "access": {
+      "visibility": "public",
+      "roles": [],
+      "organizations": []
     }
   },
   {
@@ -142,7 +154,6 @@
       "$numberInt": "18"
     },
     "location": "Chennai, India",
-    "visibility": "members",
     "shareEmail": false,
     "mentoringAvailable": false,
     "status": "approved",
@@ -158,6 +169,11 @@
     },
     "__v": {
       "$numberInt": "0"
+    },
+    "access": {
+      "visibility": "authenticated",
+      "roles": [],
+      "organizations": []
     }
   },
   {
@@ -182,7 +198,6 @@
       "$numberInt": "20"
     },
     "location": "Pune, India",
-    "visibility": "members",
     "shareEmail": false,
     "mentoringAvailable": true,
     "status": "approved",
@@ -198,6 +213,11 @@
     },
     "__v": {
       "$numberInt": "0"
+    },
+    "access": {
+      "visibility": "authenticated",
+      "roles": [],
+      "organizations": []
     }
   }
 ]

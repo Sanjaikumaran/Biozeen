@@ -24,9 +24,9 @@ The sidebar menu:
 | Expert Search | Find experts by skill or domain |
 | Academia Connect · Innovation Connect | Browse academic and innovation partners |
 | My Learning · Saved · My Events | Courses, bookmarked items and event registrations |
-| Notifications · Requests & Messages | Live updates and secretariat conversations |
+| Requests & Messages | Requests you've sent and secretariat replies (notifications are under the bell) |
 | My Feedback | Feedback you have submitted |
-| Appearance · Settings | Theme, password and devices |
+| Settings | Appearance (theme colour, light/dark), password and devices |
 
 ## Post a requirement or opportunity
 

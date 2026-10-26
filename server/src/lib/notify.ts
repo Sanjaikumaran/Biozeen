@@ -2,6 +2,7 @@ import type { Types } from "mongoose";
 import { Notification, NOTIFICATION_KINDS } from "../models/admin.js";
 import { Role, User } from "../models/identity.js";
 import { PERMISSIONS, type Permission } from "./permissions.js";
+import { AUDIENCES, featureMap, resolve, type Audience } from "./features.js";
 import { emitToUsers } from "./realtime.js";
 
 type Id = string | Types.ObjectId;
@@ -20,11 +21,27 @@ export async function notify(userIds: Id[], n: NotificationInput, exceptUserId?:
   const ids = [...new Set(userIds.map(String))].filter((id) => id !== (exceptUserId ? String(exceptUserId) : ""));
   if (!ids.length) return;
   try {
-    const docs = await Notification.insertMany(ids.map((user) => ({ user, ...n, body: n.body?.slice(0, 500) })));
-    for (const doc of docs) emitToUsers([String(doc.user)], "notification", doc.toJSON());
+    const recipients = await withFeature(ids, "notifications");
+    if (!recipients.length) return;
+    const docs = await Notification.insertMany(recipients.map((user) => ({ user, ...n, body: n.body?.slice(0, 500) })));
+    const live = new Set(await withFeature(recipients, "notifications.live"));
+    for (const doc of docs) if (live.has(String(doc.user))) emitToUsers([String(doc.user)], "notification", doc.toJSON());
   } catch (err) {
     console.error("[notify] failed:", err);
   }
+}
+
+/** The users for whom a feature is on, judged the same way as their API requests. */
+async function withFeature(ids: string[], key: string) {
+  const [map, staffRoles, users] = await Promise.all([
+    featureMap(),
+    Role.find({ permissions: PERMISSIONS.adminAccess }).select("_id").lean(),
+    User.find({ _id: { $in: ids } }).select("category roles isDeveloper").lean(),
+  ]);
+  const staff = new Set(staffRoles.map((r) => String(r._id)));
+  return users
+    .filter((u) => u.isDeveloper || resolve(map, key, u.roles.some((r) => staff.has(String(r))) ? null : ((AUDIENCES as readonly string[]).includes(u.category) ? (u.category as Audience) : "other")).on)
+    .map((u) => String(u._id));
 }
 
 /** Active users holding a permission through any of their roles. */

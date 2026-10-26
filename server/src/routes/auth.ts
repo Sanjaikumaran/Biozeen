@@ -12,6 +12,7 @@ import { clearSession, issueSession, requireAuth } from "../middleware/auth.js";
 import { Organization, Role, THEME_ACCENTS, THEME_MODES, User } from "../models/identity.js";
 import { notifyPermission } from "../lib/notify.js";
 import { disconnectUser } from "../lib/realtime.js";
+import { requireFeature } from "../lib/features.js";
 
 export const authRouter = Router();
 
@@ -95,7 +96,7 @@ const verificationMail = (to: string, name: string, path: string) =>
     text: `Hello ${name},\n\nPlease confirm your email address for the Biozeen Industry Academy Network:\n${config.appUrl}${path}\n\nIf you didn't create an account, you can ignore this email.`,
   });
 
-authRouter.post("/register", authLimiter, async (req, res) => {
+authRouter.post("/register", authLimiter, requireFeature("registration"), async (req, res) => {
   const data = parse(registerSchema, req.body);
   if (await User.exists({ email: data.email })) {
     throw new HttpError(409, "An account with this email already exists", { email: "Already registered" });
@@ -401,11 +402,12 @@ authRouter.get("/me", async (req, res) => {
       profile: user?.profile ?? {},
       phone: user?.phone,
       preferences: { themeMode: user?.preferences?.themeMode ?? null, accent: user?.preferences?.accent ?? null },
+      isDeveloper: req.user.isDeveloper,
     },
   });
 });
 
-authRouter.put("/me/preferences", requireAuth, async (req, res) => {
+authRouter.put("/me/preferences", requireAuth, requireFeature("appearance"), async (req, res) => {
   const data = parse(z.object({ themeMode: z.enum(THEME_MODES), accent: z.enum(THEME_ACCENTS) }), req.body);
   await User.updateOne({ _id: req.user!._id }, { $set: { preferences: data } });
   res.json({ preferences: data });

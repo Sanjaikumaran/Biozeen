@@ -11,8 +11,12 @@ import { FeedbackForm, FeedbackSubmission } from "../models/feedback.js";
 import { Organization, Role, USER_STATUSES, User } from "../models/identity.js";
 import { Enrollment, EventRegistration, Expert } from "../models/learning.js";
 import { CATEGORY_ROLE } from "./auth.js";
+
+/** Developer accounts are outside member management: never listed, counted or editable here. */
+const NOT_DEVELOPER: Filter = { isDeveloper: { $ne: true } };
 import { notify } from "../lib/notify.js";
 import { disconnectUser } from "../lib/realtime.js";
+import { requireFeature } from "../lib/features.js";
 
 export const adminRouter = Router();
 adminRouter.use(requirePermission(PERMISSIONS.adminAccess));
@@ -45,7 +49,7 @@ adminRouter.get("/stats", async (req, res) => {
   }
 
   const [members, organizations, experts, opportunities, collaborations, trainingRequests, pendingApprovals, pendingContent, newRequests] = await Promise.all([
-    metric(User, { status: "active" }),
+    metric(User, { status: "active", ...NOT_DEVELOPER }),
     metric(Organization, { status: "approved" }),
     metric(Expert, { status: "approved" }),
     metric(Content, { type: "opportunity", status: { $in: ["published", "scheduled"] } }),
@@ -72,12 +76,12 @@ adminRouter.get("/stats", async (req, res) => {
   const monthsBack = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth() - 11, 1));
   const [growth, before, byCategory, oppTrend] = await Promise.all([
     User.aggregate<{ _id: string; n: number }>([
-      { $match: { createdAt: { $gte: monthsBack }, status: { $in: ["active", "pending"] } } },
+      { $match: { createdAt: { $gte: monthsBack }, status: { $in: ["active", "pending"] }, ...NOT_DEVELOPER } },
       { $group: { _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } }, n: { $sum: 1 } } },
       { $sort: { _id: 1 } },
     ]),
-    User.countDocuments({ createdAt: { $lt: monthsBack }, status: { $in: ["active", "pending"] } }),
-    User.aggregate<{ _id: string; n: number }>([{ $match: { status: "active" } }, { $group: { _id: "$category", n: { $sum: 1 } } }, { $sort: { n: -1 } }]),
+    User.countDocuments({ createdAt: { $lt: monthsBack }, status: { $in: ["active", "pending"] }, ...NOT_DEVELOPER }),
+    User.aggregate<{ _id: string; n: number }>([{ $match: { status: "active", ...NOT_DEVELOPER } }, { $group: { _id: "$category", n: { $sum: 1 } } }, { $sort: { n: -1 } }]),
     Content.aggregate<{ _id: string; n: number }>([
       { $match: { type: "opportunity", createdAt: { $gte: monthsBack } } },
       { $group: { _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } }, n: { $sum: 1 } } },
@@ -124,7 +128,7 @@ const usersAdmin = Router();
 usersAdmin.use(requirePermission(PERMISSIONS.membersManage));
 
 function userFilter(query: Record<string, unknown>) {
-  const f: Filter = {};
+  const f: Filter = { ...NOT_DEVELOPER };
   const status = str(query.status);
   if (status) f.status = status;
   const category = str(query.category);
@@ -168,7 +172,7 @@ usersAdmin.get("/export.csv", async (req, res) => {
 });
 
 usersAdmin.get("/:id", async (req, res) => {
-  const user = await User.findById(oid(String(req.params.id))).populate("roles", "name displayName").populate("organization", "name slug").lean();
+  const user = await User.findOne({ _id: oid(String(req.params.id)), ...NOT_DEVELOPER }).populate("roles", "name displayName").populate("organization", "name slug").lean();
   if (!user) throw notFound("Member");
   const [expert, enrollments, requests] = await Promise.all([
     Expert.findOne({ user: user._id }).lean(),
@@ -203,7 +207,7 @@ const userUpdate = z.object({
 usersAdmin.patch("/:id", async (req, res) => {
   const data = parse(userUpdate, req.body);
   const id = String(req.params.id);
-  const user = await User.findById(oid(id));
+  const user = await User.findOne({ _id: oid(id), ...NOT_DEVELOPER });
   if (!user) throw notFound("Member");
   if (data.roles && !can(req.user, PERMISSIONS.rolesManage)) {
     // Members managers may assign audience roles, but not roles granting admin rights.
@@ -233,7 +237,7 @@ usersAdmin.patch("/:id", async (req, res) => {
 
 usersAdmin.post("/:id/approve", async (req, res) => {
   const { roles } = parse(z.object({ roles: z.array(z.string().refine(isId)).optional() }), req.body ?? {});
-  const user = await User.findById(oid(String(req.params.id)));
+  const user = await User.findOne({ _id: oid(String(req.params.id)), ...NOT_DEVELOPER });
   if (!user) throw notFound("Member");
   if (user.status !== "pending") throw new HttpError(400, "Only pending registrations can be approved");
   let roleIds = roles;
@@ -255,7 +259,7 @@ usersAdmin.post("/:id/approve", async (req, res) => {
 });
 
 usersAdmin.post("/:id/reject", async (req, res) => {
-  const user = await User.findById(oid(String(req.params.id)));
+  const user = await User.findOne({ _id: oid(String(req.params.id)), ...NOT_DEVELOPER });
   if (!user) throw notFound("Member");
   if (user.status !== "pending") throw new HttpError(400, "Only pending registrations can be rejected");
   user.status = "rejected";
@@ -319,7 +323,7 @@ rolesAdmin.delete("/:id", requirePermission(PERMISSIONS.rolesManage), async (req
 // ---------------------------------------------------------------- categories & tags
 
 const taxonomyAdmin = Router();
-taxonomyAdmin.use(requirePermission(PERMISSIONS.contentManage));
+taxonomyAdmin.use(requirePermission(PERMISSIONS.contentManage), requireFeature("admin.taxonomy"));
 
 taxonomyAdmin.get("/", async (_req, res) => {
   const [categories, tags] = await Promise.all([Category.find().sort({ name: 1 }).lean(), Tag.find().sort({ name: 1 }).lean()]);
@@ -365,7 +369,7 @@ for (const [path, model, schema] of [
 
 // ---------------------------------------------------------------- audit & settings
 
-adminRouter.get("/audit", requirePermission(PERMISSIONS.auditView), async (req, res) => {
+adminRouter.get("/audit", requirePermission(PERMISSIONS.auditView), requireFeature("admin.audit"), async (req, res) => {
   const { page, limit, skip } = pagination(req, 30);
   const f: Filter = {};
   const entity = str(req.query.entityType);
@@ -374,10 +378,18 @@ adminRouter.get("/audit", requirePermission(PERMISSIONS.auditView), async (req, 
   if (action) f.action = searchRegex(action);
   const q = str(req.query.q);
   if (q) f.$or = [{ summary: searchRegex(q) }, { actorEmail: searchRegex(q) }];
+  // Developer activity (feature switches, console changes) stays in the developer console.
+  const hidden: Filter = {};
+  if (!req.user!.isDeveloper) {
+    const developers = await User.find({ isDeveloper: true }).select("_id").lean();
+    hidden.actor = { $nin: developers.map((d) => d._id) };
+    hidden.entityType = { $ne: "FeatureSetting" };
+  }
+  const scoped: Filter = { $and: [f, hidden] };
   const [items, total, entityTypes] = await Promise.all([
-    AuditLog.find(f).sort({ at: -1 }).skip(skip).limit(limit).lean(),
-    AuditLog.countDocuments(f),
-    AuditLog.distinct("entityType"),
+    AuditLog.find(scoped).sort({ at: -1 }).skip(skip).limit(limit).lean(),
+    AuditLog.countDocuments(scoped),
+    AuditLog.distinct("entityType", hidden),
   ]);
   res.json({ ...paged(items, total, page, limit), entityTypes });
 });

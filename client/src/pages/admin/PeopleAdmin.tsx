@@ -1,12 +1,12 @@
-import { Check, Download, Filter, Pencil, Plus, Search, ShieldCheck, Trash2, UserCheck, X } from 'lucide-react'
+import { Check, Download, Filter, Pencil, Plus, ShieldCheck, Trash2, UserCheck, X } from 'lucide-react'
 import { useState } from 'react'
-import { useLookups } from '../../components/admin/Publishing'
-import { Alert, Badge, Button, Card, Checkbox, Empty, ErrorState, Input, Loading, Modal, PageHeader, Pagination, Select, StatusBadge, Tabs, TagInput, Textarea, useFeedback } from '../../components/ui'
+import { AccessEditor, AudienceSummary, useLookups } from '../../components/admin/Publishing'
+import { Alert, Badge, Button, Card, Checkbox, Empty, ErrorState, Input, Loading, Modal, PageHeader, Pagination, SearchInput, Select, StatusBadge, Tabs, TagInput, Textarea, useFeedback } from '../../components/ui'
 import { ApiError, api, downloadUrl, type Paged } from '../../lib/api'
 import { useAuth } from '../../lib/auth'
 import { LABELS, formatDate, label, timeAgo } from '../../lib/format'
 import { useAsync, useDebounced, useDocumentTitle, useQueryState } from '../../lib/hooks'
-import type { Organization } from '../../lib/types'
+import type { Access, Organization } from '../../lib/types'
 
 const CATEGORIES = ['startup', 'academia', 'industry', 'sme', 'alumni', 'student', 'professional', 'other']
 const CATEGORY_ROLE: Record<string, string> = { startup: 'startup', academia: 'academia', industry: 'industry', sme: 'expert', alumni: 'alumni', student: 'student', professional: 'professional', other: 'member' }
@@ -38,15 +38,6 @@ function RolePicker({ value, onChange }: { value: string[]; onChange: (v: string
   )
 }
 
-function SearchBox({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder: string }) {
-  return (
-    <label className="relative">
-      <span className="sr-only">{placeholder}</span>
-      <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-300" />
-      <input value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className="h-10 w-64 rounded-lg border border-ink-300/70 bg-card pl-9 pr-3 text-sm" />
-    </label>
-  )
-}
 
 export function Approvals() {
   useDocumentTitle('Member approvals')
@@ -119,8 +110,8 @@ export function Members() {
   return (
     <div>
       <PageHeader title="Members" actions={<Button variant="outline" onClick={() => downloadUrl('/admin/users/export.csv', params)}><Download className="size-4" />Export CSV</Button>} />
-      <div className="mb-4 flex flex-wrap gap-2">
-        <SearchBox value={f.q} onChange={(v) => setF({ q: v })} placeholder="Search name or email…" />
+      <div className="mb-4 flex flex-wrap items-center gap-3">
+        <SearchInput value={f.q} onChange={(v) => setF({ q: v })} placeholder="Search name or email…" />
         <Select aria-label="Status" value={f.status} onChange={(e) => setF({ status: e.target.value })} className="h-10 w-40"><option value="">All statuses</option>{['pending', 'active', 'suspended', 'inactive', 'rejected'].map((s) => <option key={s} value={s}>{label(s)}</option>)}</Select>
         <Select aria-label="Category" value={f.category} onChange={(e) => setF({ category: e.target.value })} className="h-10 w-52"><option value="">All categories</option>{CATEGORIES.map((c) => <option key={c} value={c}>{label(c)}</option>)}</Select>
         <Select aria-label="Role" value={f.role} onChange={(e) => setF({ role: e.target.value })} className="h-10 w-48"><option value="">All roles</option>{roles.map((r) => <option key={r._id} value={r._id}>{r.displayName}</option>)}</Select>
@@ -307,11 +298,11 @@ function OrgEditor({ org, onClose, onSaved }: { org: Partial<Organization>; onCl
   )
 }
 
-interface ExpertRow { _id: string; headline: string; expertType: string; domain?: string; skills: string[]; expertiseAreas: string[]; yearsExperience?: number; location?: string; bio?: string; visibility: string; shareEmail: boolean; mentoringAvailable: boolean; status: string; user: { _id: string; name: string; email: string } | null }
+interface ExpertRow { _id: string; headline: string; expertType: string; domain?: string; skills: string[]; expertiseAreas: string[]; yearsExperience?: number; location?: string; bio?: string; access?: Access; shareEmail: boolean; mentoringAvailable: boolean; status: string; user: { _id: string; name: string; email: string } | null }
 
 function ExpertEditor({ expert, onClose, onSaved }: { expert: Partial<ExpertRow>; onClose: () => void; onSaved: () => void }) {
   const { toast } = useFeedback()
-  const [f, setF] = useState<Partial<ExpertRow>>({ expertType: 'industry_expert', visibility: 'members', status: 'approved', skills: [], expertiseAreas: [], shareEmail: false, mentoringAvailable: false, ...expert })
+  const [f, setF] = useState<Partial<ExpertRow>>({ expertType: 'industry_expert', access: { visibility: 'authenticated', roles: [], organizations: [] }, status: 'approved', skills: [], expertiseAreas: [], shareEmail: false, mentoringAvailable: false, ...expert })
   const [userQ, setUserQ] = useState('')
   const [userId, setUserId] = useState('')
   const users = useAsync(() => (!f._id && userQ.length >= 2 ? api.get<Paged<Member>>('/admin/users', { q: userQ, status: 'active', limit: 8 }) : Promise.resolve(null)), [userQ])
@@ -321,7 +312,7 @@ function ExpertEditor({ expert, onClose, onSaved }: { expert: Partial<ExpertRow>
     setBusy(true)
     setErrors({})
     try {
-      const body = { headline: f.headline, bio: f.bio, expertType: f.expertType, domain: f.domain, skills: f.skills, expertiseAreas: f.expertiseAreas, yearsExperience: f.yearsExperience ? Number(f.yearsExperience) : undefined, location: f.location, visibility: f.visibility, shareEmail: f.shareEmail, mentoringAvailable: f.mentoringAvailable, status: f.status }
+      const body = { headline: f.headline, bio: f.bio, expertType: f.expertType, domain: f.domain, skills: f.skills, expertiseAreas: f.expertiseAreas, yearsExperience: f.yearsExperience ? Number(f.yearsExperience) : undefined, location: f.location, access: f.access, shareEmail: f.shareEmail, mentoringAvailable: f.mentoringAvailable, status: f.status }
       if (f._id) await api.put(`/admin/directory/experts/${f._id}`, body)
       else await api.post('/admin/directory/experts', { ...body, user: userId })
       toast('Expert saved')
@@ -350,8 +341,11 @@ function ExpertEditor({ expert, onClose, onSaved }: { expert: Partial<ExpertRow>
           <Input label="Years of experience" type="number" value={f.yearsExperience ?? ''} onChange={(e) => setF({ ...f, yearsExperience: e.target.value as unknown as number })} />
           <Input label="Location" value={f.location ?? ''} onChange={(e) => setF({ ...f, location: e.target.value })} />
           <Select label="Status" value={f.status} onChange={(e) => setF({ ...f, status: e.target.value })}>{['pending', 'approved', 'inactive'].map((s) => <option key={s} value={s}>{label(s)}</option>)}</Select>
-          <Select label="Visibility (member's consent)" value={f.visibility} onChange={(e) => setF({ ...f, visibility: e.target.value })}><option value="public">Public</option><option value="members">Members only</option><option value="hidden">Hidden</option></Select>
         </div>
+        <fieldset>
+          <legend className="mb-2 text-sm font-medium text-ink-900">Audience <span className="font-normal text-ink-500">(agree changes with the member)</span></legend>
+          <AccessEditor value={f.access ?? { visibility: 'authenticated', roles: [], organizations: [] }} onChange={(access) => setF({ ...f, access })} errors={errors} privateOption={{ label: 'BIAN team only', text: 'Hidden from the Experts Network' }} />
+        </fieldset>
         <Textarea label="Biography" value={f.bio ?? ''} onChange={(e) => setF({ ...f, bio: e.target.value })} rows={3} />
         <TagInput label="Skills" value={f.skills ?? []} onChange={(skills) => setF({ ...f, skills })} />
         <TagInput label="Areas of expertise" value={f.expertiseAreas ?? []} onChange={(expertiseAreas) => setF({ ...f, expertiseAreas })} />
@@ -388,8 +382,8 @@ export function Directory({ initialTab = 'organizations' }: { initialTab?: 'orga
     <div>
       <PageHeader title="Master Database" subtitle="Directories of organizations, experts and alumni." actions={f.tab !== 'alumni' && <Button onClick={() => (f.tab === 'organizations' ? setEditOrg({}) : setEditExpert({}))}><Plus className="size-4" />New {f.tab === 'organizations' ? 'organization' : 'expert'}</Button>} />
       <Tabs value={f.tab} onChange={(tab) => { setF({ tab, status: '', type: '' }); setShowFilters(false) }} tabs={tabs} />
-      <div className="my-4 flex flex-wrap gap-2">
-        <SearchBox value={f.q} onChange={(v) => setF({ q: v })} placeholder={`Search ${f.tab}…`} />
+      <div className="my-4 flex flex-wrap items-center gap-3">
+        <SearchInput value={f.q} onChange={(v) => setF({ q: v })} placeholder={`Search ${f.tab}…`} />
         <Button variant="outline" onClick={() => setShowFilters((s) => !s)} aria-expanded={showFilters}><Filter className="size-4" />Filter</Button>
         <Button variant="outline" onClick={() => downloadUrl(exportPath, params)}><Download className="size-4" />Export</Button>
       </div>
@@ -426,7 +420,7 @@ export function Directory({ initialTab = 'organizations' }: { initialTab?: 'orga
                     <td className="px-4 py-3"><p className="font-medium text-ink-900">{r.user?.name}</p><p className="text-xs text-ink-500">{r.headline}</p></td>
                     <td className="px-4 py-3">{label(r.expertType)}</td>
                     <td className="px-4 py-3 text-xs">{r.skills?.join(', ')}</td>
-                    <td className="px-4 py-3">{label(r.visibility)}</td>
+                    <td className="px-4 py-3"><AudienceSummary access={r.access} /></td>
                     <td className="px-4 py-3"><StatusBadge status={r.status} /></td>
                     <td className="whitespace-nowrap px-4 py-3 text-right">
                       <Button size="sm" variant="ghost" aria-label="Edit" onClick={() => setEditExpert(r)}><Pencil className="size-4" /></Button>

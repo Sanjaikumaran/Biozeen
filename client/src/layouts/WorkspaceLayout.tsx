@@ -5,6 +5,8 @@ import { Loading } from '../components/ui'
 import { cx } from '../lib/cx'
 import { useAuth } from '../lib/auth'
 import { SiteHeader } from './PublicLayout'
+import { FeatureUnavailable } from '../components/FeatureUnavailable'
+import { useFeatures } from '../lib/features'
 import { PageErrorBoundary } from '../components/ErrorBoundary'
 
 export interface NavItem {
@@ -13,12 +15,15 @@ export interface NavItem {
   icon: LucideIcon
   end?: boolean
   permission?: string
+  /** Hidden when the developer console switches this feature off for the viewer. */
+  feature?: string
   badge?: number
 }
 
 /** Shared sidebar shell for the member dashboard and admin workspace. */
-export function WorkspaceLayout({ title, items, requirePermission }: { title: string; items: NavItem[]; requirePermission?: string }) {
+export function WorkspaceLayout({ title, items, requirePermission, developerOnly, requireFeature }: { title: string; items: NavItem[]; requirePermission?: string; developerOnly?: boolean; requireFeature?: string }) {
   const { user, loading, can } = useAuth()
+  const featureOn = useFeatures()
   const loc = useLocation()
   const [open, setOpen] = useState(false)
   // Close the mobile menu after navigation.
@@ -31,8 +36,10 @@ export function WorkspaceLayout({ title, items, requirePermission }: { title: st
   if (loading) return <Loading />
   if (!user) return <Navigate to={`/login?next=${encodeURIComponent(loc.pathname + loc.search)}`} replace />
   if (requirePermission && !can(requirePermission)) return <Navigate to="/dashboard" replace />
+  if (developerOnly && !user.isDeveloper) return <Navigate to="/dashboard" replace />
+  if (requireFeature && !featureOn(requireFeature)) return <><SiteHeader /><FeatureUnavailable /></>
 
-  const visible = items.filter((i) => !i.permission || can(i.permission))
+  const visible = items.filter((i) => (!i.permission || can(i.permission)) && featureOn(i.feature))
   // NavLink ignores the query string, so items like /admin/content?type=… need their own check.
   const isActive = (i: NavItem, linkActive: boolean) => {
     const [path, query] = i.to.split('?')

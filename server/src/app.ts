@@ -20,6 +20,7 @@ import { adminFeedbackRouter, feedbackRouter } from "./routes/feedback.js";
 import { adminMediaRouter, mediaRouter } from "./routes/media.js";
 import { meRouter, publicRouter } from "./routes/public.js";
 import { notificationsRouter } from "./routes/notifications.js";
+import { developerRouter, featuresRouter } from "./routes/developer.js";
 
 export const app = express();
 app.set("trust proxy", 1);
@@ -66,6 +67,8 @@ app.use("/api/feedback", feedbackRouter);
 app.use("/api/contact", contactRouter);
 app.use("/api/media", mediaRouter);
 app.use("/api/notifications", notificationsRouter);
+app.use("/api/features", featuresRouter);
+app.use("/api/developer", developerRouter);
 
 app.use("/api/admin/contents", adminContentsRouter);
 app.use("/api/admin/courses", adminCoursesRouter);

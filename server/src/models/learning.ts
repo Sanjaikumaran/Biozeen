@@ -126,8 +126,8 @@ const expertSchema = new Schema(
     yearsExperience: Number,
     location: String,
     photoUrl: String,
-    /** public: anyone; members: signed-in members only; hidden: admins only. */
-    visibility: { type: String, enum: ["public", "members", "hidden"], default: "members" },
+    /** Who can find this expert: the same audience model as content (private = BIAN team only). */
+    access: { type: accessSchema, default: () => ({ visibility: "authenticated" }) },
     /** Member consented to their email being shown to signed-in members. */
     shareEmail: { type: Boolean, default: false },
     mentoringAvailable: { type: Boolean, default: false },
@@ -135,7 +135,7 @@ const expertSchema = new Schema(
   },
   { timestamps: true },
 );
-expertSchema.index({ expertType: 1, status: 1, visibility: 1 });
+expertSchema.index({ expertType: 1, status: 1, "access.visibility": 1 });
 expertSchema.index({ skills: 1 });
 expertSchema.index({ headline: "text", bio: "text", skills: "text", expertiseAreas: "text" });
 export const Expert = model("Expert", expertSchema, "experts");

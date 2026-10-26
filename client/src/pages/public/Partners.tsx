@@ -1,11 +1,12 @@
-import { ArrowLeft, ArrowRight, BookOpen, Building2, ExternalLink, Factory, GraduationCap, Handshake, Lightbulb, MapPin, Search, Users } from 'lucide-react'
+import { ArrowLeft, ArrowRight, BookOpen, Building2, ExternalLink, Factory, GraduationCap, Handshake, Lightbulb, MapPin, Users } from 'lucide-react'
 import { Link, useParams } from 'react-router-dom'
-import { Badge, Card, Empty, ErrorState, Loading, Pagination, Select, SkeletonGrid } from '../../components/ui'
+import { Badge, Card, Empty, ErrorState, Loading, Pagination, SearchInput, Select, SkeletonGrid } from '../../components/ui'
 import { PageBanner } from '../../layouts/PublicLayout'
 import { api, type Paged } from '../../lib/api'
 import { label } from '../../lib/format'
 import { useAsync, useDebounced, useDocumentTitle, useQueryState } from '../../lib/hooks'
 import type { Organization } from '../../lib/types'
+import { useFeature } from '../../lib/features'
 
 const TIERS = [
   { key: 'founding', title: 'Founding Partners', text: 'Strategic partners supporting the vision and growth.', icon: Handshake },
@@ -60,11 +61,7 @@ export default function Partners() {
 
         <div className="mt-10 flex flex-wrap items-end gap-3">
           <h2 className="mr-auto text-2xl font-bold">{f.tier ? label(f.tier) : 'All partners'}</h2>
-          <label className="relative">
-            <span className="sr-only">Search partners</span>
-            <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-300" />
-            <input value={f.q} onChange={(e) => setF({ q: e.target.value })} placeholder="Search partners…" className="h-10 w-56 rounded-lg border border-ink-300/70 bg-card pl-9 pr-3 text-sm" />
-          </label>
+          <SearchInput value={f.q} onChange={(q) => setF({ q })} placeholder="Search partners…" className="sm:w-64" />
           <Select aria-label="Organization type" value={f.type} onChange={(e) => setF({ type: e.target.value })} className="h-10 w-44">
             <option value="">All types</option>
             {['industry', 'academia', 'research', 'startup', 'innovation', 'government'].map((t) => <option key={t} value={t}>{label(t)}</option>)}
@@ -105,6 +102,7 @@ export default function Partners() {
 }
 
 export function PartnerDetail() {
+  const enquireOn = useFeature('partners.enquire')
   const { slug = '' } = useParams()
   const { data, error, loading, reload } = useAsync(() => api.get<Organization>(`/partners/${slug}`), [slug])
   useDocumentTitle(data?.name)
@@ -141,7 +139,7 @@ export function PartnerDetail() {
           {data.logoUrl && <img src={data.logoUrl} alt={data.name} className="max-h-16" />}
           {data.location && <p className="flex items-center gap-2"><MapPin className="size-4 text-ink-500" />{data.location}</p>}
           {data.website && <a href={data.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-brand-600 hover:underline"><ExternalLink className="size-4" />Website</a>}
-          <Link to={`/contact?type=partnership&org=${encodeURIComponent(data.name)}`} className="block rounded-lg bg-brand-600 py-2 text-center font-semibold text-white hover:bg-brand-strong">Enquire about collaboration</Link>
+          {enquireOn && <Link to={`/contact?type=partnership&org=${encodeURIComponent(data.name)}`} className="block rounded-lg bg-brand-600 py-2 text-center font-semibold text-white hover:bg-brand-strong">Enquire about collaboration</Link>}
         </Card>
       </div>
     </>

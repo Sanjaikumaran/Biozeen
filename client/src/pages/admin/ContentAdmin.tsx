@@ -1,11 +1,11 @@
-import { ArrowLeft, Eye, Plus, Save, Search, Trash2 } from 'lucide-react'
+import { ArrowLeft, Eye, Plus, Save, Trash2 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { AccessEditor, AudienceSummary, PublishPanel, useLookups, type PublishState } from '../../components/admin/Publishing'
 import { BlockEditor } from '../../components/admin/BlockEditor'
 import { MediaPicker } from '../../components/admin/MediaPicker'
 import { BlockRenderer } from '../../components/BlockRenderer'
-import { Alert, Badge, Button, Card, Checkbox, Empty, ErrorState, Input, LinkButton, Loading, PageHeader, Pagination, Select, StatusBadge, Tabs, Textarea, useFeedback } from '../../components/ui'
+import { Alert, Badge, Button, Card, Checkbox, Empty, ErrorState, Input, LinkButton, Loading, PageHeader, Pagination, SearchInput, Select, StatusBadge, Tabs, Textarea, useFeedback } from '../../components/ui'
 import { ApiError, api, type Paged } from '../../lib/api'
 import { useAuth } from '../../lib/auth'
 import { contentHref, formatDate, label, timeAgo } from '../../lib/format'
@@ -35,12 +35,8 @@ export function ContentList() {
         actions={group.types.length === 1 ? <LinkButton to={`/admin/content/new?type=${group.types[0]}`}><Plus className="size-4" />New {label(group.types[0]).toLowerCase()}</LinkButton> : group.types.map((t) => <LinkButton key={t} variant="outline" to={`/admin/content/new?type=${t}`}><Plus className="size-4" />{label(t)}</LinkButton>)}
       />
       <Tabs value={f.status} onChange={(status) => setF({ status })} tabs={[{ value: '', label: 'All' }, ...STATUSES.map((s) => ({ value: s, label: label(s) }))]} />
-      <div className="my-4 flex flex-wrap gap-2">
-        <label className="relative">
-          <span className="sr-only">Search</span>
-          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-300" />
-          <input value={f.q} onChange={(e) => setF({ q: e.target.value })} placeholder="Search titles…" className="h-10 w-72 rounded-lg border border-ink-300/70 bg-card pl-9 pr-3 text-sm" />
-        </label>
+      <div className="my-4 flex flex-wrap items-center gap-3">
+        <SearchInput value={f.q} onChange={(q) => setF({ q })} placeholder="Search titles…" />
       </div>
       {loading ? <Loading /> : error ? <ErrorState error={error} onRetry={reload} /> : !data?.items.length ? <Empty title="Nothing here yet" /> : (
         <>

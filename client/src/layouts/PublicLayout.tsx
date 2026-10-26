@@ -1,43 +1,39 @@
-import { ChevronDown, LayoutDashboard, LogOut, Mail, MapPin, Menu, Moon, Palette, Phone, Search, Shield, Sun, X } from 'lucide-react'
+import { ChevronDown, Code2, LayoutDashboard, LogOut, Mail, MapPin, Menu, Phone, Search, Settings, Shield, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { Logo } from '../components/Logo'
 import { NotificationBell } from '../components/NotificationBell'
-import { LinkButton, useFeedback } from '../components/ui'
+import { LinkButton } from '../components/ui'
 import { cx } from '../lib/cx'
 import { api } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { useAsync } from '../lib/hooks'
-import { useTheme } from '../lib/theme'
+import { useFeatures } from '../lib/features'
 import type { SiteSettings } from '../lib/types'
 import { PageErrorBoundary } from '../components/ErrorBoundary'
 
-const NAV = [
+const NAV: { to: string; label: string; end?: boolean; feature?: string; also?: string[] }[] = [
   { to: '/', label: 'Home', end: true },
-  { to: '/about', label: 'About' },
-  { to: '/portfolio', label: 'Portfolio' },
-  { to: '/partners', label: 'Partners' },
-  { to: '/opportunities', label: 'Opportunities' },
-  { to: '/experts', label: 'Experts' },
-  { to: '/knowledge', label: 'Knowledge Hub' },
-  { to: '/events', label: 'Events' },
-  { to: '/contact', label: 'Contact' },
+  { to: '/about', label: 'About', feature: 'portfolio' },
+  { to: '/portfolio', label: 'Portfolio', feature: 'portfolio' },
+  { to: '/partners', label: 'Partners', feature: 'partners' },
+  { to: '/opportunities', label: 'Opportunities', feature: 'opportunities' },
+  { to: '/experts', label: 'Experts', feature: 'experts' },
+  { to: '/knowledge', label: 'Knowledge Hub', feature: 'knowledge', also: ['/courses'] },
+  { to: '/events', label: 'Events', feature: 'events' },
+  { to: '/contact', label: 'Contact', feature: 'contact' },
 ]
 
-function ThemeToggle() {
-  const { theme, resolvedMode, setTheme } = useTheme()
-  const { toast } = useFeedback()
-  const next = resolvedMode === 'dark' ? 'light' : 'dark'
-  return (
-    <button
-      onClick={() => setTheme({ ...theme, mode: next }).catch((e: Error) => toast(e.message, 'error'))}
-      className="rounded-md p-2 text-ink-500 hover:bg-ink-900/5 hover:text-ink-900"
-      aria-label={`Switch to ${next} mode`}
-      title={`Switch to ${next} mode`}
-    >
-      {resolvedMode === 'dark' ? <Sun className="size-4" /> : <Moon className="size-4" />}
-    </button>
-  )
+/** Main navigation without screens the developer console has switched off for this viewer. */
+function useNav() {
+  const on = useFeatures()
+  return NAV.filter((n) => on(n.feature))
+}
+
+/** True when the current path is the item's screen or a page beneath it. */
+function isCurrent(n: (typeof NAV)[number], path: string) {
+  const under = (to: string) => path === to || path.startsWith(`${to}/`)
+  return n.end ? path === n.to : under(n.to) || !!n.also?.some(under)
 }
 
 function UserMenu() {
@@ -69,8 +65,13 @@ function UserMenu() {
               <Shield className="size-4" /> Admin workspace
             </Link>
           )}
-          <Link to="/dashboard/appearance" onClick={() => setOpen(false)} className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-ink-900/5">
-            <Palette className="size-4" /> Appearance
+          {user.isDeveloper && (
+            <Link to="/developer" onClick={() => setOpen(false)} className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-ink-900/5">
+              <Code2 className="size-4" /> Developer console
+            </Link>
+          )}
+          <Link to={user.isDeveloper ? '/developer/settings' : can('admin.access') ? '/admin/account' : '/dashboard/settings'} onClick={() => setOpen(false)} className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-ink-900/5">
+            <Settings className="size-4" /> Settings
           </Link>
           <button
             onClick={async () => {
@@ -89,6 +90,8 @@ function UserMenu() {
 
 export function SiteHeader() {
   const { user } = useAuth()
+  const on = useFeatures()
+  const nav = useNav()
   const [open, setOpen] = useState(false)
   const loc = useLocation()
   const navigate = useNavigate()
@@ -105,24 +108,25 @@ export function SiteHeader() {
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6">
         <Logo />
         <nav className="ml-auto hidden items-center gap-0.5 lg:flex" aria-label="Main">
-          {NAV.map((n) => (
-            <NavLink key={n.to} to={n.to} end={n.end} className={({ isActive }) => cx('whitespace-nowrap rounded-md px-2 py-2 text-[13px] font-medium transition-colors', isActive ? 'text-brand-700' : 'text-ink-700 hover:text-brand-700')}>
+          {nav.map((n) => (
+            <NavLink key={n.to} to={n.to} end={n.end} aria-current={isCurrent(n, loc.pathname) ? 'page' : undefined} className={cx('whitespace-nowrap rounded-md px-2 py-2 text-[13px] font-medium transition-colors', isCurrent(n, loc.pathname) ? 'bg-brand-100 font-semibold text-brand-800' : 'text-ink-700 hover:bg-ink-900/5 hover:text-brand-700')}>
               {n.label}
             </NavLink>
           ))}
         </nav>
         <div className="ml-auto flex items-center gap-2 lg:ml-2">
-          <Link to="/search" className="rounded-md p-2 text-ink-500 hover:bg-ink-900/5 hover:text-ink-900" aria-label="Search">
-            <Search className="size-4" />
-          </Link>
-          <ThemeToggle />
-          {user && <NotificationBell />}
+          {on('search') && (
+            <Link to="/search" className="rounded-md p-2 text-ink-500 hover:bg-ink-900/5 hover:text-ink-900" aria-label="Search">
+              <Search className="size-4" />
+            </Link>
+          )}
+          {user && on('notifications') && <NotificationBell />}
           {user ? (
             <UserMenu />
           ) : (
             <div className="hidden items-center gap-2 sm:flex">
               <LinkButton to="/login" variant="dark" size="sm">Login</LinkButton>
-              <LinkButton to="/register" variant="accent" size="sm">Join Now</LinkButton>
+              {on('registration') && <LinkButton to="/register" variant="accent" size="sm">Join Now</LinkButton>}
             </div>
           )}
           <button className="rounded-md p-2 lg:hidden" onClick={() => setOpen((o) => !o)} aria-label="Toggle menu" aria-expanded={open}>
@@ -132,7 +136,7 @@ export function SiteHeader() {
       </div>
       {open && (
         <div className="border-t border-ink-900/8 bg-card px-4 pb-4 lg:hidden">
-          <form
+          {on('search') && <form
             className="my-3"
             onSubmit={(e) => {
               e.preventDefault()
@@ -140,10 +144,10 @@ export function SiteHeader() {
             }}
           >
             <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search BIAN…" className="w-full rounded-lg border border-ink-300/70 px-3 py-2 text-sm" aria-label="Search" />
-          </form>
+          </form>}
           <nav className="grid gap-1" aria-label="Mobile">
-            {NAV.map((n) => (
-              <NavLink key={n.to} to={n.to} end={n.end} className={({ isActive }) => cx('rounded-lg px-3 py-2 text-sm font-medium', isActive ? 'bg-brand-50 text-brand-700' : 'text-ink-700')}>
+            {nav.map((n) => (
+              <NavLink key={n.to} to={n.to} end={n.end} aria-current={isCurrent(n, loc.pathname) ? 'page' : undefined} className={cx('rounded-lg px-3 py-2 text-sm font-medium', isCurrent(n, loc.pathname) ? 'bg-brand-50 font-semibold text-brand-700' : 'text-ink-700')}>
                 {n.label}
               </NavLink>
             ))}
@@ -151,7 +155,7 @@ export function SiteHeader() {
           {!user && (
             <div className="mt-3 grid grid-cols-2 gap-2">
               <LinkButton to="/login" variant="dark">Login</LinkButton>
-              <LinkButton to="/register" variant="accent">Join Now</LinkButton>
+              {on('registration') && <LinkButton to="/register" variant="accent">Join Now</LinkButton>}
             </div>
           )}
         </div>
@@ -163,6 +167,7 @@ export function SiteHeader() {
 function SiteFooter() {
   const { data } = useAsync(() => api.get<SiteSettings>('/settings'), [])
   const c = data?.contact
+  const nav = useNav()
   return (
     <footer className="hero-bg mt-16 text-brand-100">
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:px-6 md:grid-cols-4">
@@ -174,7 +179,7 @@ function SiteFooter() {
         <div>
           <p className="mb-3 text-sm font-semibold text-white">Explore</p>
           <ul className="space-y-2 text-sm">
-            {NAV.slice(1).map((n) => (
+            {nav.slice(1).map((n) => (
               <li key={n.to}>
                 <Link to={n.to} className="hover:text-white">{n.label}</Link>
               </li>

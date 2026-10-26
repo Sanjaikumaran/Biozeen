@@ -114,7 +114,7 @@ export interface Expert {
   yearsExperience?: number
   location?: string
   photoUrl?: string
-  visibility: 'public' | 'members' | 'hidden'
+  access?: Access
   mentoringAvailable?: boolean
   organization?: { name: string; slug: string }
   status?: string
@@ -175,6 +175,7 @@ export interface SessionUser {
   permissions: string[]
   profile: Record<string, any> // eslint-disable-line @typescript-eslint/no-explicit-any
   phone?: string
+  isDeveloper?: boolean
   preferences?: { themeMode: 'light' | 'dark' | 'system' | null; accent: string | null }
 }
 

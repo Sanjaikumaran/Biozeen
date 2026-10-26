@@ -108,11 +108,11 @@ export async function seed() {
   await User.create(<Filter>{ ...base, status: "pending", email: "pending@demo.bian.local", name: "Pending Startup Founder", accountType: "organization", category: "startup", organization: orgs.NextBio });
 
   const expertPeople = [
-    { name: "Dr. Priya Sharma", email: "priya.sharma@demo.bian.local", expert: { headline: "Bioprocess Expert", expertType: "industry_expert", domain: "Biopharma", yearsExperience: 15, skills: ["Downstream", "Process Dev"], expertiseAreas: ["Bioprocess development", "Scale-up"], location: "Bangalore, India", mentoringAvailable: true, visibility: "public" } },
-    { name: "Dr. Arvind Rao", email: "arvind.rao@demo.bian.local", expert: { headline: "Research Scientist", expertType: "research_expert", domain: "Drug Discovery", yearsExperience: 12, skills: ["Immunology", "Cell Culture"], expertiseAreas: ["Assay development"], location: "Hyderabad, India", visibility: "public" } },
-    { name: "Ms. Neha Mehta", email: "neha.mehta@demo.bian.local", expert: { headline: "Regulatory Consultant", expertType: "consultant", domain: "Global Regulatory", yearsExperience: 10, skills: ["GMP", "Compliance"], expertiseAreas: ["Regulatory submissions"], location: "Mumbai, India", visibility: "public" } },
-    { name: "Dr. Kavita Iyer", email: "kavita.iyer@demo.bian.local", expert: { headline: "GMP Trainer", expertType: "trainer", domain: "Quality", yearsExperience: 18, skills: ["GMP", "Validation"], expertiseAreas: ["Quality systems training"], location: "Chennai, India", visibility: "members" } },
-    { name: "Mr. Rohan Kapoor", email: "rohan.kapoor@demo.bian.local", expert: { headline: "Startup Mentor", expertType: "mentor", domain: "Innovation", yearsExperience: 20, skills: ["Fundraising", "Go-to-market"], expertiseAreas: ["Biotech venture building"], location: "Pune, India", mentoringAvailable: true, visibility: "members" } },
+    { name: "Dr. Priya Sharma", email: "priya.sharma@demo.bian.local", expert: { headline: "Bioprocess Expert", expertType: "industry_expert", domain: "Biopharma", yearsExperience: 15, skills: ["Downstream", "Process Dev"], expertiseAreas: ["Bioprocess development", "Scale-up"], location: "Bangalore, India", mentoringAvailable: true, access: { visibility: "public" } } },
+    { name: "Dr. Arvind Rao", email: "arvind.rao@demo.bian.local", expert: { headline: "Research Scientist", expertType: "research_expert", domain: "Drug Discovery", yearsExperience: 12, skills: ["Immunology", "Cell Culture"], expertiseAreas: ["Assay development"], location: "Hyderabad, India", access: { visibility: "public" } } },
+    { name: "Ms. Neha Mehta", email: "neha.mehta@demo.bian.local", expert: { headline: "Regulatory Consultant", expertType: "consultant", domain: "Global Regulatory", yearsExperience: 10, skills: ["GMP", "Compliance"], expertiseAreas: ["Regulatory submissions"], location: "Mumbai, India", access: { visibility: "public" } } },
+    { name: "Dr. Kavita Iyer", email: "kavita.iyer@demo.bian.local", expert: { headline: "GMP Trainer", expertType: "trainer", domain: "Quality", yearsExperience: 18, skills: ["GMP", "Validation"], expertiseAreas: ["Quality systems training"], location: "Chennai, India", access: { visibility: "authenticated" } } },
+    { name: "Mr. Rohan Kapoor", email: "rohan.kapoor@demo.bian.local", expert: { headline: "Startup Mentor", expertType: "mentor", domain: "Innovation", yearsExperience: 20, skills: ["Fundraising", "Go-to-market"], expertiseAreas: ["Biotech venture building"], location: "Pune, India", mentoringAvailable: true, access: { visibility: "authenticated" } } },
   ];
   for (const p of expertPeople) {
     const u = await User.create(<Filter>{ ...base, email: p.email, name: p.name, accountType: "individual", category: "sme", roles: [roles.member, roles.expert] });
@@ -381,7 +381,11 @@ export async function seed() {
     { ...published, title: "Industry Visit: Biologics Manufacturing Facility", slug: "industry-visit-biologics-facility", summary: "Guided visit for student members.", eventType: "industry_visit", startAt: at(55, 10), location: { mode: "in_person", city: "Bangalore, India" }, registration: { enabled: true, capacity: 25 }, access: { visibility: "roles", roles: [roles.student, roles.alumni] }, blocks: [b("richText", { html: "<p>Restricted to students and alumni.</p>" })] },
   ]);
 
-  return { adminPassword, demoPassword, industryEmail: industry!.email, studentEmail: student!.email };
+  // Developer console account: flagged on the user, not a role, so role management never shows it.
+  const developerPassword = process.env.SEED_DEVELOPER_PASSWORD ?? "BianDev2026";
+  await User.create(<Filter>{ ...base, email: "developer@bian.local", name: "Platform Developer", accountType: "individual", category: "other", roles: [], isDeveloper: true, passwordHash: await bcrypt.hash(developerPassword, 12) });
+
+  return { adminPassword, demoPassword, developerPassword, industryEmail: industry!.email, studentEmail: student!.email };
 }
 
 async function main() {
@@ -400,6 +404,7 @@ async function main() {
   console.log(`  Student:    ${creds.studentEmail} / ${creds.demoPassword}`);
   console.log(`  Editor:     editor@demo.bian.local / ${creds.demoPassword}`);
   console.log(`  Expert:     priya.sharma@demo.bian.local / ${creds.demoPassword}`);
+  console.log(`  Developer:  developer@bian.local / ${creds.developerPassword}`);
   console.log("  Change these passwords before any shared deployment.\n");
 }
 

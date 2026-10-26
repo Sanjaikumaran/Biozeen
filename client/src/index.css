@@ -71,26 +71,32 @@
    --brand-l-* is the accent's light-mode scale; --color-brand-* is what utilities read. */
 
 [data-accent="forest"] {
+  --hl-400: #a3e05a; --hl-500: #8bd346; --hl-600: #6fb52d;
   --brand-l-50: #eef7f1; --brand-l-100: #d5ecdc; --brand-l-200: #a9d8b9; --brand-l-300: #74bd8f; --brand-l-500: #1f7a55;
   --brand-l-600: #136445; --brand-l-700: #0b4d3b; --brand-l-800: #083b2e; --brand-l-900: #052a21;
 }
 [data-accent="ocean"] {
+  --hl-400: #8fd0ff; --hl-500: #5eb8f7; --hl-600: #3a9be0;
   --brand-l-50: #eef5fc; --brand-l-100: #d6e6f7; --brand-l-200: #a9c9ee; --brand-l-300: #74a6e0; --brand-l-500: #2563b8;
   --brand-l-600: #1d4f96; --brand-l-700: #173e76; --brand-l-800: #12305b; --brand-l-900: #0b1f3d;
 }
 [data-accent="teal"] {
+  --hl-400: #6ee7d8; --hl-500: #2dd4bf; --hl-600: #14b8a6;
   --brand-l-50: #ecf8f7; --brand-l-100: #d0eeeb; --brand-l-200: #a0dbd5; --brand-l-300: #67c1b8; --brand-l-500: #138a80;
   --brand-l-600: #0e6f67; --brand-l-700: #0b5751; --brand-l-800: #08433e; --brand-l-900: #052d2a;
 }
 [data-accent="indigo"] {
+  --hl-400: #b4bcff; --hl-500: #98a2ff; --hl-600: #7c86f0;
   --brand-l-50: #f0f0fc; --brand-l-100: #dcdcf7; --brand-l-200: #b8b8ef; --brand-l-300: #8e8ee2; --brand-l-500: #4f4fc4;
   --brand-l-600: #3e3ea3; --brand-l-700: #313183; --brand-l-800: #262665; --brand-l-900: #191944;
 }
 [data-accent="plum"] {
+  --hl-400: #f5b3f0; --hl-500: #ec8fe4; --hl-600: #d96ad0;
   --brand-l-50: #f8eff7; --brand-l-100: #eedaec; --brand-l-200: #ddb3d9; --brand-l-300: #c784c0; --brand-l-500: #94408c;
   --brand-l-600: #7a3273; --brand-l-700: #61285c; --brand-l-800: #4b1f47; --brand-l-900: #33152f;
 }
 [data-accent="terracotta"] {
+  --hl-400: #ffc58f; --hl-500: #fdab63; --hl-600: #f08c3c;
   --brand-l-50: #fcf1ec; --brand-l-100: #f7ddd1; --brand-l-200: #eebba3; --brand-l-300: #e2916d; --brand-l-500: #b9532b;
   --brand-l-600: #994322; --brand-l-700: #7a361c; --brand-l-800: #5e2a16; --brand-l-900: #401c0e;
 }
@@ -101,6 +107,8 @@
   --color-brand-300: var(--brand-l-300); --color-brand-500: var(--brand-l-500); --color-brand-600: var(--brand-l-600);
   --color-brand-700: var(--brand-l-700); --color-brand-800: var(--brand-l-800); --color-brand-900: var(--brand-l-900);
   --color-brand-strong: var(--brand-l-700);
+  /* Highlight colour (active menu item, accent buttons, hero emphasis) follows the theme too. */
+  --color-lime-400: var(--hl-400); --color-lime-500: var(--hl-500); --color-lime-600: var(--hl-600);
 }
 [data-accent] {
   color-scheme: light;
@@ -132,3 +140,10 @@
   --color-amber-50: #2a2111; --color-amber-200: #5a4416; --color-amber-800: #fcd34d; --color-amber-900: #fde68a;
   --color-red-50: #2d1517; --color-red-200: #5c2328; --color-red-700: #fca5a5; --color-red-800: #fecaca;
 }
+
+/* Right-hand drawer (components/ui.tsx Modal). */
+@keyframes drawer-in { from { transform: translateX(100%); } to { transform: translateX(0); } }
+@keyframes backdrop-in { from { opacity: 0; } to { opacity: 1; } }
+.drawer-panel { animation: drawer-in 0.22s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.drawer-backdrop { animation: backdrop-in 0.18s ease-out; }
+@media (prefers-reduced-motion: reduce) { .drawer-panel, .drawer-backdrop { animation: none; } }

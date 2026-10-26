@@ -419,3 +419,113 @@ describe("review notifications", () => {
     assert.equal((await editor.get("/api/notifications?unread=true")).body.items.length, 0);
   });
 });
+
+describe("expert audiences", () => {
+  it("limits an expert profile to chosen roles, like other content", async () => {
+    const studentRole = await Role.findOne({ name: "student" });
+    const priya = await User.findOne({ email: "priya.sharma@demo.bian.local" });
+    const { Expert } = await import("../src/models/learning.js");
+    await Expert.updateOne({ user: priya!._id }, { access: { visibility: "roles", roles: [studentRole!._id], organizations: [] } });
+    const id = String((await Expert.findOne({ user: priya!._id }))!._id);
+    assert.equal((await anon.get(`/api/experts/${id}`)).status, 404);
+    assert.equal((await industry.get(`/api/experts/${id}`)).status, 404);
+    assert.equal((await student.get(`/api/experts/${id}`)).status, 200);
+    assert.equal((await admin.get(`/api/experts/${id}`)).status, 200);
+    assert.ok(!(await industry.get("/api/experts")).body.items.some((e: { _id: string }) => e._id === id));
+    await Expert.updateOne({ user: priya!._id }, { access: { visibility: "public", roles: [], organizations: [] } });
+  });
+
+  it("lets a member choose an audience for their own profile", async () => {
+    const opts = (await industry.get("/api/experts/audience-options")).body;
+    assert.ok(opts.roles.length && !opts.roles.some((r: { name: string }) => r.name === "super_admin"));
+    const role = opts.roles.find((r: { name: string }) => r.name === "academia");
+    const r = await industry.put("/api/experts/me/profile", { headline: "Process scale-up", expertType: "consultant", skills: [], expertiseAreas: [], access: { visibility: "roles", roles: [role._id], organizations: [] } });
+    assert.equal(r.status, 201, JSON.stringify(r.body));
+    assert.equal(r.body.access.visibility, "roles");
+  });
+});
+
+describe("developer console", () => {
+  const developer = new Client();
+  before(async () => {
+    await developer.login("developer@bian.local", creds.developerPassword);
+  });
+  after(async () => {
+    await developer.post("/api/developer/features/reset");
+  });
+
+  it("is a flag, not a role, and stays out of member management", async () => {
+    const me = (await developer.get("/api/auth/me")).body.user;
+    assert.equal(me.isDeveloper, true);
+    assert.deepEqual(me.roles, []);
+    assert.ok(me.permissions.includes("roles.manage"));
+    const roles = (await admin.get("/api/admin/roles")).body.roles;
+    assert.ok(!roles.some((r: { name: string }) => /developer/i.test(r.name)));
+    const users = (await admin.get("/api/admin/users?q=developer")).body.items;
+    assert.equal(users.length, 0);
+    const dev = await User.findOne({ email: "developer@bian.local" });
+    assert.equal((await admin.patch(`/api/admin/users/${dev!._id}`, { status: "suspended" })).status, 404);
+    assert.equal((await admin.get("/api/developer/features")).status, 404);
+    assert.equal((await student.get("/api/developer/features")).status, 404);
+    assert.equal((await developer.get("/api/developer/features")).status, 200);
+  });
+
+  it("switching a feature off disables everything that depends on it", async () => {
+    const r = await developer.put("/api/developer/features/contact", { enabled: false, audience: [] });
+    assert.equal(r.status, 200);
+    assert.deepEqual(r.body.matrix["experts.connect"].student, { on: false, reason: "off", key: "contact" });
+    assert.equal(r.body.matrix["admin.requests"].staff.on, false);
+    const flags = (await student.get("/api/features")).body.features;
+    assert.equal(flags.contact, false);
+    assert.equal(flags["experts.connect"], false);
+    assert.equal(flags["partners.enquire"], false);
+    assert.equal(flags["dashboard.requests"], false);
+    assert.equal(flags.experts, true);
+    const msg = { name: "A Person", email: "a@example.com", category: "student", type: "general", message: "Hello there, a question.", startedAt: Date.now() - 10_000 };
+    assert.equal((await anon.post("/api/contact", msg)).status, 403);
+    assert.equal((await admin.get("/api/admin/contacts")).status, 403);
+    assert.equal((await student.get("/api/me/requests")).status, 403);
+    // The developer still sees everything.
+    assert.equal((await developer.get("/api/features")).body.features.contact, true);
+    await developer.put("/api/developer/features/contact", { enabled: true, audience: [] });
+    assert.equal((await anon.post("/api/contact", msg)).status, 201);
+  });
+
+  it("limits a screen to member categories; staff keep access", async () => {
+    await developer.put("/api/developer/features/experts", { enabled: true, audience: ["student", "visitor"] });
+    assert.equal((await student.get("/api/experts")).status, 200);
+    assert.equal((await anon.get("/api/experts")).status, 200);
+    assert.equal((await industry.get("/api/experts")).status, 403);
+    assert.equal((await admin.get("/api/experts")).status, 200);
+    const flags = (await industry.get("/api/features")).body.features;
+    assert.equal(flags["experts.selfProfile"], false);
+    const search = (await industry.get("/api/search?q=GMP")).body;
+    assert.equal(search.experts.length, 0);
+    await developer.put("/api/developer/features/experts", { enabled: true, audience: [] });
+  });
+
+  it("filters content screens out of listings and search", async () => {
+    await developer.put("/api/developer/features/opportunities", { enabled: false, audience: [] });
+    const list = (await student.get("/api/contents?type=opportunity")).body;
+    assert.equal(list.items.length, 0);
+    const home = (await anon.get("/api/home")).body;
+    assert.equal(home.opportunities.length, 0);
+    assert.equal((await admin.get("/api/admin/contents?type=opportunity")).body.items.length, 0);
+    await developer.put("/api/developer/features/opportunities", { enabled: true, audience: [] });
+  });
+
+  it("closes registration and hides developer changes from the admin audit log", async () => {
+    await developer.put("/api/developer/features/registration", { enabled: false, audience: [] });
+    const reg = await anon.post("/api/auth/register", { category: "student", name: "Late Joiner", email: "late@example.com", password: "LateJoiner123", acceptTerms: true });
+    assert.equal(reg.status, 403);
+    await developer.put("/api/developer/features/registration", { enabled: true, audience: [] });
+    const audit = (await admin.get("/api/admin/audit")).body;
+    assert.ok(!audit.items.some((a: { entityType: string }) => a.entityType === "FeatureSetting"));
+    assert.ok((await developer.get("/api/developer/overview")).body.history.length > 0);
+  });
+
+  it("rejects unknown features and audiences", async () => {
+    assert.equal((await developer.put("/api/developer/features/nope", { enabled: false })).status, 404);
+    assert.equal((await developer.put("/api/developer/features/experts", { enabled: true, audience: ["martians"] })).status, 400);
+  });
+});

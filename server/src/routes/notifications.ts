@@ -2,9 +2,10 @@ import { Router } from "express";
 import { oid } from "../lib/http.js";
 import { requireAuth } from "../middleware/auth.js";
 import { Notification } from "../models/admin.js";
+import { requireFeature } from "../lib/features.js";
 
 export const notificationsRouter = Router();
-notificationsRouter.use(requireAuth);
+notificationsRouter.use(requireAuth, requireFeature("notifications"));
 
 notificationsRouter.get("/", async (req, res) => {
   const limit = Math.min(Number(req.query.limit) || 20, 100);

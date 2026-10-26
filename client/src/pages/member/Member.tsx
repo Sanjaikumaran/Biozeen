@@ -1,6 +1,6 @@
 import {
   ArrowRight, Bell, Bookmark, BookOpen, Briefcase, CalendarDays, CheckCircle2, ClipboardList, GraduationCap, LayoutDashboard,
-  MessageSquare, MessagesSquare, Palette, PlusCircle, Search, Settings, ShieldCheck, Star, UserRound, UserSearch, Users,
+  MessageSquare, MessagesSquare, PlusCircle, Search, Settings, ShieldCheck, Star, UserRound, UserSearch, Users,
 } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
@@ -9,30 +9,31 @@ import { Alert, Badge, Button, Card, Checkbox, Empty, ErrorState, Input, LinkBut
 import { WorkspaceLayout, type NavItem } from '../../layouts/WorkspaceLayout'
 import { ApiError, api } from '../../lib/api'
 import { useAuth } from '../../lib/auth'
+import { useFeature, useFeatures } from '../../lib/features'
 import { contentHref, formatDate, label, timeAgo } from '../../lib/format'
 import { useAsync, useDocumentTitle } from '../../lib/hooks'
 import type { ContentCard, Enrollment, EventItem, Expert, Organization } from '../../lib/types'
+import { AccessEditor, MemberAudienceProvider } from '../../components/admin/Publishing'
+import Appearance from '../Appearance'
 
 const NAV: NavItem[] = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, end: true },
   { to: '/dashboard/profile', label: 'Profile', icon: UserRound },
-  { to: '/dashboard/post-opportunity', label: 'Post Opportunity', icon: PlusCircle, permission: 'opportunities.post' },
-  { to: '/dashboard/opportunities', label: 'My Opportunities', icon: Briefcase, permission: 'opportunities.post' },
-  { to: '/experts', label: 'Expert Search', icon: UserSearch },
-  { to: '/partners?type=academia', label: 'Academia Connect', icon: GraduationCap },
-  { to: '/partners?tier=innovation', label: 'Innovation Connect', icon: Users },
-  { to: '/dashboard/learning', label: 'My Learning', icon: BookOpen },
-  { to: '/dashboard/saved', label: 'Saved', icon: Bookmark },
-  { to: '/dashboard/events', label: 'My Events', icon: CalendarDays },
-  { to: '/dashboard/notifications', label: 'Notifications', icon: Bell },
-  { to: '/dashboard/requests', label: 'Requests & Messages', icon: MessagesSquare },
-  { to: '/dashboard/feedback', label: 'My Feedback', icon: Star },
-  { to: '/dashboard/appearance', label: 'Appearance', icon: Palette },
+  { to: '/dashboard/post-opportunity', label: 'Post Opportunity', icon: PlusCircle, permission: 'opportunities.post', feature: 'opportunities.post' },
+  { to: '/dashboard/opportunities', label: 'My Opportunities', icon: Briefcase, permission: 'opportunities.post', feature: 'opportunities.post' },
+  { to: '/experts', label: 'Expert Search', icon: UserSearch, feature: 'experts' },
+  { to: '/partners?type=academia', label: 'Academia Connect', icon: GraduationCap, feature: 'partners' },
+  { to: '/partners?tier=innovation', label: 'Innovation Connect', icon: Users, feature: 'partners' },
+  { to: '/dashboard/learning', label: 'My Learning', icon: BookOpen, feature: 'dashboard.learning' },
+  { to: '/dashboard/saved', label: 'Saved', icon: Bookmark, feature: 'saved' },
+  { to: '/dashboard/events', label: 'My Events', icon: CalendarDays, feature: 'dashboard.events' },
+  { to: '/dashboard/requests', label: 'Requests & Messages', icon: MessagesSquare, feature: 'dashboard.requests' },
+  { to: '/dashboard/feedback', label: 'My Feedback', icon: Star, feature: 'dashboard.feedback' },
   { to: '/dashboard/settings', label: 'Settings', icon: Settings },
 ]
 
 export function MemberLayout() {
-  return <WorkspaceLayout title="Member Portal" items={NAV} />
+  return <WorkspaceLayout title="Member Portal" items={NAV} requireFeature="dashboard" />
 }
 
 interface DashboardData {
@@ -53,6 +54,7 @@ export function Dashboard() {
   useDocumentTitle('Dashboard')
   const { user, can } = useAuth()
   const { data, error, loading, reload } = useAsync(() => api.get<DashboardData>('/me/dashboard'), [])
+  const on = useFeatures()
   if (loading) return <Loading />
   if (error || !data) return <ErrorState error={error} onRetry={reload} />
   const c = data.counts
@@ -73,10 +75,10 @@ export function Dashboard() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {can('opportunities.post') && <StatTile icon={<Briefcase className="size-5" />} value={c.activePosts} label={`Active posts${c.pendingPosts ? ` · ${c.pendingPosts} in review` : ''}`} />}
-        <StatTile icon={<GraduationCap className="size-5" />} value={c.enrollments} label="Courses enrolled" tone="blue" />
-        <StatTile icon={<CalendarDays className="size-5" />} value={c.upcomingEvents} label="Upcoming registered events" tone="purple" />
-        <StatTile icon={<MessageSquare className="size-5" />} value={c.openRequests} label="Open requests" tone="amber" />
+        {can('opportunities.post') && on('opportunities.post') && <StatTile icon={<Briefcase className="size-5" />} value={c.activePosts} label={`Active posts${c.pendingPosts ? ` · ${c.pendingPosts} in review` : ''}`} />}
+        {on('dashboard.learning') && <StatTile icon={<GraduationCap className="size-5" />} value={c.enrollments} label="Courses enrolled" tone="blue" />}
+        {on('dashboard.events') && <StatTile icon={<CalendarDays className="size-5" />} value={c.upcomingEvents} label="Upcoming registered events" tone="purple" />}
+        {on('dashboard.requests') && <StatTile icon={<MessageSquare className="size-5" />} value={c.openRequests} label="Open requests" tone="amber" />}
       </div>
 
       {data.notifications.length > 0 && (
@@ -88,11 +90,11 @@ export function Dashboard() {
 
       <div className="grid gap-6 xl:grid-cols-[1fr_320px]">
         <div className="space-y-6">
-          <Card className="p-5">
+          {on('opportunities') && <Card className="p-5">
             <div className="mb-4 flex items-center justify-between"><h2 className="font-semibold">Relevant opportunities</h2><Link to="/opportunities" className="text-sm font-semibold text-brand-600">View all →</Link></div>
             {data.opportunities.length ? <div className="grid gap-3 md:grid-cols-2">{data.opportunities.map((o) => <OpportunityCard key={o._id} item={o} />)}</div> : <p className="text-sm text-ink-500">No opportunities available for your roles yet.</p>}
-          </Card>
-          <Card className="p-5">
+          </Card>}
+          {on('dashboard.learning') && <Card className="p-5">
             <div className="mb-4 flex items-center justify-between"><h2 className="font-semibold">Continue learning</h2><Link to="/dashboard/learning" className="text-sm font-semibold text-brand-600">My learning →</Link></div>
             {data.enrollments.length ? (
               <div className="space-y-3">
@@ -104,24 +106,24 @@ export function Dashboard() {
                 ))}
               </div>
             ) : <p className="text-sm text-ink-500">You haven't enrolled in a course yet. <Link to="/knowledge?tab=courses" className="font-semibold text-brand-600">Browse courses</Link></p>}
-          </Card>
-          <Card className="p-5">
+          </Card>}
+          {on('knowledge.resources') && <Card className="p-5">
             <div className="mb-4 flex items-center justify-between"><h2 className="font-semibold">New in the Knowledge Hub</h2><Link to="/knowledge" className="text-sm font-semibold text-brand-600">Explore →</Link></div>
             {data.knowledge.length ? <div className="grid gap-3 md:grid-cols-2">{data.knowledge.slice(0, 2).map((k) => <ContentTile key={k._id} item={k} />)}</div> : <p className="text-sm text-ink-500">Nothing new yet.</p>}
-          </Card>
+          </Card>}
         </div>
 
         <div className="space-y-6">
           <Card className="p-5">
             <h2 className="mb-3 font-semibold">Quick Actions</h2>
             <div className="space-y-2">
-              {can('opportunities.post') && <LinkButton to="/dashboard/post-opportunity" variant="outline" className="w-full justify-start"><PlusCircle className="size-4" />Post a Requirement</LinkButton>}
-              <LinkButton to="/experts" variant="outline" className="w-full justify-start"><Search className="size-4" />Find Experts</LinkButton>
-              <LinkButton to="/opportunities" variant="outline" className="w-full justify-start"><ClipboardList className="size-4" />Browse Opportunities</LinkButton>
-              <LinkButton to="/partners?type=academia" variant="outline" className="w-full justify-start"><GraduationCap className="size-4" />Connect with Academia</LinkButton>
+              {can('opportunities.post') && on('opportunities.post') && <LinkButton to="/dashboard/post-opportunity" variant="outline" className="w-full justify-start"><PlusCircle className="size-4" />Post a Requirement</LinkButton>}
+              {on('experts') && <LinkButton to="/experts" variant="outline" className="w-full justify-start"><Search className="size-4" />Find Experts</LinkButton>}
+              {on('opportunities') && <LinkButton to="/opportunities" variant="outline" className="w-full justify-start"><ClipboardList className="size-4" />Browse Opportunities</LinkButton>}
+              {on('partners') && <LinkButton to="/partners?type=academia" variant="outline" className="w-full justify-start"><GraduationCap className="size-4" />Connect with Academia</LinkButton>}
             </div>
           </Card>
-          <Card className="p-5">
+          {on('dashboard.requests') && <Card className="p-5">
             <h2 className="mb-3 font-semibold">Recent requests</h2>
             {data.recentRequests.length ? (
               <ul className="space-y-3">
@@ -133,12 +135,12 @@ export function Dashboard() {
                 ))}
               </ul>
             ) : <p className="text-sm text-ink-500">No requests yet.</p>}
-          </Card>
-          <Card className="p-5">
+          </Card>}
+          {on('events.calendar') && <Card className="p-5">
             <div className="mb-3 flex items-center justify-between"><h2 className="font-semibold">Upcoming events</h2><Link to="/events" className="text-sm font-semibold text-brand-600">All →</Link></div>
             <div className="space-y-2">{data.events.length ? data.events.map((e) => <EventRow key={e._id} event={e} compact />) : <p className="text-sm text-ink-500">No upcoming events.</p>}</div>
-          </Card>
-          {data.announcements.length > 0 && (
+          </Card>}
+          {on('events.announcements') && data.announcements.length > 0 && (
             <Card className="p-5">
               <h2 className="mb-3 font-semibold">Announcements</h2>
               <ul className="space-y-2 text-sm">{data.announcements.map((a) => <li key={a._id}><Link to={contentHref(a)} className="hover:text-brand-700">{a.title}</Link></li>)}</ul>
@@ -153,6 +155,8 @@ export function Dashboard() {
 export function Profile() {
   useDocumentTitle('Profile')
   const { user, refresh } = useAuth()
+  const companyOn = useFeature('dashboard.companyProfile')
+  const expertOn = useFeature('experts.selfProfile')
   const { toast } = useFeedback()
   const p = user?.profile ?? {}
   const [form, setForm] = useState({
@@ -200,8 +204,8 @@ export function Profile() {
           <Button type="submit" loading={busy}>Save profile</Button>
         </form>
       </Card>
-      {user?.accountType === 'organization' && user.organization && <OrganizationProfile />}
-      <ExpertProfileCard />
+      {user?.accountType === 'organization' && user.organization && companyOn && <OrganizationProfile />}
+      {expertOn && <ExpertProfileCard />}
     </div>
   )
 }
@@ -264,7 +268,7 @@ function ExpertProfileCard() {
   if (loading) return null
 
   const start = () => {
-    setForm(data ?? { headline: '', expertType: 'industry_expert', skills: [], expertiseAreas: [], visibility: 'members', mentoringAvailable: false })
+    setForm(data ?? { headline: '', expertType: 'industry_expert', skills: [], expertiseAreas: [], access: { visibility: 'authenticated', roles: [], organizations: [] }, mentoringAvailable: false })
     setEditing(true)
   }
 
@@ -273,7 +277,7 @@ function ExpertProfileCard() {
       <Card className="flex flex-wrap items-center justify-between gap-4 p-6">
         <div>
           <h2 className="flex items-center gap-2 text-lg font-semibold"><ShieldCheck className="size-5 text-brand-600" />Expert profile</h2>
-          <p className="text-sm text-ink-500">{data ? <>{data.headline} · <StatusBadge status={data.status} /> · {label(data.visibility)}</> : 'List yourself in the Experts Network for mentoring, consultancy and collaboration requests.'}</p>
+          <p className="text-sm text-ink-500">{data ? <>{data.headline} · <StatusBadge status={data.status} /> · Visible to: {AUDIENCE_LABEL[data.access?.visibility ?? 'authenticated']}</> : 'List yourself in the Experts Network for mentoring, consultancy and collaboration requests.'}</p>
         </div>
         <Button variant="outline" onClick={start}>{data ? 'Edit expert profile' : 'Create expert profile'}</Button>
       </Card>
@@ -289,8 +293,8 @@ function ExpertProfileCard() {
           setBusy(true)
           setErrors({})
           try {
-            const { headline, bio, expertType, domain, skills, expertiseAreas, yearsExperience, location, visibility, shareEmail, mentoringAvailable } = form
-            await api.put('/experts/me/profile', { headline, bio, expertType, domain, skills, expertiseAreas, yearsExperience: yearsExperience ? Number(yearsExperience) : undefined, location, visibility, shareEmail: !!shareEmail, mentoringAvailable: !!mentoringAvailable })
+            const { headline, bio, expertType, domain, skills, expertiseAreas, yearsExperience, location, access, shareEmail, mentoringAvailable } = form
+            await api.put('/experts/me/profile', { headline, bio, expertType, domain, skills, expertiseAreas, yearsExperience: yearsExperience ? Number(yearsExperience) : undefined, location, access, shareEmail: !!shareEmail, mentoringAvailable: !!mentoringAvailable })
             toast(data ? 'Expert profile updated' : 'Expert profile submitted for approval')
             setEditing(false)
             reload()
@@ -308,12 +312,13 @@ function ExpertProfileCard() {
           <Input label="Domain" value={form.domain ?? ''} onChange={(e) => setForm({ ...form, domain: e.target.value })} placeholder="e.g. Biopharma" />
           <Input label="Years of experience" type="number" min={0} value={form.yearsExperience ?? ''} onChange={(e) => setForm({ ...form, yearsExperience: e.target.value as unknown as number })} />
           <Input label="Location" value={form.location ?? ''} onChange={(e) => setForm({ ...form, location: e.target.value })} />
-          <Select label="Profile visibility" value={form.visibility} onChange={(e) => setForm({ ...form, visibility: e.target.value as Expert['visibility'] })}>
-            <option value="public">Public — anyone can see</option>
-            <option value="members">Members only</option>
-            <option value="hidden">Hidden</option>
-          </Select>
         </div>
+        <fieldset>
+          <legend className="mb-2 text-sm font-medium text-ink-900">Who can see your expert profile</legend>
+          <MemberAudienceProvider>
+            <AccessEditor value={form.access ?? { visibility: 'authenticated', roles: [], organizations: [] }} onChange={(access) => setForm({ ...form, access })} errors={errors} privateOption={EXPERT_PRIVATE} />
+          </MemberAudienceProvider>
+        </fieldset>
         <Textarea label="Biography" value={form.bio ?? ''} onChange={(e) => setForm({ ...form, bio: e.target.value })} rows={4} />
         <TagInput label="Skills" value={form.skills ?? []} onChange={(skills) => setForm({ ...form, skills })} />
         <TagInput label="Areas of expertise" value={form.expertiseAreas ?? []} onChange={(expertiseAreas) => setForm({ ...form, expertiseAreas })} />
@@ -326,6 +331,9 @@ function ExpertProfileCard() {
     </Card>
   )
 }
+
+const EXPERT_PRIVATE = { label: 'BIAN team only', text: 'Hidden from the Experts Network' }
+const AUDIENCE_LABEL: Record<string, string> = { public: 'everyone', authenticated: 'all members', roles: 'selected roles', organizations: 'selected organisations', private: 'BIAN team only' }
 
 const OPP_TYPES = ['hiring', 'internship', 'consultancy', 'research_collaboration', 'technology_transfer', 'training', 'funding']
 
@@ -510,6 +518,7 @@ export function MyFeedback() {
 
 export function AccountSettings() {
   useDocumentTitle('Settings')
+  const appearanceOn = useFeature('appearance')
   const { toast, confirm } = useFeedback()
   const { logout } = useAuth()
   const navigate = useNavigate()
@@ -517,8 +526,10 @@ export function AccountSettings() {
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [busy, setBusy] = useState(false)
   return (
-    <div className="max-w-2xl space-y-6">
-      <PageHeader title="Settings" />
+    <div className="max-w-4xl space-y-8">
+      <PageHeader title="Settings" subtitle="Appearance, password and signed-in devices." />
+      {appearanceOn && <Appearance embedded />}
+      <h2 className="text-xl font-bold text-ink-900">Security</h2>
       <Card className="p-6">
         <h2 className="mb-4 text-lg font-semibold">Change password</h2>
         <form

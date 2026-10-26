@@ -27,7 +27,7 @@ The sidebar shows red badges for pending approvals, content awaiting review and 
 | Categories & Tags · Media Library | Taxonomy and uploaded files with access settings |
 | Audit Log | Who changed what and when |
 | Site Settings | Homepage hero, keywords, intro video, secretariat email/phone/address |
-| Appearance | Your own theme and light/dark mode |
+| My settings | Your own appearance (theme colour, light/dark), password and devices |
 
 ## Roles and permissions
 

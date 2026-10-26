@@ -15,6 +15,7 @@ import { Content } from "../models/content.js";
 import { FeedbackForm, FeedbackSubmission, QUESTION_TYPES } from "../models/feedback.js";
 import { User } from "../models/identity.js";
 import { Course, Event } from "../models/learning.js";
+import { requireFeature } from "../lib/features.js";
 
 export const feedbackRouter = Router();
 export const adminFeedbackRouter = Router();
@@ -123,7 +124,7 @@ function validateAnswer(q: FormQuestion, raw: unknown): unknown {
   }
 }
 
-feedbackRouter.post("/submit", submitLimiter, async (req, res) => {
+feedbackRouter.post("/submit", submitLimiter, requireFeature("feedback"), async (req, res) => {
   const data = parse(submitSchema, req.body);
   const form = await FeedbackForm.findById(data.formId).lean();
   if (!form || form.status !== "active") throw new HttpError(400, "This feedback form is not accepting responses");
@@ -185,7 +186,7 @@ feedbackRouter.get("/status", requireAuth, async (req, res) => {
 });
 
 /** The member's own identified feedback. Anonymous responses are never linked back. */
-feedbackRouter.get("/mine", requireAuth, async (req, res) => {
+feedbackRouter.get("/mine", requireAuth, requireFeature("dashboard.feedback"), async (req, res) => {
   const items = await FeedbackSubmission.find({ user: req.user!._id }).populate("form", "title").sort({ submittedAt: -1 }).limit(50).lean();
   res.json(items);
 });
@@ -471,5 +472,6 @@ analyticsAdmin.get("/export.csv", async (req, res) => {
   res.type("text/csv").attachment("feedback.csv").send(toCsv(rows, ["submittedAt", "form", "formVersion", "targetType", "target", "respondent", "category", "ratingAvg", ...questionLabels]));
 });
 
+adminFeedbackRouter.use(requireFeature("admin.feedback"));
 adminFeedbackRouter.use("/forms", formsAdmin);
 adminFeedbackRouter.use("/analytics", analyticsAdmin);

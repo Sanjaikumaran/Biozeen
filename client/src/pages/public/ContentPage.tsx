@@ -9,6 +9,7 @@ import { useAuth } from '../../lib/auth'
 import { formatDate, label } from '../../lib/format'
 import { useAsync, useDocumentTitle } from '../../lib/hooks'
 import type { ContentDetail } from '../../lib/types'
+import { useFeature } from '../../lib/features'
 
 interface Props {
   /** API type segment: a content type or the "knowledge" / "portfolio" groups. */
@@ -17,6 +18,7 @@ interface Props {
 }
 
 export default function ContentPage({ type, back }: Props) {
+  const saveOn = useFeature('saved')
   const { slug = '' } = useParams()
   const { user } = useAuth()
   const { toast } = useFeedback()
@@ -117,7 +119,7 @@ export default function ContentPage({ type, back }: Props) {
               {org?.slug && <Link to={`/partners/${org.slug}`} className="block text-brand-600 hover:underline">About {org.name}</Link>}
             </Card>
           )}
-          {user && (
+          {user && saveOn && (
             <Button variant="outline" className="w-full" onClick={toggleSave} loading={saving}>
               {data.saved ? <BookmarkCheck className="size-4" /> : <Bookmark className="size-4" />}
               {data.saved ? 'Saved' : 'Save for later'}

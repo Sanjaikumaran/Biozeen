@@ -47,6 +47,7 @@ The database's contents are kept in the repository under [db/data/](db/data/) as
 | Student member | `student@demo.bian.local` | `BianDemo2026` |
 | Content editor (drafts only) | `editor@demo.bian.local` | `BianDemo2026` |
 | Expert | `priya.sharma@demo.bian.local` | `BianDemo2026` |
+| Developer (feature control) | `developer@bian.local` | `BianDev2026` |
 
 Override with `SEED_ADMIN_PASSWORD` / `SEED_DEMO_PASSWORD`. **Change these before any shared deployment.**
 
@@ -57,11 +58,11 @@ Seeded organisations, people, opportunities, events and announcements come from 
 ## Checks
 
 ```bash
-cd server && npm run typecheck && npm test   # 26 API integration tests (needs MongoDB; uses the bian_test database)
+cd server && npm run typecheck && npm test   # 34 API integration tests (needs MongoDB; uses the bian_test database)
 cd client && npm run lint && npm run build
 ```
 
-The tests cover audience filtering on listings, direct URLs, search, courses and events; editor and publisher rights; HTML sanitising; session revocation on suspension; the registration → verification → approval flow; protected file downloads; upload type checks; anonymous feedback privacy; lesson-level analytics; identity hiding in feedback reports; account theme preferences; sign-in codes (expiry, lockout, replay); and notifications (who is told, the live socket, rejection without a session).
+The tests cover audience filtering on listings, direct URLs, search, courses and events; editor and publisher rights; HTML sanitising; session revocation on suspension; the registration → verification → approval flow; protected file downloads; upload type checks; anonymous feedback privacy; lesson-level analytics; identity hiding in feedback reports; account theme preferences; sign-in codes (expiry, lockout, replay); notifications (who is told, the live socket, rejection without a session); expert audiences; and the developer console (isolation from member management, chained disabling, category limits, closing registration).
 
 ## What's included
 
@@ -69,7 +70,9 @@ The tests cover audience filtering on listings, direct URLs, search, courses and
 
 **Accounts:** 3-step registration by category (organisation or individual), email verification, admin approval, login with "remember me", an optional emailed 6-digit sign-in code, forgot/reset password, change password, and sign out of all devices.
 
-**For every user:** live in-app notifications (bell, pop-up and notifications page) for approvals, replies, reviews, publications and new requests; per-user appearance settings with six theme colours, light/dark/system mode and a live preview, saved to the account.
+**For every user:** live in-app notifications in a right-hand panel from the header bell, for approvals, replies, reviews, publications and new requests; a Settings page with appearance (six theme colours that also recolour highlights, light/dark/system mode, live preview, saved to the account), password and signed-in devices. Forms and details open in right-hand drawers.
+
+**Developer console:** a developer account (a flag on the user, not a role) switches every screen and feature on or off, or limits it to visitors and chosen member categories, with dependencies chained so that switching off a screen switches off everything that needs it. See [Developer console](#developer-console-and-feature-control).
 
 **Member dashboard:** relevant opportunities, learning progress, registered events, requests with secretariat replies, saved items, submitted feedback, profile, company profile for organisation accounts, a self-service expert profile, and "Post a Requirement" (goes to review before publishing).
 
@@ -92,6 +95,19 @@ The tests cover audience filtering on listings, direct URLs, search, courses and
 - **Logos** are placeholders: the mock-ups show "LOGO". Partner logos can be set per organisation in the Master Database.
 - Quizzes and assessments, multi-factor authentication and real-time messaging are not implemented. Member messaging is handled through secretariat-mediated requests.
 
+## Developer console and feature control
+
+Developer accounts are flagged on the user (`isDeveloper`), not granted by a role. They hold every permission, never appear in Roles & Permissions, member lists, statistics or the admin audit log, and administrators can't edit or suspend them.
+
+The console at `/developer` lists 48 features in four groups (public website, member portal, across the platform, admin workspace), defined in [server/src/lib/features.ts](server/src/lib/features.ts). Each feature can be:
+
+- **switched off**, for everyone except developers (staff included), or
+- **limited** to visitors and chosen member categories. Staff with admin access ignore audience limits.
+
+A feature is available only when it, its parent screen and every feature it `requires` are available. The API enforces this on every route (`requireFeature`), in listings, homepage sections, search, related content and notification delivery. The client hides the matching navigation, buttons and sections, and open sessions update live over the socket. Settings are stored in the `featureSettings` collection and can be exported and imported as JSON from the console.
+
+Experts use the same audience model as content (public, all members, selected roles, selected organisations, BIAN team only). Older `visibility` values are migrated automatically on start and after `db:import`.
+
 ## Configuration
 
 All settings are in `server/.env` (see [server/.env.example](server/.env.example)).
@@ -103,6 +119,7 @@ All settings are in `server/.env` (see [server/.env.example](server/.env.example
 | `LOGIN_OTP_ENABLED` · `LOGIN_OTP_MINUTES` | `false` · `10` | Require an emailed 6-digit code after the password. Codes lock after 5 wrong tries |
 | `REQUIRE_APPROVAL` · `REQUIRE_EMAIL_VERIFICATION` | `true` | Joining rules |
 | `AUTO_INIT_DB` · `DB_DATA_DIR` | `true` · `../db/data` | Fill an empty database on start, and where the export lives |
+| `DEVELOPER_EMAIL` · `DEVELOPER_PASSWORD` | — | Developer console account, created on start if missing. An existing ordinary account with that email is never promoted |
 
 Realtime notifications use Socket.IO on `/api/socket` and authenticate with the same session cookie as the API. Behind a reverse proxy, allow WebSocket upgrades on that path.
 

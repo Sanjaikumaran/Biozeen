@@ -1,1 +1,32 @@
-[]
+[
+  {
+    "_id": {
+      "$oid": "6adf429395698c4dd6a2d8aa"
+    },
+    "type": "general",
+    "name": "Biozeen Administrator",
+    "email": "admin@bian.local",
+    "organization": "Biozeen",
+    "category": "other",
+    "message": "test 123456789",
+    "user": {
+      "$oid": "6adf0bca3bcd5c045c6e4cad"
+    },
+    "status": "new",
+    "ip": "::1",
+    "notes": [],
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793016467250"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1793016467250"
+      }
+    },
+    "__v": {
+      "$numberInt": "0"
+    }
+  }
+]

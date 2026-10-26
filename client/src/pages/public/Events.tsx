@@ -11,6 +11,7 @@ import { useAuth } from '../../lib/auth'
 import { contentHref, formatDate, formatDateTime, label, timeAgo } from '../../lib/format'
 import { useAsync, useDocumentTitle, useQueryState } from '../../lib/hooks'
 import type { Block, ContentCard, EventItem, PublicForm } from '../../lib/types'
+import { useFeature } from '../../lib/features'
 
 const TABS = [
   { value: 'upcoming', label: 'Upcoming Events' },
@@ -51,7 +52,13 @@ function Announcements({ page, onPage }: { page: string; onPage: (p: number) => 
 export default function Events() {
   useDocumentTitle('Events & Announcements')
   const { user } = useAuth()
-  const [f, setF] = useQueryState({ tab: 'upcoming', page: '1' })
+  const calendarOn = useFeature('events.calendar')
+  const announcementsOn = useFeature('events.announcements')
+  const [query, setF] = useQueryState({ tab: 'upcoming', page: '1' })
+  // Fall back to whichever half of the screen is switched on.
+  const tab = !calendarOn ? 'announcements' : query.tab === 'announcements' && !announcementsOn ? 'upcoming' : query.tab
+  const f = { ...query, tab }
+  const tabs = TABS.filter((t) => (t.value === 'announcements' ? announcementsOn : calendarOn))
   const isType = !['upcoming', 'past', 'announcements'].includes(f.tab)
   const { data, error, loading, reload } = useAsync(
     () => (f.tab === 'announcements' ? Promise.resolve(null) : api.get<Paged<EventItem>>('/events', { when: f.tab === 'past' ? 'past' : 'upcoming', type: isType ? f.tab : undefined, page: f.page })),
@@ -61,7 +68,7 @@ export default function Events() {
     <>
       <PageBanner title="Events & Announcements" subtitle="Stay updated with the latest events, webinars and ecosystem news." icon={<CalendarDays className="size-6" />} />
       <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
-        <Tabs value={f.tab} onChange={(tab) => setF({ tab })} tabs={TABS} />
+        <Tabs value={f.tab} onChange={(tab) => setF({ tab })} tabs={tabs} />
         <div className="mt-6">
           {f.tab === 'announcements' ? <Announcements page={f.page} onPage={(p) => setF({ page: String(p) })} /> : loading ? <SkeletonGrid count={3} className="h-24" /> : error ? <ErrorState error={error} onRetry={reload} /> : !data?.items.length ? (
             <Empty icon={<CalendarX2 className="size-8" />} title={f.tab === 'past' ? 'No past events' : 'No upcoming events'}>{!user && 'Some events are only visible to signed-in members.'}</Empty>
@@ -88,6 +95,7 @@ interface EventDetailData extends EventItem {
 export function EventDetail() {
   const { slug = '' } = useParams()
   const { user } = useAuth()
+  const registrationOn = useFeature('events.registration')
   const navigate = useNavigate()
   const { toast, confirm } = useFeedback()
   const { data, error, loading, reload } = useAsync(() => api.get<EventDetailData>(`/events/${slug}`), [slug, user?.id])
@@ -139,7 +147,7 @@ export function EventDetail() {
           {reg?.deadline && <p className="text-ink-500">Registration closes {formatDate(reg.deadline)}</p>}
           {reg?.externalUrl ? (
             <a href={reg.externalUrl} target="_blank" rel="noopener noreferrer" className="block rounded-lg bg-brand-600 py-2.5 text-center font-semibold text-white">Register externally</a>
-          ) : reg?.enabled && !ended ? (
+          ) : reg?.enabled && !ended && registrationOn ? (
             data.registered ? (
               <>
                 <Alert tone="success">You are registered.</Alert>

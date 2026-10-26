@@ -8,8 +8,11 @@ import { PERMISSIONS } from "../lib/permissions.js";
 import { can, requireAuth, requirePermission } from "../middleware/auth.js";
 import { ContactRequest } from "../models/admin.js";
 import { EXPERT_TYPES, Expert } from "../models/learning.js";
-import { Organization, User } from "../models/identity.js";
+import { Organization, Role, User } from "../models/identity.js";
 import { notify, notifyPermission } from "../lib/notify.js";
+import { audienceFilter } from "../lib/access.js";
+import { accessInput } from "../lib/publishing.js";
+import { requireFeature } from "../lib/features.js";
 
 export const partnersRouter = Router();
 export const expertsRouter = Router();
@@ -20,7 +23,7 @@ export const adminDirectoryRouter = Router();
 const PUBLIC_ORG_FIELDS = "name slug orgType partnerTier description logoUrl website location collaborationAreas initiatives";
 const publicOrgFilter: Filter = { visibility: "public", status: "approved" };
 
-partnersRouter.get("/", async (req, res) => {
+partnersRouter.get("/", requireFeature("partners"), async (req, res) => {
   const { page, limit, skip } = pagination(req, 24);
   const f: Filter = { ...publicOrgFilter };
   const tier = str(req.query.tier);
@@ -37,7 +40,7 @@ partnersRouter.get("/", async (req, res) => {
   res.json({ ...paged(items, total, page, limit), tiers: Object.fromEntries(tiers.map((t) => [t._id, t.n])) });
 });
 
-partnersRouter.get("/:slug", async (req, res) => {
+partnersRouter.get("/:slug", requireFeature("partners.profiles"), async (req, res) => {
   const org = await Organization.findOne({ slug: req.params.slug, ...publicOrgFilter }).select(PUBLIC_ORG_FIELDS).lean();
   if (!org) throw notFound("Partner");
   res.json(org);
@@ -45,10 +48,10 @@ partnersRouter.get("/:slug", async (req, res) => {
 
 // ---------------------------------------------------------------- experts (public / members)
 
-/** Visibility filter honouring each expert's consent setting. */
-function expertVisibility(user?: Express.Request["user"]): Filter {
+/** Experts the viewer may find: approved, and within the audience the expert chose. */
+export function expertVisibility(user?: Express.Request["user"]): Filter {
   if (can(user, PERMISSIONS.expertsManage)) return {};
-  return { status: "approved", visibility: { $in: user ? ["public", "members"] : ["public"] } };
+  return { status: "approved", ...audienceFilter(user) };
 }
 
 type ExpertLean = Record<string, unknown> & { shareEmail?: boolean; user?: unknown };
@@ -60,7 +63,7 @@ function presentExpert(e: ExpertLean, viewer?: Express.Request["user"]) {
   return { ...rest, name: u.name, organization: u.organization, email: showEmail ? u.email : undefined };
 }
 
-expertsRouter.get("/", async (req, res) => {
+expertsRouter.get("/", requireFeature("experts"), async (req, res) => {
   const { page, limit, skip } = pagination(req, 12);
   const f: Filter = { ...expertVisibility(req.user) };
   const type = str(req.query.type);
@@ -87,7 +90,16 @@ expertsRouter.get("/", async (req, res) => {
   res.json({ ...paged(items.map((e) => presentExpert(e as ExpertLean, req.user)), total, page, limit), domains: domains.filter(Boolean).sort() });
 });
 
-expertsRouter.get("/:id", async (req, res) => {
+/** Roles and organisations a member may choose when limiting who can see their expert profile. */
+expertsRouter.get("/audience-options", requireAuth, requireFeature("experts.selfProfile"), async (_req, res) => {
+  const [roles, organizations] = await Promise.all([
+    Role.find({ permissions: { $ne: PERMISSIONS.adminAccess } }).select("name displayName").sort({ displayName: 1 }).lean(),
+    Organization.find({ status: "approved" }).select("name").sort({ name: 1 }).lean(),
+  ]);
+  res.json({ roles, organizations, forms: [] });
+});
+
+expertsRouter.get("/:id", requireFeature("experts"), async (req, res) => {
   const expert = await Expert.findOne({ _id: oid(String(req.params.id)), ...expertVisibility(req.user) })
     .populate({ path: "user", select: "name email organization", populate: { path: "organization", select: "name slug" } })
     .lean();
@@ -97,7 +109,7 @@ expertsRouter.get("/:id", async (req, res) => {
 
 const connectLimiter = rateLimit({ windowMs: 60 * 60 * 1000, limit: 10, message: { error: "Too many requests. Please try again later." } });
 
-expertsRouter.post("/:id/connect", connectLimiter, requirePermission(PERMISSIONS.expertsContact), async (req, res) => {
+expertsRouter.post("/:id/connect", connectLimiter, requirePermission(PERMISSIONS.expertsContact), requireFeature("experts.connect"), async (req, res) => {
   const expert = await Expert.findOne({ _id: oid(String(req.params.id)), ...expertVisibility(req.user) }).populate("user", "name").lean();
   if (!expert) throw notFound("Expert");
   const { purpose, message } = parse(
@@ -138,16 +150,16 @@ const expertSelfInput = z.object({
   expertiseAreas: z.array(z.string().trim().min(1).max(80)).max(20).default([]),
   yearsExperience: z.number().int().min(0).max(70).optional(),
   location: z.string().trim().max(120).optional(),
-  visibility: z.enum(["public", "members", "hidden"]),
+  access: accessInput,
   shareEmail: z.boolean().default(false),
   mentoringAvailable: z.boolean().default(false),
 });
 
-expertsRouter.get("/me/profile", requireAuth, async (req, res) => {
+expertsRouter.get("/me/profile", requireAuth, requireFeature("experts.selfProfile"), async (req, res) => {
   res.json(await Expert.findOne({ user: req.user!._id }).lean());
 });
 
-expertsRouter.put("/me/profile", requireAuth, async (req, res) => {
+expertsRouter.put("/me/profile", requireAuth, requireFeature("experts.selfProfile"), async (req, res) => {
   const data = parse(expertSelfInput, req.body);
   const existing = await Expert.findOne({ user: req.user!._id });
   if (existing) {
@@ -178,7 +190,7 @@ const orgInput = z.object({
 });
 
 const orgsAdmin = Router();
-orgsAdmin.use(requirePermission(PERMISSIONS.adminAccess, PERMISSIONS.organizationsManage));
+orgsAdmin.use(requirePermission(PERMISSIONS.adminAccess, PERMISSIONS.organizationsManage), requireFeature("admin.directory"));
 
 function orgFilter(query: Record<string, unknown>) {
   const f: Filter = {};
@@ -241,14 +253,16 @@ orgsAdmin.delete("/:id", async (req, res) => {
 });
 
 const expertsAdmin = Router();
-expertsAdmin.use(requirePermission(PERMISSIONS.adminAccess, PERMISSIONS.expertsManage));
+expertsAdmin.use(requirePermission(PERMISSIONS.adminAccess, PERMISSIONS.expertsManage), requireFeature("admin.experts"));
 
 async function expertFilter(query: Record<string, unknown>) {
   const f: Filter = {};
-  for (const key of ["expertType", "status", "visibility"]) {
+  for (const key of ["expertType", "status"]) {
     const v = str(query[key]);
     if (v) f[key] = v;
   }
+  const visibility = str(query.visibility);
+  if (visibility) f["access.visibility"] = visibility;
   const q = str(query.q);
   if (q) {
     const users = await User.find({ $or: [{ name: searchRegex(q) }, { email: searchRegex(q) }] }).select("_id").lean();
@@ -269,7 +283,7 @@ expertsAdmin.get("/", async (req, res) => {
 
 expertsAdmin.get("/export.csv", async (req, res) => {
   const items = await Expert.find(await expertFilter(req.query)).populate<{ user: { name: string; email: string } }>("user", "name email").lean();
-  const rows = items.map((e) => ({ name: e.user?.name, email: e.user?.email, headline: e.headline, expertType: e.expertType, domain: e.domain, skills: e.skills.join("; "), yearsExperience: e.yearsExperience, location: e.location, visibility: e.visibility, status: e.status }));
+  const rows = items.map((e) => ({ name: e.user?.name, email: e.user?.email, headline: e.headline, expertType: e.expertType, domain: e.domain, skills: e.skills.join("; "), yearsExperience: e.yearsExperience, location: e.location, visibility: e.access?.visibility, status: e.status }));
   await audit(req, "export", "Expert", null, `Exported ${rows.length} experts`);
   res.type("text/csv").attachment("experts.csv").send(toCsv(rows, ["name", "email", "headline", "expertType", "domain", "skills", "yearsExperience", "location", "visibility", "status"]));
 });

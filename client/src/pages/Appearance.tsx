@@ -81,8 +81,9 @@ function ThemePreview({ accent, mode, compact }: { accent: Accent; mode: 'light'
   )
 }
 
-export default function Appearance() {
-  useDocumentTitle('Appearance')
+/** Theme colour and light/dark mode; shown as a section of the Settings page. */
+export default function Appearance({ embedded = false }: { embedded?: boolean }) {
+  useDocumentTitle(embedded ? undefined : 'Appearance')
   const { theme, systemDark, setTheme } = useTheme()
   const { user } = useAuth()
   const { toast } = useFeedback()
@@ -105,10 +106,17 @@ export default function Appearance() {
 
   return (
     <div className="max-w-4xl space-y-6">
-      <PageHeader
-        title="Appearance"
-        subtitle={user ? 'Choose how BIAN looks for you. Your choice is saved to your account and applies on every device you sign in on.' : 'Choose how BIAN looks on this device.'}
-      />
+      {embedded ? (
+        <div>
+          <h2 className="text-xl font-bold text-ink-900">Appearance</h2>
+          <p className="mt-1 text-sm text-ink-500">Theme colour and light or dark mode. Saved to your account and applied on every device you sign in on.</p>
+        </div>
+      ) : (
+        <PageHeader
+          title="Appearance"
+          subtitle={user ? 'Choose how BIAN looks for you. Your choice is saved to your account and applies on every device you sign in on.' : 'Choose how BIAN looks on this device.'}
+        />
+      )}
 
       <Card className="p-6">
         <h2 className="text-lg font-semibold">Mode</h2>
@@ -155,7 +163,7 @@ export default function Appearance() {
                 onClick={() => setDraft({ ...draft, accent: a.key })}
                 className={cx('flex w-24 flex-col items-center gap-2 rounded-xl border p-3 text-xs font-medium text-ink-900 transition', on ? 'border-brand-500 ring-2 ring-brand-500/25' : 'border-ink-900/10 hover:border-brand-200')}
               >
-                <span className="grid size-9 place-items-center rounded-full text-white ring-2 ring-card" style={{ background: a.swatch }}>{on && <Check className="size-4" />}</span>
+                <span className="grid size-9 place-items-center rounded-full text-white ring-2 ring-card" style={{ background: `linear-gradient(135deg, ${a.swatch} 55%, ${a.highlight} 55%)` }}>{on && <Check className="size-4" />}</span>
                 {a.label}
               </button>
             )

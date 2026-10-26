@@ -1,7 +1,7 @@
 import { ArrowDown, ArrowUp, Download, EyeOff, ListChecks, MessageSquareHeart, Plus, Star, Trash2, Users } from 'lucide-react'
 import { Fragment, useState } from 'react'
 import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import { Alert, Badge, Button, Card, Checkbox, Empty, ErrorState, Input, Loading, Modal, PageHeader, Pagination, Select, StatTile, StatusBadge, Tabs, Textarea, useFeedback } from '../../components/ui'
+import { Alert, Badge, Button, Card, Checkbox, Empty, ErrorState, Input, Loading, Modal, PageHeader, Pagination, SearchInput, Select, StatTile, StatusBadge, Tabs, Textarea, useFeedback } from '../../components/ui'
 import { ApiError, api, downloadUrl, type Paged } from '../../lib/api'
 import { useAuth } from '../../lib/auth'
 import { formatDate, formatDateTime, label } from '../../lib/format'
@@ -341,7 +341,7 @@ export function FeedbackAnalytics() {
 
       {f.view === 'responses' && (
         <div className="space-y-3">
-          <input aria-label="Search answers" value={f.q} onChange={(e) => setF({ q: e.target.value })} placeholder="Search text answers…" className="h-10 w-72 rounded-lg border border-ink-300/70 bg-card px-3 text-sm" />
+          <SearchInput value={f.q} onChange={(q) => setF({ q })} placeholder="Search text answers…" />
           {responses.loading ? <Loading /> : responses.error ? <ErrorState error={responses.error} onRetry={responses.reload} /> : !responses.data?.items.length ? <Empty title="No responses" /> : (
             <>
               <Card className="divide-y divide-ink-900/8">

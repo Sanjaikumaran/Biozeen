@@ -9,6 +9,8 @@ import { Content } from "../models/content.js";
 import { FeedbackSubmission } from "../models/feedback.js";
 import { Organization, User } from "../models/identity.js";
 import { Course, Enrollment, Event, EventRegistration, Expert } from "../models/learning.js";
+import { expertVisibility } from "./directory.js";
+import { allowedContentTypes, allowedFeatures, requireFeature } from "../lib/features.js";
 
 export const publicRouter = Router();
 export const meRouter = Router();
@@ -25,7 +27,7 @@ async function publicStats() {
     Expert.countDocuments({ status: "approved" }),
     Organization.countDocuments({ ...approvedPublic, orgType: { $in: ["academia", "research"] } }),
     Content.countDocuments({ type: "opportunity", ...liveFilter() }),
-    User.countDocuments({ status: "active" }),
+    User.countDocuments({ status: "active", isDeveloper: { $ne: true } }),
   ]);
   return { partners, experts, institutions, opportunities, members };
 }
@@ -36,43 +38,51 @@ publicRouter.get("/stats", async (_req, res) => {
 
 publicRouter.get("/home", async (req, res) => {
   const visible = visibleFilter(req.user);
+  const on = await allowedFeatures(req.user);
+  // Each homepage section is left empty when the screen it comes from is switched off for this viewer.
+  const when = <T>(key: string, load: () => Promise<T>, off: T) => (on[key] ? load() : Promise.resolve(off));
   const cards = (type: string | { $in: string[] }, limit: number, extra = {}) =>
     Content.find({ $and: [{ type, ...extra }, visible] }).select(CARD_FIELDS).sort({ featured: -1, publishedAt: -1 }).limit(limit).lean();
   const [stats, about, services, opportunities, knowledge, announcements, events, partners, settings] = await Promise.all([
-    publicStats(),
-    Content.findOne({ $and: [{ type: "page", slug: "about" }, visible] }).select("title summary featuredImage").lean(),
-    cards("service", 6),
-    cards("opportunity", 3),
-    cards({ $in: ["article", "blog", "tutorial"] }, 4),
-    cards("announcement", 3),
-    Event.find({ $and: [{ startAt: { $gte: new Date() } }, visible] }).select("-blocks -location.meetingUrl").sort({ startAt: 1 }).limit(3).lean(),
-    Organization.find({ status: "approved", visibility: "public", partnerTier: { $ne: "none" } }).select("name slug logoUrl partnerTier").sort({ partnerTier: 1, name: 1 }).limit(12).lean(),
+    when("home.stats", () => publicStats(), null),
+    when("portfolio", () => Content.findOne({ $and: [{ type: "page", slug: "about" }, visible] }).select("title summary featuredImage").lean(), null),
+    when("portfolio", () => cards("service", 6), []),
+    when("opportunities", () => cards("opportunity", 3), []),
+    when("knowledge.resources", () => cards({ $in: ["article", "blog", "tutorial"] }, 4), []),
+    when("events.announcements", () => cards("announcement", 3), []),
+    when("events.calendar", () => Event.find({ $and: [{ startAt: { $gte: new Date() } }, visible] }).select("-blocks -location.meetingUrl").sort({ startAt: 1 }).limit(3).lean(), []),
+    when("partners", () => Organization.find({ status: "approved", visibility: "public", partnerTier: { $ne: "none" } }).select("name slug logoUrl partnerTier").sort({ partnerTier: 1, name: 1 }).limit(12).lean(), []),
     SiteSettings.findOne({ key: "site" }).lean(),
   ]);
+  if (settings?.hero && !on["home.video"]) settings.hero.videoUrl = undefined;
   res.json({ stats, about, services, opportunities, knowledge, announcements, events, partners, settings });
 });
 
 /** Site-wide search; each source applies the same visibility rules as its own listing. */
-publicRouter.get("/search", async (req, res) => {
+publicRouter.get("/search", requireFeature("search"), async (req, res) => {
   const { q } = parse(z.object({ q: z.string().trim().min(2, "Enter at least 2 characters").max(100) }), req.query);
   const rx = searchRegex(q);
   const visible = visibleFilter(req.user);
+  const on = await allowedFeatures(req.user);
+  const types = await allowedContentTypes(req.user);
   const [contents, courses, events, experts] = await Promise.all([
-    Content.find({ $and: [{ $or: [{ title: rx }, { summary: rx }] }, visible] }).select(CARD_FIELDS).limit(20).lean(),
-    Course.find({ $and: [{ $or: [{ title: rx }, { summary: rx }] }, visible] }).select("title slug summary thumbnail").limit(10).lean(),
-    Event.find({ $and: [{ $or: [{ title: rx }, { summary: rx }] }, visible] }).select("title slug summary startAt eventType").limit(10).lean(),
-    Expert.find({ status: "approved", visibility: { $in: req.user ? ["public", "members"] : ["public"] }, $or: [{ headline: rx }, { skills: rx }, { expertiseAreas: rx }] })
-      .populate("user", "name")
-      .select("headline expertType user")
-      .limit(10)
-      .lean(),
+    Content.find({ $and: [{ type: { $in: types } }, { $or: [{ title: rx }, { summary: rx }] }, visible] }).select(CARD_FIELDS).limit(20).lean(),
+    on["knowledge.courses"] ? Course.find({ $and: [{ $or: [{ title: rx }, { summary: rx }] }, visible] }).select("title slug summary thumbnail").limit(10).lean() : [],
+    on["events.calendar"] ? Event.find({ $and: [{ $or: [{ title: rx }, { summary: rx }] }, visible] }).select("title slug summary startAt eventType").limit(10).lean() : [],
+    on.experts
+      ? Expert.find({ $and: [expertVisibility(req.user), { $or: [{ headline: rx }, { skills: rx }, { expertiseAreas: rx }] }] })
+          .populate("user", "name")
+          .select("headline expertType user")
+          .limit(10)
+          .lean()
+      : [],
   ]);
   res.json({ contents, courses, events, experts: experts.map((e) => ({ _id: e._id, headline: e.headline, expertType: e.expertType, name: (e.user as { name?: string } | null)?.name })) });
 });
 
 // ---------------------------------------------------------------- member self-service
 
-meRouter.use(requireAuth);
+meRouter.use(requireAuth, requireFeature("dashboard"));
 
 meRouter.get("/dashboard", async (req, res) => {
   const user = req.user!;
@@ -119,29 +129,29 @@ meRouter.get("/dashboard", async (req, res) => {
   });
 });
 
-meRouter.get("/opportunities", async (req, res) => {
+meRouter.get("/opportunities", requireFeature("opportunities.post"), async (req, res) => {
   const items = await Content.find({ author: req.user!._id, type: "opportunity" }).select(CARD_FIELDS).sort({ createdAt: -1 }).lean();
   res.json(items);
 });
 
-meRouter.get("/saved", async (req, res) => {
+meRouter.get("/saved", requireFeature("saved"), async (req, res) => {
   const me = await User.findById(req.user!._id).select("savedContents").lean();
   const items = await Content.find({ $and: [{ _id: { $in: me?.savedContents ?? [] } }, visibleFilter(req.user)] }).select(CARD_FIELDS).lean();
   res.json(items);
 });
 
-meRouter.get("/learning", async (req, res) => {
+meRouter.get("/learning", requireFeature("dashboard.learning"), async (req, res) => {
   const items = await Enrollment.find({ user: req.user!._id }).populate("course", "title slug thumbnail summary modules.lessons._id").sort({ updatedAt: -1 }).lean();
   res.json(items);
 });
 
-meRouter.get("/events", async (req, res) => {
+meRouter.get("/events", requireFeature("dashboard.events"), async (req, res) => {
   const items = await EventRegistration.find({ user: req.user!._id, status: "registered" }).populate("event", "title slug startAt endAt eventType location.mode location.city location.venue").sort({ createdAt: -1 }).lean();
   res.json(items);
 });
 
 /** Requests the member sent; internal notes and assignment are never included. */
-meRouter.get("/requests", async (req, res) => {
+meRouter.get("/requests", requireFeature("dashboard.requests"), async (req, res) => {
   const items = await ContactRequest.find({ user: req.user!._id })
     .select("type subject message status response createdAt updatedAt targetExpert")
     .populate({ path: "targetExpert", select: "headline user", populate: { path: "user", select: "name" } })
@@ -175,12 +185,12 @@ meRouter.put("/profile", async (req, res) => {
 });
 
 /** Organization accounts can view and edit their organization's public profile draft. */
-meRouter.get("/organization", async (req, res) => {
+meRouter.get("/organization", requireFeature("dashboard.companyProfile"), async (req, res) => {
   if (!req.user!.organization) return res.json(null);
   res.json(await Organization.findById(req.user!.organization).select("-contact").lean());
 });
 
-meRouter.put("/organization", async (req, res) => {
+meRouter.put("/organization", requireFeature("dashboard.companyProfile"), async (req, res) => {
   if (!req.user!.organization || req.user!.accountType !== "organization") throw new HttpError(403, "No organization is linked to your account");
   const data = parse(
     z.object({

@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import type { Types } from "mongoose";
 import { config } from "../config.js";
 import { HttpError, forbidden } from "../lib/http.js";
-import type { Permission } from "../lib/permissions.js";
+import { ALL_PERMISSIONS, type Permission } from "../lib/permissions.js";
 import { Role, User } from "../models/identity.js";
 
 export interface AuthUser {
@@ -18,6 +18,7 @@ export interface AuthUser {
   roleIds: Types.ObjectId[];
   roleNames: string[];
   permissions: Set<Permission>;
+  isDeveloper: boolean;
 }
 
 declare global {
@@ -74,7 +75,8 @@ export async function sessionUser(token: string): Promise<AuthUser | null> {
     organization: user.organization ?? null,
     roleIds: roles.map((r) => r._id),
     roleNames: roles.map((r) => r.name),
-    permissions: new Set(roles.flatMap((r) => r.permissions as Permission[])),
+    permissions: user.isDeveloper ? new Set(ALL_PERMISSIONS) : new Set(roles.flatMap((r) => r.permissions as Permission[])),
+    isDeveloper: !!user.isDeveloper,
   };
 }
 
@@ -106,4 +108,11 @@ export function requirePermission(...permissions: Permission[]) {
     if (!permissions.every((p) => req.user!.permissions.has(p))) throw forbidden();
     next();
   };
+}
+
+/** Developer console only; developer accounts are flagged on the user, not granted by a role. */
+export function requireDeveloper(req: Request, _res: Response, next: NextFunction) {
+  if (!req.user) throw new HttpError(401, "Please sign in to continue");
+  if (!req.user.isDeveloper) throw new HttpError(404, "Endpoint not found");
+  next();
 }
