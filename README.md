@@ -4,7 +4,7 @@ Company portfolio website and role-based member platform for BIAN, built from th
 
 | Layer | Stack |
 |---|---|
-| Client | React 19, Vite, TypeScript, Tailwind CSS 4, React Router 7, Recharts |
+| Client | React 19, Vite, TypeScript, Tailwind CSS 4, React Router 7, d3 (admin overview charts), Recharts (feedback analytics) |
 | Server | Node.js, Express 5, TypeScript (tsx), Mongoose 9, Zod |
 | Database | MongoDB 7 (files on disk, metadata in MongoDB) |
 

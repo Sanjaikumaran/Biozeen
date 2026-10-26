@@ -35,7 +35,7 @@ New opportunities published for your audience arrive as notifications.
 ![A course page](../presentation/screens/learning.png)
 
 - **Knowledge Hub** has insights, research, regulatory guidance and the learning centre. Items marked *Members* open once you are signed in.
-- **Courses:** **Enroll for free**, work through the modules and lessons, and use **Mark as complete** on each lesson. **My Learning** shows your progress.
+- **Courses:** **Enroll for free**, work through the modules and lessons, and use **Mark as complete** on each lesson. **My Learning** lists your courses with a progress bar each, and a **Continue** button that takes you back to where you left off.
 - Leave **feedback** on lessons and courses. It helps the team improve them, and you can often answer anonymously.
 
 ## Events
